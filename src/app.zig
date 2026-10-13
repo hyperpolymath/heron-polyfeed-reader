@@ -8,6 +8,7 @@ const Io = std.Io;
 const config = @import("config.zig");
 const adapter = @import("adapter.zig");
 const feed_adapter = @import("feed_adapter.zig");
+const monitor = @import("monitor.zig");
 const http = @import("http.zig");
 
 pub const Overrides = struct {
@@ -25,6 +26,7 @@ pub const App = struct {
     cfg: config.Config,
     jobs: []adapter.Source = &.{},
     feed: feed_adapter.FeedAdapter = .{},
+    mon: monitor.MonitorAdapter = .{},
     registry: adapter.Registry = .{},
     http: ?http.HttpTransport = null,
 
@@ -68,6 +70,10 @@ pub const App = struct {
     /// Register adapters. Call once, after the App has its final address.
     pub fn setup(self: *App) !void {
         try self.registry.register(self.feed.asAdapter());
+        const ua = self.cfg.user_agent;
+        const end = std.mem.indexOfAny(u8, ua, "/ ") orelse ua.len;
+        if (end > 0) self.mon.ua_token = ua[0..end];
+        try self.registry.register(self.mon.asAdapter());
     }
 
     pub fn transport(self: *App) @import("transport.zig").Transport {

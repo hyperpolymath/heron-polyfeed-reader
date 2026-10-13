@@ -10,6 +10,7 @@ const store_mod = @import("store.zig");
 const engine_mod = @import("engine.zig");
 const daemon = @import("daemon.zig");
 const util = @import("util.zig");
+const monitor_mod = @import("monitor.zig");
 
 const usage =
     \\superfeedreader — a small local feed reader and site monitor
@@ -24,6 +25,7 @@ const usage =
     \\  read ID | unread ID       change an item's read state
     \\  mark-all-read [NAME]
     \\  sources                   per-source status: last check, failures, next poll
+    \\  monitors                  monitor status: up/down, HTTP status, TLS certificate expiry
     \\  rebuild                   rebuild the index and search tables from the log
     \\  check-config              validate the config file
     \\  help
@@ -152,6 +154,8 @@ fn run(init: std.process.Init) !u8 {
         return 0;
     } else if (std.mem.eql(u8, cmd, "sources")) {
         return cmdSources(&app, &store, out, arena, now);
+    } else if (std.mem.eql(u8, cmd, "monitors")) {
+        return cmdMonitors(&app, &store, out, arena, now);
     } else if (std.mem.eql(u8, cmd, "rebuild")) {
         try store.rebuild();
         const c = try store.count();
@@ -207,6 +211,27 @@ fn cmdSources(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, arena
         const ok_ago = if (st.last_ok) |t| util.fmtSpan(&b1, now - t) else "never";
         const next = if (st.next_poll) |t| (if (t <= now) "due" else util.fmtSpan(&b2, t - now)) else "-";
         try out.print("{s:<20} {s:<8} {s:>9} {d:>6} {s:>9}  {s}\n", .{ job.name, job.type_name, ok_ago, st.failures, next, st.last_error orelse "" });
+    }
+    return 0;
+}
+
+fn cmdMonitors(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, arena: Allocator, now: i64) !u8 {
+    try out.print("{s:<20} {s:<8} {s:>9} {s:>6} {s:>10}  {s}\n", .{ "name", "state", "since", "http", "cert", "note" });
+    for (app.jobs) |job| {
+        if (!std.mem.eql(u8, job.type_name, "monitor")) continue;
+        const st = try store.getSourceState(arena, job.name);
+        const ms = monitor_mod.parseState(arena, st.adapter_state);
+        var b1: [16]u8 = undefined;
+        var b2: [16]u8 = undefined;
+        var b3: [16]u8 = undefined;
+        const state: []const u8 = if (ms.blocked) "blocked" else if (ms.up) |u| (if (u) "up" else "DOWN") else "unknown";
+        const since = if (ms.since > 0) util.fmtSpan(&b1, now - ms.since) else "-";
+        const http_s = if (ms.status > 0) try std.fmt.bufPrint(&b2, "{d}", .{ms.status}) else "-";
+        const cert = if (ms.cert_not_after > 0)
+            (if (ms.cert_not_after <= now) "EXPIRED" else util.fmtSpan(&b3, ms.cert_not_after - now))
+        else
+            "-";
+        try out.print("{s:<20} {s:<8} {s:>9} {s:>6} {s:>10}  {s}\n", .{ job.name, state, since, http_s, cert, ms.err });
     }
     return 0;
 }
