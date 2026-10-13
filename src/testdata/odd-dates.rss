@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Dates</title>
+<item><title>rfc822</title><guid>d1</guid><pubDate>Sat, 01 Jan 2000 00:00:00 GMT</pubDate></item>
+<item><title>no weekday no seconds</title><guid>d2</guid><pubDate>1 Jan 2000 00:00 +0000</pubDate></item>
+<item><title>two digit year, lowercase</title><guid>d3</guid><pubDate>sat, 01 jan 00 00:00:00 gmt</pubDate></item>
+<item><title>iso in pubDate</title><guid>d4</guid><pubDate>2000-01-01T00:00:00Z</pubDate></item>
+<item><title>dc:date with offset</title><guid>d5</guid><dc:date>2000-01-01T01:00:00+01:00</dc:date></item>
+<item><title>named zone EST</title><guid>d6</guid><pubDate>Sat, 01 Jan 2000 00:00:00 EST</pubDate></item>
+<item><title>trailing comment</title><guid>d7</guid><pubDate>Sat, 01 Jan 2000 00:00:00 GMT (UTC)</pubDate></item>
+<item><title>garbage</title><guid>d8</guid><pubDate>sometime last week</pubDate></item>
+<item><title>epoch</title><guid>d9</guid><pubDate>946684800</pubDate></item>
+</channel></rss>

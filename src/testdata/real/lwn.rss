@@ -1,0 +1,271 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
+    		xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>LWN.net</title>
+        <link>https://lwn.net</link>
+        <description> LWN.net is a comprehensive source of news and opinions from
+        and about the Linux community.  This is the main LWN.net feed,
+        listing all articles which are posted to the site front page.
+</description>
+        <language>en-us</language>
+        <pubDate>Tue, 13 Oct 2026 10:27:52 +0000</pubDate>
+        <lastBuildDate>Tue, 13 Oct 2026 10:27:52 +0000</lastBuildDate>
+        <docs>https://www.rssboard.org/rss-specification</docs>
+        <webMaster>lwn@lwn.net</webMaster>
+        <atom:link href="https://lwn.net/headlines/rss2"
+    		rel="self" type="application/rss+xml"/>
+    <item>
+        <title>[$] The 2026 Maintainers Summit</title>
+        <link>https://lwn.net/Articles/1099594/</link>
+        <guid>https://lwn.net/Articles/1099594/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>The Maintainers Summit is a one-day, invitation-only gathering of about 30
+kernel developers; it is held once each year to discuss policy-related issues
+that are not always amenable to resolution via email.  The 2026 event was
+scheduled for October&amp;#160;8 in Prague, Czechia.  Unsurprisingly, the discussion
+there was dominated by large language models (LLMs) and their effect on the
+development community, but some time was also found to talk about security
+bugs and long-term succession planning.
+</description>
+        <pubDate>Mon, 12 Oct 2026 15:27:27 +0000</pubDate>
+        </item>
+        <item>
+        <title>LineageOS 24 released</title>
+        <link>https://lwn.net/Articles/1099950/</link>
+        <guid>https://lwn.net/Articles/1099950/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>&lt;p&gt;The &lt;a href=&quot;https://lineageos.org/&quot;&gt;LineageOS&lt;/a&gt; project, which produces an
+Android-based distribution for mobile devices, has &lt;a
+href=&quot;https://lineageos.org/Changelog-32/&quot;&gt;announced&lt;/a&gt; the release of
+LineageOS 24.0.&lt;/p&gt;
+
+&lt;blockquote class=&quot;bq&quot;&gt;
+&lt;p&gt;We're a bit sentimental about this release, as it precedes a really fun
+upcoming milestone.&lt;/p&gt;
+
+&lt;p&gt;On December 24, 2026, LineageOS will celebrate 10 years. It's a remarkable
+milestone for a project built by a passionate community of developers,
+maintainers, contributors, and users who have kept so many devices alive along
+the way.&lt;/p&gt;
+
+&lt;p&gt;[...] We've been hard at work rebasing all of our changes and features since
+Android 17's release in June. Android 17's first release mainly contained
+iterative improvements and some UI/UX refinements, but due to our previous
+efforts adapting to Google's heavy refactoring over the last several versions,
+we were able to rebase onto Android 17's code-base faster than anticipated. Yes
+you read that right: We're early this year!&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+        <pubDate>Mon, 12 Oct 2026 13:13:57 +0000</pubDate>
+        </item>
+        <item>
+        <title>Security updates for Monday</title>
+        <link>https://lwn.net/Articles/1099949/</link>
+        <guid>https://lwn.net/Articles/1099949/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>Security updates have been issued by &lt;b&gt;AlmaLinux&lt;/b&gt; (cjose, compat-openssl10, compat-openssl11, curl, dogtag-pki, dovecot, emacs, glibc, kernel, openssl, python3.12, python3.14, and sssd), &lt;b&gt;Debian&lt;/b&gt; (chromium, ghostscript, tor, and vips), &lt;b&gt;Fedora&lt;/b&gt; (kernel, libical, markdownlint-cli2, openbao, openvpn, php-getid3, python3.10, python3.11, and python3.13), &lt;b&gt;Mageia&lt;/b&gt; (capnproto, chirp, flatpak, freetype2, hamlib, mingw-pcre2, pcre2, openssl, tomcat, tomcat-native, and xdg-dbus-proxy), &lt;b&gt;Oracle&lt;/b&gt; (bind, cjose, dogtag-pki, dovecot, firefox, kernel, nodejs:24, openssl, pki-core:10.6, python3.12, python3.14, ruby:2.5, rust-sequoia-sq, sssd, and tftp), &lt;b&gt;Red Hat&lt;/b&gt; (libxml2), &lt;b&gt;Slackware&lt;/b&gt; (mutt), &lt;b&gt;SUSE&lt;/b&gt; (apache-sshd, bind, ccache, chromium, cpp13, dash, expat, fetchmail, flatpak, golang-github-prometheus-prometheus, grafana, system-user-grafana, incus, libpng16-16, libsoup, logback, openssh8.4, perl-DBI, php8, python3-paramiko, python312, python313-asyncpg, python313-azure-identity, python313-Babel, python313-Beaker, python313-bjoern, python313-black, python313-Brotli, python313-CairoSVG, python313-Flask-Cors, python313-FontTools, python313-Jinja2, python313-jwcrypto, python313-MechanicalSoup, python313-oauthlib, python313-PyJWT, python313-PyMySQL, python313-PyYAML, python313-virtualenv, python313-XStatic-jquery-ui, qemu, rsyslog, shadowsocks-rust, squid, stunnel, swtpm, trivy, unbound, wpa_supplicant, and yast2-users), and &lt;b&gt;Ubuntu&lt;/b&gt; (libdbi-perl).
+</description>
+        <pubDate>Mon, 12 Oct 2026 13:00:41 +0000</pubDate>
+        </item>
+        <item>
+        <title>Kernel prepatch 7.3-rc7</title>
+        <link>https://lwn.net/Articles/1099798/</link>
+        <guid>https://lwn.net/Articles/1099798/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>The &lt;a href=&quot;https://lwn.net/Articles/1099809/&quot;&gt;7.3-rc7&lt;/a&gt; kernel prepatch is out for
+testing.  According to Linus: &quot;&lt;q&gt;As always, I would have preferred to see a smaller
+rc, but it's not like anything in here looks like a reason to delay
+the final release. So that's still set for next weekend unless
+something new comes up.&lt;/q&gt;&quot;
+&lt;p&gt;
+
+One notable change that slipped into the mainline this week is the &lt;a
+href=&quot;https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=3e78d7b06323&quot;&gt;deprecation&lt;/a&gt;
+of the ext4 &lt;tt&gt;data=journal&lt;/tt&gt; mode; it will be removed entirely at the
+beginning of 2028.</description>
+        <pubDate>Mon, 12 Oct 2026 03:31:34 +0000</pubDate>
+        </item>
+        <item>
+        <title>Stable kernels 7.2.10 and 6.18.56</title>
+        <link>https://lwn.net/Articles/1099764/</link>
+        <guid>https://lwn.net/Articles/1099764/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>The &lt;a href=&quot;https://lwn.net/Articles/1099765/&quot;&gt;7.2.10&lt;/a&gt; and &lt;a
+href=&quot;https://lwn.net/Articles/1099766/&quot;&gt;6.18.56&lt;/a&gt; stable kernels have been released.
+Each contains another several hundred important fixes.</description>
+        <pubDate>Sun, 11 Oct 2026 14:35:57 +0000</pubDate>
+        </item>
+        <item>
+        <title>Python 3.15 released</title>
+        <link>https://lwn.net/Articles/1099602/</link>
+        <guid>https://lwn.net/Articles/1099602/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>&lt;p&gt;&lt;a href=&quot;https://www.python.org/downloads/release/python-3150/&quot;&gt;Version
+3.15&lt;/a&gt; of the Python programming language has been released. Notable changes
+in this release include the addition of the &lt;tt&gt;sentinel&lt;/tt&gt; and &lt;a
+href=&quot;https://lwn.net/Articles/1047238/&quot;&gt;&lt;tt&gt;frozendict&lt;/tt&gt;&lt;/a&gt; built-in types,
+the use of UTF-8 encoding by default, &lt;a
+href=&quot;https://docs.python.org/3.15/library/site.html#site-start-files&quot;&gt;package
+start-up configuration files&lt;/a&gt;, as well as improvements in the &lt;a
+href=&quot;https://docs.python.org/3/whatsnew/3.15.html#whatsnew315-jit&quot;&gt;experimental
+JIT compiler&lt;/a&gt;. See the &quot;&lt;a
+href=&quot;https://docs.python.org/3/whatsnew/3.15.html&quot;&gt;What's new in Python
+3.15&lt;/a&gt;&quot; article for an in-depth look at new features in this release, and the
+&lt;a
+href=&quot;https://docs.python.org/3/whatsnew/changelog.html#changelog&quot;&gt;changelog&lt;/a&gt;
+for a full list of changes.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+        <pubDate>Fri, 09 Oct 2026 17:15:44 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] Adding kernel control-flow-integrity checking to GCC</title>
+        <link>https://lwn.net/Articles/1098670/</link>
+        <guid>https://lwn.net/Articles/1098670/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>While many developers are struggling to keep up with the flood of
+vulnerability reports, others are still focused on preventing those reports
+from happening in the first place.  Control-flow integrity (CFI) is the
+term for preventing (or at least detecting) exploits that divert the flow
+of control from its intended paths.  At the 2026 &lt;a
+href=&quot;https://gnu-tools-cauldron.org/&quot;&gt;GNU Tools Cauldron&lt;/a&gt;, Kees Cook
+presented his changes to the GCC compiler suite to support forward-edge CFI
+for the kernel.
+</description>
+        <pubDate>Fri, 09 Oct 2026 17:06:12 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] The state of systemd: 2026 edition</title>
+        <link>https://lwn.net/Articles/1099024/</link>
+        <guid>https://lwn.net/Articles/1099024/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>&lt;p&gt;At the 2026 &lt;a href=&quot;https://all-systems-go.io/&quot;&gt;All Systems Go!&lt;/a&gt;
+conference, systemd maintainers Luca Boccassi and Zbigniew Jędrzejewski-Szmek
+delivered the traditional &quot;state of the project&quot; session with an overview of the
+systemd project's accomplishments in the past year. That was followed by a
+maintainer round table where Boccassi, Jędrzejewski-Szmek, Daan De&amp;#160;Meyer, and
+project leader Lennart Poettering fielded questions about systemd's size,
+health, and if it might replace Kubernetes. (It will not.)&lt;/p&gt;
+</description>
+        <pubDate>Fri, 09 Oct 2026 14:58:15 +0000</pubDate>
+        </item>
+        <item>
+        <title>Let's Encrypt moving to 64-day certificate lifetimes in 2027</title>
+        <link>https://lwn.net/Articles/1099588/</link>
+        <guid>https://lwn.net/Articles/1099588/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>&lt;p&gt;&lt;a href=&quot;https://letsencrypt.org/2026/10/07/64-day-certs.html&quot;&gt;Let's
+Encrypt&lt;/a&gt;, the nonprofit that provides free TLS certificates for millions of
+sites, has &lt;a
+href=&quot;https://letsencrypt.org/2026/10/07/64-day-certs.html&quot;&gt;announced&lt;/a&gt; that
+it will be moving to certificates with 64-day lifetimes on February&amp;#160;10,
+2027:&lt;/p&gt;
+
+&lt;blockquote class=&quot;bq&quot;&gt;
+&lt;p&gt;This means that any certificate we issue or renew on and after that date will
+have a 64 day validity period, and we expect the last 90-day certificate to
+expire on May 11, 2027. We will not revoke valid certificates as a part of this
+process.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This is the second stage of Let's Encrypt's plan, &lt;a
+href=&quot;https://letsencrypt.org/2025/12/02/from-90-to-45&quot;&gt;announced in 2025&lt;/a&gt;,
+to move to 45-day certificate lifetimes as required by the the &lt;a
+href=&quot;https://cabforum.org/working-groups/server/baseline-requirements/requirements/&quot;&gt;CA/Browser
+Forum Baseline Requirements&lt;/a&gt;. In 2028, Let's Encrypt will switch to 45-day certificates.&lt;/p&gt;</description>
+        <pubDate>Fri, 09 Oct 2026 14:02:44 +0000</pubDate>
+        </item>
+        <item>
+        <title>Security updates for Friday</title>
+        <link>https://lwn.net/Articles/1099587/</link>
+        <guid>https://lwn.net/Articles/1099587/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>Security updates have been issued by &lt;b&gt;AlmaLinux&lt;/b&gt; (bind, bind9.16, freerdp, glibc, kbd, mod_auth_openidc, openssl, perl-DBI, python3.12, python3.14, and tftp), &lt;b&gt;Debian&lt;/b&gt; (rails and twitter-bootstrap3), &lt;b&gt;Fedora&lt;/b&gt; (barman, cockpit, hcloud, libmodsecurity, nginx-mod-modsecurity, perl-DBI, sudo, and xorg-x11-server-Xwayland), &lt;b&gt;Mageia&lt;/b&gt; (libxfont2), &lt;b&gt;Oracle&lt;/b&gt; (bind9.18, firefox, kernel, nodejs24, perl-DBI, and vim), &lt;b&gt;Red Hat&lt;/b&gt; (kernel, libreswan, opentelemetry-collector, osbuild-composer, rhc, and runc), &lt;b&gt;SUSE&lt;/b&gt; (alloy, amazon-ecs-init, bind, busybox, distribution, emacs, ghostscript, glibc, GraphicsMagick, hauler, helm, helm3, jackson-annotations, jackson-core, jackson-databind, kernel, libpoppler-cpp3, libxtst, logback, nvidia-open-driver-G07-signed, perl-DBI, php-composer2, pi-coding-agent, portprotonqt, pvetui, python-hpack, python313-GitPython, and wpa_supplicant), and &lt;b&gt;Ubuntu&lt;/b&gt; (apache2, bluez, libarchive, libde265, libgit2, libpng1.6, libxml2, linux, linux-aws, linux-aws-6.8, linux-aws-fips, linux-fips, linux-realtime, linux-realtime-6.8, linux-aws-7.0, linux-azure, linux-azure-6.8, linux-azure-fde, linux-azure-fde-6.8, linux-azure-fips, linux-azure-7.0, linux-azure-fde-7.0, linux-gcp, linux-gcp-6.8, linux-gcp-fips, linux-gcp-7.0, linux-hwe-7.0, linux-oracle-7.0, linux-gke, linux-gkeop, linux-ibm, linux-lowlatency, linux-lowlatency-hwe-6.8, linux-nvidia, linux-nvidia-6.8, linux-nvidia-lowlatency, linux-oracle, linux-ibm-6.8, linux-nvidia, and linux-oem-6.17).
+</description>
+        <pubDate>Fri, 09 Oct 2026 13:08:14 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] An update on Rust's project goals</title>
+        <link>https://lwn.net/Articles/1098617/</link>
+        <guid>https://lwn.net/Articles/1098617/</guid>
+        <dc:creator>daroc</dc:creator>
+        <description>&lt;p&gt;
+Tomáš Šedovič is a program manager at the Rust Foundation. He co-leads the
+&lt;a href=&quot;https://rust-lang.org/governance/teams/#team-goals&quot;&gt;
+goals team&lt;/a&gt;, which helps
+organize the Rust project's
+&lt;a href=&quot;https://goals.rust-lang.org/2026/goals.html&quot;&gt;
+overall goals&lt;/a&gt;, including making sure that the people
+who have agreed to work on one have the support they need.
+At Kangrejos 2026, he provided an overview of the Rust project's goal processes
+aimed at ensuring that the Rust for Linux developers were aware of how the
+project organizes, tracks, and amends goals.
+The
+&lt;a href=&quot;https://rust-for-linux.com/&quot;&gt;
+Rust for Linux project&lt;/a&gt;
+has inspired several current project goals, so he thought that getting an inside
+view of the process might be helpful.
+&lt;/p&gt;
+</description>
+        <pubDate>Thu, 08 Oct 2026 17:00:30 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] The [vx]swap showdown</title>
+        <link>https://lwn.net/Articles/1098399/</link>
+        <guid>https://lwn.net/Articles/1098399/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>The kernel's swap layer has undergone &lt;a href=&quot;https://lwn.net/Articles/1057102/&quot;&gt;some
+significant changes&lt;/a&gt; over the course of the last year and a number of
+longstanding problems have been addressed.  One problem that has &lt;i&gt;not&lt;/i&gt;
+yet been solved in the mainline is the direct tie between slots in the swap
+cache and space in persistent swap files, which can cause highly
+inefficient resource use.  There are two competing solutions for this
+problem, neither of which has, as yet, reached readiness for merging; a
+lengthy discussion on possible paths forward shows ongoing disagreement
+over the best path forward.
+</description>
+        <pubDate>Thu, 08 Oct 2026 13:43:27 +0000</pubDate>
+        </item>
+        <item>
+        <title>Security updates for Thursday</title>
+        <link>https://lwn.net/Articles/1099388/</link>
+        <guid>https://lwn.net/Articles/1099388/</guid>
+        <dc:creator>jzb</dc:creator>
+        <description>Security updates have been issued by &lt;b&gt;AlmaLinux&lt;/b&gt; (bind, firefox, freerdp, ghostscript, glibc, kernel, kernel-rt, perl-DBI, python3.12, rust-rpm-sequoia, rust-sequoia-sq, rust-sequoia-sqv, and vim), &lt;b&gt;Debian&lt;/b&gt; (gst-plugins-base1.0, python3.11, and xz-utils), &lt;b&gt;Fedora&lt;/b&gt; (7zip, chromium, curl, docker-buildx, kernel, Lmod, and sos), &lt;b&gt;Mageia&lt;/b&gt; (tesseract), &lt;b&gt;Oracle&lt;/b&gt; (dovecot, firefox, freerdp, gd, ghostscript, kernel, librabbitmq, perl-DBI, python3.12, rust-rpm-sequoia, rust-sequoia-sqv, sg3_utils, vim, and virtuoso-opensource), &lt;b&gt;Slackware&lt;/b&gt; (xorg-server), &lt;b&gt;SUSE&lt;/b&gt; (aliyun-cli, busybox, cadvisor, chromedriver, chromium, crane, distribution-registry, fetchmail, fio, ghostscript, golang-github-prometheus-alertmanager, google-osconfig-agent, govulncheck-vulndb, libsoup, libXtst, openexr, prometheus-blackbox_exporter, python-fsspec, rpcbind, rsyslog, rustup, wireshark, wpa_supplicant, and zcode), and &lt;b&gt;Ubuntu&lt;/b&gt; (erlang, golang-golang-x-net, gst-plugins-ugly1.0, lxml, poppler, and sudo).
+</description>
+        <pubDate>Thu, 08 Oct 2026 13:11:00 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] LWN.net Weekly Edition for October 8, 2026</title>
+        <link>https://lwn.net/Articles/1097859/</link>
+        <guid>https://lwn.net/Articles/1097859/</guid>
+        <dc:creator>corbet</dc:creator>
+        <description>Inside this week's LWN.net Weekly Edition:
+        &lt;p&gt;
+        &lt;ul&gt;
+&lt;li&gt; &lt;a href=&quot;https://lwn.net/Articles/1097859/&quot;&gt;Front&lt;/a&gt;: Kernel bugs; Gentoo's Chromium package; Rust smart pointers; Sashiko; Charon; LAVD scheduler; Python random-number modules.
+            &lt;li&gt; &lt;a href=&quot;https://lwn.net/Articles/1097861/&quot;&gt;Briefs&lt;/a&gt;: OpenSSH 10.6; RustConf recordings; Rust 1.99.0; Picard 3.0; Zig 0.17; Quotes; ...
+            &lt;li&gt; &lt;a href=&quot;https://lwn.net/Articles/1097862/&quot;&gt;Announcements&lt;/a&gt;: Newsletters, conferences, security updates, patches, and more.
+            &lt;/ul&gt;
+
+        </description>
+        <pubDate>Thu, 08 Oct 2026 00:22:31 +0000</pubDate>
+        </item>
+        <item>
+        <title>[$] Analyzing Rust programs with Charon</title>
+        <link>https://lwn.net/Articles/1097198/</link>
+        <guid>https://lwn.net/Articles/1097198/</guid>
+        <dc:creator>daroc</dc:creator>
+        <description>&lt;p&gt;
+Nadrieril is a long-time Rust contributor, and the maintainer of the rustc
+pattern-matching infrastructure. During his involvement with Rust, he has
+noticed a problem with the usability of the language: it is difficult to
+automatically extract information from a Rust crate for use with other tooling.
+&lt;a href=&quot;https://github.com/AeneasVerif/charon#charon&quot;&gt;
+The Charon project&lt;/a&gt; aims to fix that by providing a stable API for accessing
+internal information from the Rust compiler.
+&lt;/p&gt;
+</description>
+        <pubDate>Wed, 07 Oct 2026 15:19:59 +0000</pubDate>
+        </item>
+        </channel>
+</rss>

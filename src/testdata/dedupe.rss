@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Dedupe</title>
+<item><title>A</title><guid>guid-1</guid><link>http://example.com/a</link><pubDate>Sat, 01 Jan 2000 00:00:00 GMT</pubDate></item>
+<item><title>A again (same guid)</title><guid>guid-1</guid><link>http://example.com/a</link></item>
+<item><title>No guid</title><link>http://example.com/a</link><pubDate>Sat, 01 Jan 2000 00:00:00 GMT</pubDate></item>
+<item><title>No guid, redated</title><link>http://example.com/a</link><pubDate>Sun, 02 Jan 2000 00:00:00 GMT</pubDate></item>
+<item><title>No guid dup</title><link>http://example.com/a</link><pubDate>Sat, 01 Jan 2000 00:00:00 GMT</pubDate></item>
+<item><title>No link no guid</title><description>just text</description></item>
+<item><title>guid 2</title><guid>guid-2</guid></item>
+</channel></rss>

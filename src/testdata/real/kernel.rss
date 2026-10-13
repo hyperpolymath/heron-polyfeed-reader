@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>Latest Linux Kernel Versions</title><link>https://www.kernel.org</link><description>Latest Linux Kernel Versions</description><lastBuildDate>Mon, 12 Oct 2026 18:13:48 -0000</lastBuildDate><item><title>7.3-rc7: mainline</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;7.3-rc7&lt;/strong&gt; (mainline)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-12&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://git.kernel.org/torvalds/t/linux-7.3-rc7.tar.gz"&gt;linux-7.3-rc7.tar.gz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://git.kernel.org/torvalds/p/v7.3-rc7/v7.2"&gt;full&lt;/a&gt; (&lt;a href="https://git.kernel.org/torvalds/p/v7.3-rc7/v7.3-rc6"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Mon, 12 Oct 2026 03:04:55 -0000</pubDate><guid isPermaLink="false">kernel.org,mainline,7.3-rc7,2026-10-12</guid></item><item><title>7.2.10: stable</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;7.2.10&lt;/strong&gt; (stable)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-11&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.10.tar.xz"&gt;linux-7.2.10.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.10.tar.sign"&gt;linux-7.2.10.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v7.x/patch-7.2.10.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v7.x/incr/patch-7.2.9-10.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v7.x/ChangeLog-7.2.10"&gt;ChangeLog-7.2.10&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sun, 11 Oct 2026 13:29:14 -0000</pubDate><guid isPermaLink="false">kernel.org,stable,7.2.10,2026-10-11</guid></item><item><title>6.18.56: longterm</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;6.18.56&lt;/strong&gt; (longterm)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-11&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.56.tar.xz"&gt;linux-6.18.56.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.56.tar.sign"&gt;linux-6.18.56.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/patch-6.18.56.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.18.55-56.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.18.56"&gt;ChangeLog-6.18.56&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sun, 11 Oct 2026 13:26:32 -0000</pubDate><guid isPermaLink="false">kernel.org,longterm,6.18.56,2026-10-11</guid></item><item><title>6.12.112: longterm</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;6.12.112&lt;/strong&gt; (longterm)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-03&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.112.tar.xz"&gt;linux-6.12.112.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.112.tar.sign"&gt;linux-6.12.112.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/patch-6.12.112.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.12.111-112.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.12.112"&gt;ChangeLog-6.12.112&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sat, 03 Oct 2026 10:37:36 -0000</pubDate><guid isPermaLink="false">kernel.org,longterm,6.12.112,2026-10-03</guid></item><item><title>6.6.158: longterm</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;6.6.158&lt;/strong&gt; (longterm)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-03&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.158.tar.xz"&gt;linux-6.6.158.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.158.tar.sign"&gt;linux-6.6.158.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/patch-6.6.158.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.6.157-158.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.6.158"&gt;ChangeLog-6.6.158&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sat, 03 Oct 2026 10:31:53 -0000</pubDate><guid isPermaLink="false">kernel.org,longterm,6.6.158,2026-10-03</guid></item><item><title>6.1.189: longterm</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;6.1.189&lt;/strong&gt; (longterm)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-03&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.189.tar.xz"&gt;linux-6.1.189.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.189.tar.sign"&gt;linux-6.1.189.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/patch-6.1.189.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/incr/patch-6.1.188-189.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.1.189"&gt;ChangeLog-6.1.189&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sat, 03 Oct 2026 10:29:16 -0000</pubDate><guid isPermaLink="false">kernel.org,longterm,6.1.189,2026-10-03</guid></item><item><title>5.15.222: longterm</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;5.15.222&lt;/strong&gt; (longterm)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-03&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.222.tar.xz"&gt;linux-5.15.222.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.15.222.tar.sign"&gt;linux-5.15.222.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/patch-5.15.222.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/incr/patch-5.15.221-222.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/ChangeLog-5.15.222"&gt;ChangeLog-5.15.222&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sat, 03 Oct 2026 10:27:02 -0000</pubDate><guid isPermaLink="false">kernel.org,longterm,5.15.222,2026-10-03</guid></item><item><title>5.10.271: longterm</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;5.10.271&lt;/strong&gt; (longterm)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-03&lt;/td&gt;&lt;/tr&gt;
+            
+                &lt;tr&gt;&lt;th align="right"&gt;Source:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.271.tar.xz"&gt;linux-5.10.271.tar.xz&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;PGP Signature:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.271.tar.sign"&gt;linux-5.10.271.tar.sign&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Patch:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/patch-5.10.271.xz"&gt;full&lt;/a&gt; (&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/incr/patch-5.10.270-271.xz"&gt;incremental&lt;/a&gt;)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;ChangeLog:&lt;/th&gt;&lt;td&gt;&lt;a href="https://cdn.kernel.org/pub/linux/kernel/v5.x/ChangeLog-5.10.271"&gt;ChangeLog-5.10.271&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;</description><pubDate>Sat, 03 Oct 2026 10:25:11 -0000</pubDate><guid isPermaLink="false">kernel.org,longterm,5.10.271,2026-10-03</guid></item><item><title>next-20261012: linux-next</title><link>https://www.kernel.org/</link><description>
+            &lt;table&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Version:&lt;/th&gt;&lt;td&gt;&lt;strong&gt;next-20261012&lt;/strong&gt; (linux-next)&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;th align="right"&gt;Released:&lt;/th&gt;&lt;td&gt;2026-10-12&lt;/td&gt;&lt;/tr&gt;
+            
+            &lt;/table&gt;</description><pubDate>Mon, 12 Oct 2026 18:13:48 -0000</pubDate><guid isPermaLink="false">kernel.org,linux-next,next-20261012,2026-10-12</guid></item></channel></rss>
