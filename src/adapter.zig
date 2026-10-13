@@ -25,6 +25,9 @@ pub const Source = struct {
 pub const Cond = struct {
     etag: ?[]const u8 = null,
     last_modified: ?[]const u8 = null,
+    /// Adapter-private persisted state (opaque to the core): e.g. a monitor keeps its last
+    /// up/down verdict and body hash here; an NNTP adapter would keep the last article number.
+    state: ?[]const u8 = null,
 };
 
 pub const FailureClass = enum {

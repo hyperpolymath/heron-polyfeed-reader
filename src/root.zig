@@ -9,6 +9,14 @@ pub const adapter = @import("adapter.zig");
 pub const feed = @import("feed.zig");
 pub const scheduler = @import("scheduler.zig");
 pub const store = @import("store.zig");
+pub const config = @import("config.zig");
+pub const http = @import("http.zig");
+pub const localserver = @import("localserver.zig");
+pub const engine = @import("engine.zig");
+pub const util = @import("util.zig");
+pub const app = @import("app.zig");
+pub const daemon = @import("daemon.zig");
+pub const cli = @import("cli.zig");
 pub const dedupe = @import("dedupe.zig");
 pub const feed_adapter = @import("feed_adapter.zig");
 test {

@@ -38,6 +38,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{.{ .name = "sfr", .module = core }},
+            .link_libc = true,
         }),
     });
     b.installArtifact(exe);

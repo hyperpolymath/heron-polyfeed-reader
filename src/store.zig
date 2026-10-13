@@ -40,6 +40,8 @@ pub const Record = struct {
 pub const SourceState = struct {
     etag: ?[]const u8 = null,
     last_modified: ?[]const u8 = null,
+    /// Adapter-private state blob (see adapter.Cond.state).
+    adapter_state: ?[]const u8 = null,
     /// Wall-clock Unix seconds of the next planned poll.
     next_poll: ?i64 = null,
     failures: u32 = 0,
@@ -126,7 +128,7 @@ pub const Store = struct {
             \\PRAGMA mmap_size=0;
             \\CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT NOT NULL) WITHOUT ROWID;
             \\CREATE TABLE IF NOT EXISTS sources(
-            \\  name TEXT PRIMARY KEY, etag TEXT, last_modified TEXT, next_poll INTEGER,
+            \\  name TEXT PRIMARY KEY, etag TEXT, last_modified TEXT, adapter_state TEXT, next_poll INTEGER,
             \\  failures INTEGER NOT NULL DEFAULT 0, last_check INTEGER, last_ok INTEGER, last_error TEXT) WITHOUT ROWID;
             \\CREATE TABLE IF NOT EXISTS read_state(source TEXT NOT NULL, id TEXT NOT NULL, at INTEGER NOT NULL,
             \\  PRIMARY KEY(source,id)) WITHOUT ROWID;
@@ -367,7 +369,7 @@ pub const Store = struct {
     // ---- state ------------------------------------------------------------------
 
     pub fn getSourceState(self: *Store, a: Allocator, name: []const u8) !SourceState {
-        const st = try self.db.prepare("SELECT etag,last_modified,next_poll,failures,last_check,last_ok,last_error FROM sources WHERE name=?1");
+        const st = try self.db.prepare("SELECT etag,last_modified,next_poll,failures,last_check,last_ok,last_error,adapter_state FROM sources WHERE name=?1");
         defer st.finalize();
         try st.bindText(1, name);
         if (!try st.step()) return .{};
@@ -379,16 +381,17 @@ pub const Store = struct {
             .last_check = st.colOptInt(4),
             .last_ok = st.colOptInt(5),
             .last_error = if (st.colText(6)) |t| try a.dupe(u8, t) else null,
+            .adapter_state = if (st.colText(7)) |t| try a.dupe(u8, t) else null,
         };
     }
 
     pub fn putSourceState(self: *Store, name: []const u8, s: SourceState) !void {
         const st = try self.db.prepare(
-            \\INSERT INTO sources(name,etag,last_modified,next_poll,failures,last_check,last_ok,last_error)
-            \\VALUES(?1,?2,?3,?4,?5,?6,?7,?8)
+            \\INSERT INTO sources(name,etag,last_modified,next_poll,failures,last_check,last_ok,last_error,adapter_state)
+            \\VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)
             \\ON CONFLICT(name) DO UPDATE SET etag=excluded.etag,last_modified=excluded.last_modified,
             \\next_poll=excluded.next_poll,failures=excluded.failures,last_check=excluded.last_check,
-            \\last_ok=excluded.last_ok,last_error=excluded.last_error
+            \\last_ok=excluded.last_ok,last_error=excluded.last_error,adapter_state=excluded.adapter_state
         );
         defer st.finalize();
         try st.bindText(1, name);
@@ -399,6 +402,15 @@ pub const Store = struct {
         try st.bindOptInt(6, s.last_check);
         try st.bindOptInt(7, s.last_ok);
         try st.bindOptText(8, s.last_error);
+        try st.bindOptText(9, s.adapter_state);
+        _ = try st.step();
+    }
+
+    pub fn setNextPoll(self: *Store, name: []const u8, next_poll: i64) !void {
+        const st = try self.db.prepare("INSERT INTO sources(name,next_poll) VALUES(?1,?2) ON CONFLICT(name) DO UPDATE SET next_poll=excluded.next_poll");
+        defer st.finalize();
+        try st.bindText(1, name);
+        try st.bindInt(2, next_poll);
         _ = try st.step();
     }
 
