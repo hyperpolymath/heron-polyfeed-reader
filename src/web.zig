@@ -39,8 +39,8 @@ pub fn isLoopback(addr: []const u8) bool {
 }
 
 /// Bind the listener (refusing non-loopback addresses). Caller then runs `localserver.serve` on a task.
-pub fn bind(io: Io, bind_addr: []const u8, port: u16) !Io.net.Server {
-    if (!isLoopback(bind_addr)) return error.NotLoopback;
+pub fn bind(io: Io, bind_addr: []const u8, port: u16, allow_non_loopback: bool) !Io.net.Server {
+    if (!allow_non_loopback and !isLoopback(bind_addr)) return error.NotLoopback;
     return localserver.listen(io, bind_addr, port);
 }
 
@@ -395,8 +395,8 @@ test "web UI end to end: pages, escaping, read marks, host/origin checks, loopba
     var app: app_mod.App = .{ .gpa = testing.allocator, .io = io, .arena = std.heap.ArenaAllocator.init(testing.allocator), .config_path = "", .data_dir = dir, .cfg = .{}, .jobs = &jobs };
     defer app.arena.deinit();
 
-    try testing.expectError(error.NotLoopback, bind(io, "0.0.0.0", 0));
-    var server = try bind(io, "127.0.0.1", 0);
+    try testing.expectError(error.NotLoopback, bind(io, "0.0.0.0", 0, false));
+    var server = try bind(io, "127.0.0.1", 0, false);
     var w: Web = .{ .gpa = testing.allocator, .io = io, .app = &app, .store = &st, .port = localserver.port(&server), .fixed_now = 6000 };
     var fut = try io.concurrent(localserver.serve, .{ io, &server, @as(*anyopaque, &w), handler });
     defer {

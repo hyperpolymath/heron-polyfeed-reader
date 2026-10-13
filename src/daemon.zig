@@ -81,7 +81,7 @@ pub fn run(app: *app_mod.App, store: *store_mod.Store) !void {
     var ui_fut: ?Io.Future(void) = null;
     var ui: web_mod.Web = .{ .gpa = app.gpa, .io = io, .app = app, .store = undefined };
     if (app.cfg.web.enabled) ui_start: {
-        ui_server = web_mod.bind(io, app.cfg.web.bind, app.cfg.web.port) catch |e| {
+        ui_server = web_mod.bind(io, app.cfg.web.bind, app.cfg.web.port, app.cfg.web.allow_non_loopback) catch |e| {
             std.log.err("web UI disabled: cannot listen on {s}:{d}: {s}", .{ app.cfg.web.bind, app.cfg.web.port, @errorName(e) });
             break :ui_start;
         };

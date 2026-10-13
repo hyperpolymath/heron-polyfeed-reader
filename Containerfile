@@ -30,6 +30,6 @@ USER 10001:10001
 ENV SFR_DATA=/data SFR_CONFIG=/config/sfr.json
 VOLUME ["/data"]
 # The web UI binds 127.0.0.1 by default. Inside a container that is unreachable from the host;
-# set "web": {"bind": "0.0.0.0"} only together with `-p 127.0.0.1:8484:8484` on the host side.
+# set "web": {"bind": "0.0.0.0", "allow_non_loopback": true} only together with `-p 127.0.0.1:8484:8484` on the host side.
 ENTRYPOINT ["/sfr"]
 CMD ["daemon"]

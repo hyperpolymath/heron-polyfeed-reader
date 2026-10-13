@@ -6,7 +6,7 @@
 //!   "data_dir": "/var/lib/sfr",                 // optional
 //!   "user_agent": "sfr/0.1 (+contact)",         // optional
 //!   "timeout_s": 30,                            // optional, per request
-//!   "web": { "enabled": true, "bind": "127.0.0.1", "port": 8484 },   // optional
+//!   "web": { "enabled": true, "bind": "127.0.0.1", "port": 8484, "allow_non_loopback": false },   // optional
 //!   "sources":  [ { "name": "lwn", "type": "feed", "url": "https://lwn.net/headlines/rss", "interval_s": 900 } ],
 //!   "monitors": [ { "name": "site", "url": "https://example.org/", "interval_s": 300,
 //!                  "expect_status": 200, "detect_changes": true, "check_robots": true } ]
@@ -44,6 +44,8 @@ pub const WebCfg = struct {
     enabled: bool = false,
     bind: []const u8 = "127.0.0.1",
     port: u16 = 8484,
+    /// Required to bind a non-loopback address (e.g. 0.0.0.0 inside a container whose port is published on host loopback only).
+    allow_non_loopback: bool = false,
 };
 
 pub const Config = struct {
@@ -109,6 +111,7 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
         if (w != .object) return bad(a, diag, "web must be an object", .{});
         cfg.web.enabled = getBool(w.object, "enabled") orelse true;
         if (getStr(w.object, "bind")) |b| cfg.web.bind = b;
+        cfg.web.allow_non_loopback = getBool(w.object, "allow_non_loopback") orelse false;
         if (getInt(w.object, "port")) |p| {
             if (p < 1 or p > 65535) return bad(a, diag, "web.port out of range", .{});
             cfg.web.port = @intCast(p);
