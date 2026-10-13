@@ -7,6 +7,7 @@ pub const item = @import("item.zig");
 pub const transport = @import("transport.zig");
 pub const adapter = @import("adapter.zig");
 pub const feed = @import("feed.zig");
+pub const scheduler = @import("scheduler.zig");
 pub const dedupe = @import("dedupe.zig");
 pub const feed_adapter = @import("feed_adapter.zig");
 test {
