@@ -13,9 +13,9 @@ const util = @import("util.zig");
 const monitor_mod = @import("monitor.zig");
 
 const usage =
-    \\superfeedreader — a small local feed reader and site monitor
+    \\heron-polyfeed-reader — a small local feed reader and site monitor
     \\
-    \\usage: sfr [--config FILE] [--data DIR] <command> [args]
+    \\usage: heron [--config FILE] [--data DIR] <command> [args]
     \\
     \\  daemon                    run in the foreground: poll sources, serve the web UI if enabled
     \\  fetch [NAME...]           poll the named sources (default: all) once, now
@@ -95,7 +95,7 @@ fn run(init: std.process.Init) !u8 {
     var store = store_mod.Store.open(gpa, io, app.data_dir, exclusive) catch |e| switch (e) {
         error.AlreadyRunning => {
             try out.flush();
-            std.log.err("another sfr process (probably the daemon) is using {s}; this command needs the data lock", .{app.data_dir});
+            std.log.err("another heron process (probably the daemon) is using {s}; this command needs the data lock", .{app.data_dir});
             return 1;
         },
         else => return e,

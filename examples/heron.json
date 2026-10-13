@@ -1,5 +1,5 @@
 {
-  "user_agent": "superfeedreader/0.1 (+mailto:you@example.org)",
+  "user_agent": "heron-polyfeed-reader/0.1 (+mailto:you@example.org)",
   "timeout_s": 30,
   "web": { "enabled": true, "bind": "127.0.0.1", "port": 8484 },
   "sources": [

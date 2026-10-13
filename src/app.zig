@@ -39,10 +39,10 @@ pub const App = struct {
         const a = arena.allocator();
 
         const home = env.get("HOME");
-        const config_path = ov.config_path orelse env.get("SFR_CONFIG") orelse blk: {
-            if (env.get("XDG_CONFIG_HOME")) |x| break :blk try std.fmt.allocPrint(a, "{s}/superfeedreader/config.json", .{x});
+        const config_path = ov.config_path orelse env.get("HERON_CONFIG") orelse blk: {
+            if (env.get("XDG_CONFIG_HOME")) |x| break :blk try std.fmt.allocPrint(a, "{s}/heron-polyfeed-reader/config.json", .{x});
             const h = home orelse return error.NoHome;
-            break :blk try std.fmt.allocPrint(a, "{s}/.config/superfeedreader/config.json", .{h});
+            break :blk try std.fmt.allocPrint(a, "{s}/.config/heron-polyfeed-reader/config.json", .{h});
         };
         const text = Io.Dir.cwd().readFileAlloc(io, config_path, a, .limited(1024 * 1024)) catch {
             diag.message = try std.fmt.allocPrint(a, "cannot read config file {s}", .{config_path});
@@ -52,10 +52,10 @@ pub const App = struct {
             error.OutOfMemory => return error.OutOfMemory,
             error.InvalidConfig => return error.InvalidConfig,
         };
-        const data_dir = ov.data_dir orelse env.get("SFR_DATA") orelse cfg.data_dir orelse blk: {
-            if (env.get("XDG_DATA_HOME")) |x| break :blk try std.fmt.allocPrint(a, "{s}/superfeedreader", .{x});
+        const data_dir = ov.data_dir orelse env.get("HERON_DATA") orelse cfg.data_dir orelse blk: {
+            if (env.get("XDG_DATA_HOME")) |x| break :blk try std.fmt.allocPrint(a, "{s}/heron-polyfeed-reader", .{x});
             const h = home orelse return error.NoHome;
-            break :blk try std.fmt.allocPrint(a, "{s}/.local/share/superfeedreader", .{h});
+            break :blk try std.fmt.allocPrint(a, "{s}/.local/share/heron-polyfeed-reader", .{h});
         };
 
         var jobs: std.ArrayList(adapter.Source) = .empty;

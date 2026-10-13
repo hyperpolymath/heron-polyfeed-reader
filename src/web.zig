@@ -197,7 +197,7 @@ fn pageList(w: *Web, a: Allocator, o: *Io.Writer, query: []const u8) !void {
     const page: u32 = if (try queryParam(a, query, "page")) |p| (std.fmt.parseInt(u32, p, 10) catch 0) else 0;
     const per: u32 = 50;
 
-    try head(o, "superfeedreader");
+    try head(o, "heron-polyfeed-reader");
     const rows = if (q) |text|
         (if (text.len >= 3) try w.store.search(a, text, per) else &[_]store_mod.Row{})
     else

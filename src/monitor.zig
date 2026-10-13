@@ -58,7 +58,7 @@ pub const State = struct {
 pub const MonitorAdapter = struct {
     pub const type_name = "monitor";
     /// Product token used to select robots.txt groups.
-    ua_token: []const u8 = "superfeedreader",
+    ua_token: []const u8 = "heron-polyfeed-reader",
 
     pub fn asAdapter(self: *MonitorAdapter) adapter.Adapter {
         return .{ .type_name = type_name, .ptr = self, .fetchFn = fetchImpl };

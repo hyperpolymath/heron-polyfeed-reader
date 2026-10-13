@@ -20,7 +20,7 @@ const dedupe = @import("dedupe.zig");
 
 pub const log_name = "items.ndjson";
 pub const db_name = "state.db";
-pub const lock_name = "sfr.lock";
+pub const lock_name = "heron.lock";
 const fts_text_cap = 8 * 1024;
 const max_line = 32 * 1024 * 1024;
 

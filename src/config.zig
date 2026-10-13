@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-//! Configuration: a plain JSON file (no YAML). See `examples/sfr.json`.
+//! Configuration: a plain JSON file (no YAML). See `examples/heron.json`.
 //!
 //! {
-//!   "data_dir": "/var/lib/sfr",                 // optional
-//!   "user_agent": "sfr/0.1 (+contact)",         // optional
+//!   "data_dir": "/var/lib/heron",                 // optional
+//!   "user_agent": "heron/0.1 (+contact)",         // optional
 //!   "timeout_s": 30,                            // optional, per request
 //!   "web": { "enabled": true, "bind": "127.0.0.1", "port": 8484, "allow_non_loopback": false },   // optional
 //!   "sources":  [ { "name": "lwn", "type": "feed", "url": "https://lwn.net/headlines/rss", "interval_s": 900 } ],
@@ -50,7 +50,7 @@ pub const WebCfg = struct {
 
 pub const Config = struct {
     data_dir: ?[]const u8 = null,
-    user_agent: []const u8 = "superfeedreader/0.1 (+https://github.com/hyperpolymath/superfeedreader)",
+    user_agent: []const u8 = "heron-polyfeed-reader/0.1 (+https://github.com/hyperpolymath/heron-polyfeed-reader)",
     timeout_s: u32 = 30,
     web: WebCfg = .{},
     sources: []SourceCfg = &.{},

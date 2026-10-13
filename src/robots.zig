@@ -114,44 +114,44 @@ pub fn allowed(robots: []const u8, token: []const u8, path: []const u8) bool {
 const t = std.testing;
 
 test "no rules / no matching group => allowed" {
-    try t.expect(allowed("", "sfr", "/x"));
-    try t.expect(allowed("User-agent: googlebot\nDisallow: /\n", "sfr", "/x"));
+    try t.expect(allowed("", "heron", "/x"));
+    try t.expect(allowed("User-agent: googlebot\nDisallow: /\n", "heron", "/x"));
 }
 
 test "star group, prefix, allow overrides by longest match, ties to allow" {
     const r = "User-agent: *\nDisallow: /private\nAllow: /private/public\nDisallow: /tie\nAllow: /tie\n";
-    try t.expect(allowed(r, "sfr", "/"));
-    try t.expect(!allowed(r, "sfr", "/private/x"));
-    try t.expect(allowed(r, "sfr", "/private/public/page"));
-    try t.expect(allowed(r, "sfr", "/tie"));
-    try t.expect(allowed(r, "sfr", "/privatex") == false); // prefix match, as specified
+    try t.expect(allowed(r, "heron", "/"));
+    try t.expect(!allowed(r, "heron", "/private/x"));
+    try t.expect(allowed(r, "heron", "/private/public/page"));
+    try t.expect(allowed(r, "heron", "/tie"));
+    try t.expect(allowed(r, "heron", "/privatex") == false); // prefix match, as specified
 }
 
 test "specific group beats star group; token match is case-insensitive" {
-    const r = "User-agent: *\nDisallow: /\n\nUser-agent: SuperFeedReader\nDisallow: /admin\n";
-    try t.expect(allowed(r, "superfeedreader", "/index.html"));
-    try t.expect(!allowed(r, "superfeedreader", "/admin/x"));
+    const r = "User-agent: *\nDisallow: /\n\nUser-agent: Heron-Polyfeed-Reader\nDisallow: /admin\n";
+    try t.expect(allowed(r, "heron-polyfeed-reader", "/index.html"));
+    try t.expect(!allowed(r, "heron-polyfeed-reader", "/admin/x"));
     try t.expect(!allowed(r, "other", "/index.html"));
 }
 
 test "multiple user-agent lines share a group; comments and blank lines ignored" {
-    const r = "# hi\nUser-agent: a\nUser-agent: sfr  # us\n\nDisallow: /nope # why\n";
-    try t.expect(!allowed(r, "sfr", "/nope"));
-    try t.expect(allowed(r, "sfr", "/yes"));
+    const r = "# hi\nUser-agent: a\nUser-agent: heron  # us\n\nDisallow: /nope # why\n";
+    try t.expect(!allowed(r, "heron", "/nope"));
+    try t.expect(allowed(r, "heron", "/yes"));
 }
 
 test "wildcards and end anchor" {
     const r = "User-agent: *\nDisallow: /*.pdf$\nDisallow: /tmp/*/cache\n";
-    try t.expect(!allowed(r, "sfr", "/a/b.pdf"));
-    try t.expect(allowed(r, "sfr", "/a/b.pdf?x=1"));
-    try t.expect(allowed(r, "sfr", "/a/b.pdfx"));
-    try t.expect(!allowed(r, "sfr", "/tmp/foo/cache/z"));
-    try t.expect(allowed(r, "sfr", "/tmp/foo/other"));
+    try t.expect(!allowed(r, "heron", "/a/b.pdf"));
+    try t.expect(allowed(r, "heron", "/a/b.pdf?x=1"));
+    try t.expect(allowed(r, "heron", "/a/b.pdfx"));
+    try t.expect(!allowed(r, "heron", "/tmp/foo/cache/z"));
+    try t.expect(allowed(r, "heron", "/tmp/foo/other"));
 }
 
 test "empty disallow means allow all; disallow / blocks all" {
-    try t.expect(allowed("User-agent: *\nDisallow:\n", "sfr", "/x"));
-    try t.expect(!allowed("User-agent: *\nDisallow: /\n", "sfr", "/x"));
+    try t.expect(allowed("User-agent: *\nDisallow:\n", "heron", "/x"));
+    try t.expect(!allowed("User-agent: *\nDisallow: /\n", "heron", "/x"));
 }
 
 test "http status semantics" {

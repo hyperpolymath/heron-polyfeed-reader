@@ -251,7 +251,7 @@ const TestCtx = struct {
                 inm = true;
                 self.saw_inm.store(true, .monotonic);
             }
-            if (std.ascii.eqlIgnoreCase(h.name, "user-agent") and std.mem.eql(u8, h.value, "sfr-test/1")) self.saw_ua.store(true, .monotonic);
+            if (std.ascii.eqlIgnoreCase(h.name, "user-agent") and std.mem.eql(u8, h.value, "heron-test/1")) self.saw_ua.store(true, .monotonic);
         }
         if (std.mem.eql(u8, t, "/feed")) {
             if (inm) return req.respond("", .{ .status = .not_modified, .keep_alive = false, .extra_headers = &.{.{ .name = "ETag", .value = "\"v1\"" }} }) catch {};
@@ -298,7 +298,7 @@ test "http transport: 200 with validators, conditional 304, 429 Retry-After, 404
     defer arena.deinit();
     const a = arena.allocator();
 
-    var t = HttpTransport.init(testing.allocator, io, "sfr-test/1", 1);
+    var t = HttpTransport.init(testing.allocator, io, "heron-test/1", 1);
     defer t.deinit();
     const tr = t.asTransport();
     const base = try std.fmt.allocPrint(a, "http://127.0.0.1:{d}", .{localserver.port(&server)});

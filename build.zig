@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Core library module: everything except the CLI entry point.
-    const core = b.addModule("sfr", .{
+    const core = b.addModule("heron", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
@@ -32,12 +32,12 @@ pub fn build(b: *std.Build) void {
     });
 
     const exe = b.addExecutable(.{
-        .name = "sfr",
+        .name = "heron",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{.{ .name = "sfr", .module = core }},
+            .imports = &.{.{ .name = "heron", .module = core }},
             .link_libc = true,
         }),
     });
@@ -46,7 +46,7 @@ pub fn build(b: *std.Build) void {
     const run = b.addRunArtifact(exe);
     run.step.dependOn(b.getInstallStep());
     run.addPassthruArgs();
-    b.step("run", "Run sfr").dependOn(&run.step);
+    b.step("run", "Run heron").dependOn(&run.step);
 
     const core_tests = b.addTest(.{ .root_module = core });
     const run_core_tests = b.addRunArtifact(core_tests);
