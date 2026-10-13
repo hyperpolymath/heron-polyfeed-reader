@@ -41,6 +41,14 @@ pub const Error = error{
 pub const Transport = struct {
     ptr: *anyopaque,
     requestFn: *const fn (ptr: *anyopaque, arena: std.mem.Allocator, req: Request) Error!Response,
+    /// Optional: expiry (Unix seconds) of the TLS leaf certificate presented by host:port, or null
+    /// if it could not be read. Used by the monitor; transports without TLS leave it null.
+    certNotAfterFn: ?*const fn (ptr: *anyopaque, host: []const u8, port: u16) ?i64 = null,
+
+    pub fn certNotAfter(self: Transport, host: []const u8, port: u16) ?i64 {
+        const f = self.certNotAfterFn orelse return null;
+        return f(self.ptr, host, port);
+    }
 
     pub fn request(self: Transport, arena: std.mem.Allocator, req: Request) Error!Response {
         return self.requestFn(self.ptr, arena, req);

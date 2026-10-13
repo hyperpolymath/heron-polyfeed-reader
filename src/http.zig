@@ -9,6 +9,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Io = std.Io;
 const transport = @import("transport.zig");
+const tls_client = @import("vendor/tls_client.zig");
 
 pub const HttpTransport = struct {
     gpa: Allocator,
@@ -26,7 +27,58 @@ pub const HttpTransport = struct {
     }
 
     pub fn asTransport(self: *HttpTransport) transport.Transport {
-        return .{ .ptr = self, .requestFn = requestImpl };
+        return .{ .ptr = self, .requestFn = requestImpl, .certNotAfterFn = certImpl };
+    }
+
+    const CertRace = union(enum) {
+        probe: ?i64,
+        timer: Io.Cancelable!void,
+    };
+
+    fn certImpl(ptr: *anyopaque, host: []const u8, port: u16) ?i64 {
+        const self: *HttpTransport = @ptrCast(@alignCast(ptr));
+        var buf: [2]CertRace = undefined;
+        var sel = Io.Select(CertRace).init(self.io, &buf);
+        sel.concurrent(.probe, probeCert, .{ self, host, port }) catch return null;
+        sel.concurrent(.timer, timerTask, .{ self.io, self.timeout_s }) catch {
+            sel.cancelDiscard();
+            return null;
+        };
+        const first = sel.await() catch {
+            sel.cancelDiscard();
+            return null;
+        };
+        sel.cancelDiscard();
+        return switch (first) {
+            .probe => |v| v,
+            .timer => null,
+        };
+    }
+
+    /// Handshake with certificate verification disabled and read only the leaf's notAfter.
+    /// Trust is established by the real request (std.http.Client verifies); this only records expiry.
+    fn probeCert(self: *HttpTransport, host: []const u8, port: u16) ?i64 {
+        const hn = Io.net.HostName.init(host) catch return null;
+        const stream = hn.connect(self.io, port, .{ .mode = .stream }) catch return null;
+        defer stream.close(self.io);
+        const n = tls_client.min_buffer_len;
+        const bufs = self.gpa.alloc(u8, n * 4) catch return null;
+        defer self.gpa.free(bufs);
+        var sr = stream.reader(self.io, bufs[0..n]);
+        var sw = stream.writer(self.io, bufs[n .. 2 * n]);
+        var entropy: [tls_client.Options.entropy_len]u8 = undefined;
+        self.io.random(&entropy);
+        var not_after: u64 = 0;
+        _ = tls_client.init(&sr.interface, &sw.interface, .{
+            .host = .{ .sni_only = host },
+            .ca = .no_verification,
+            .read_buffer = bufs[2 * n .. 3 * n],
+            .write_buffer = bufs[3 * n ..],
+            .entropy = &entropy,
+            .realtime_now = Io.Timestamp.now(self.io, .real),
+            .leaf_not_after = &not_after,
+        }) catch {};
+        return if (not_after != 0) @intCast(not_after) else null;
     }
 
     /// Drop the parsed CA bundle (and force a rescan on the next HTTPS request) to give memory back

@@ -17,6 +17,8 @@ pub const util = @import("util.zig");
 pub const app = @import("app.zig");
 pub const daemon = @import("daemon.zig");
 pub const cli = @import("cli.zig");
+pub const robots = @import("robots.zig");
+pub const monitor = @import("monitor.zig");
 pub const dedupe = @import("dedupe.zig");
 pub const feed_adapter = @import("feed_adapter.zig");
 test {
