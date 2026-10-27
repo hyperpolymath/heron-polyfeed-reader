@@ -84,3 +84,10 @@ tests/
 ?REQUIRES_INITIALISATION.md  # written by the minting process, removed once `just repo-init` runs
 ?Project.toml              # julia-library archetype: Pkg reads the package manifest from the package root only
 ?test/                     # julia-library archetype: Pkg.test runs test/runtests.jl, a fixed path (the spine keeps tests/)
+
+# ─── Project (heron-polyfeed-reader): tool-required at root ──────────────────
+build.zig                  # Zig reads the build script from the package root only
+build.zig.zon              # Zig package manifest; beside build.zig by definition
+Containerfile              # OCI build (test + runtime stages); podman/docker read it from the build context root
+.dockerignore              # read by podman/docker beside the Containerfile
+vendor/                    # vendored SQLite amalgamation (tracked source; .gitignore un-ignores vendor/sqlite/)

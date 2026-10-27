@@ -170,7 +170,7 @@ pub const HttpTransport = struct {
             try r.sendBodiless();
 
             var resp = try r.receiveHead(&.{});
-            const status = @intFromEnum(resp.head.status);
+            const status = @backingInt(resp.head.status);
 
             switch (status) {
                 301, 302, 303, 307, 308 => if (req.follow_redirects) {

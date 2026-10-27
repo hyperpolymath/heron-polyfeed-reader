@@ -127,8 +127,8 @@
     :project "heron-polyfeed-reader"
     :ecosystem "hyperpolymath"
     :position-type "UNASSIGNED"
-    :purpose "UNASSIGNED"
-    :not ()
+    :purpose "A small local feed reader and site monitor daemon (RSS/Atom/RDF polling, up/down and content-change and TLS-expiry monitoring, NDJSON log + SQLite FTS5 index, localhost-only web UI) in Zig, one user, one machine."
+    :not ("a hosted or multi-user service" "a WebSub subscriber" "a browser or page-content extractor" "the RSR template it was minted from")
     :coordination standards
     (related :name "rsr-template-repo" :relationship minted-from :notes "the template this repo was minted from by just repo-init"))
   ; <<< repo-identity

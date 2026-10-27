@@ -95,12 +95,7 @@ build: provision::build
 
 # Build in release mode with optimizations
 build-release *args:
-    # TODO: Replace with your release build command
-    # Examples:
-    #   cargo build --release {{args}}
-    #   MIX_ENV=prod mix compile {{args}}
-    #   zig build -Doptimize=ReleaseFast {{args}}
-    @echo "FAIL: 'just build-release' is not wired yet — nothing was built. Edit the 'build-release' recipe." >&2; exit 1
+    zig build -Doptimize=ReleaseSafe {{args}}
 
 # Build and watch for changes (requires entr or similar)
 build-watch:
@@ -120,7 +115,7 @@ clean:
     # directory in an RSR repo: it holds 11 tracked files, including
     # build/just/repo-init.just, which the root Justfile imports at line 65.
     # Deleting it destroys `just repo-init`, `just verify` and the proof gates.
-    rm -rf target/ _build/ dist/ out/ obj/ bin/
+    rm -rf target/ _build/ dist/ out/ obj/ bin/ zig-out/ .zig-cache/
 
 # Deep clean including caches [reversible: rebuild]
 clean-all: clean
@@ -141,8 +136,9 @@ test-verbose: provision::test
 
 # Smoke test
 test-smoke:
-    # TODO: Add basic sanity checks
-    @echo "FAIL: 'just test-smoke' is not wired yet — no smoke check ran. Edit the 'test-smoke' recipe." >&2; exit 1
+    zig build
+    ./zig-out/bin/heron help >/dev/null
+    ./zig-out/bin/heron --config examples/heron.json --data "$(mktemp -d)" check-config
 
 # Run end-to-end tests (full pipeline: build → run → verify)
 e2e:

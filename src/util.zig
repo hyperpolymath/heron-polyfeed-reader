@@ -10,7 +10,7 @@ pub fn fmtDate(buf: []u8, unix: i64) []const u8 {
     const md = yd.calculateMonthDay();
     const ds = es.getDaySeconds();
     return std.fmt.bufPrint(buf, "{d:0>4}-{d:0>2}-{d:0>2} {d:0>2}:{d:0>2}", .{
-        yd.year, @intFromEnum(md.month), md.day_index + 1, ds.getHoursIntoDay(), ds.getMinutesIntoHour(),
+        yd.year, @backingInt(md.month), md.day_index + 1, ds.getHoursIntoDay(), ds.getMinutesIntoHour(),
     }) catch "-";
 }
 

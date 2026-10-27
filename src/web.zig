@@ -33,7 +33,6 @@ pub const Web = struct {
     }
 };
 
-
 pub fn isLoopback(addr: []const u8) bool {
     return std.mem.eql(u8, addr, "127.0.0.1") or std.mem.eql(u8, addr, "::1") or std.mem.startsWith(u8, addr, "127.");
 }

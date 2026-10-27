@@ -2,81 +2,111 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 = Usage — heron-polyfeed-reader
-:revdate: 2026-MM-DD
+:revdate: 2026-10-27
 
 == Audience
 
-This document is for *consumers* of `heron-polyfeed-reader` — people who depend
-on it, call it, or include it. For developers working *on* it, see
-link:./contributing.adoc[contributing.adoc].
+This document is for people who *run* `heron`. For developers working *on*
+it, see link:./contributing.adoc[contributing.adoc].
 
 == Quickstart
 
-The shortest path from zero to a working call:
-
 [source,bash]
 ----
-# 1. Install
-just install                # or: cargo install --path . /  task install
+# 1. Build (Zig 0.17.0 exactly)
+zig build -Doptimize=ReleaseSafe          # -> zig-out/bin/heron
 
 # 2. Configure
-cp examples/config.example.toml ./config.toml
-# Edit minimal required fields.
+cp examples/heron.json ~/.config/heron.json
+$EDITOR ~/.config/heron.json              # sources, monitors, web
+heron --config ~/.config/heron.json check-config
 
 # 3. Run
-just run                    # or the equivalent for your language
+heron --config ~/.config/heron.json --data ~/.local/share/heron daemon
 ----
 
-Expected output:
-
-[source]
-----
-heron-polyfeed-reader v0.0.0
-Listening on 127.0.0.1:8080
-----
+`HERON_CONFIG` and `HERON_DATA` stand in for `--config` and `--data`.
+With `"web": {"enabled": true}` the UI is at `http://127.0.0.1:8484/`.
 
 == Common use cases
 
-For each canonical use case, give:
+=== Read feeds from the terminal
 
-. A one-line statement of the goal.
-. The minimal invocation.
-. Expected output / side effect.
+[source,bash]
+----
+heron fetch                     # poll every source once, now
+heron list --unread --limit 20  # newest unread items
+heron show 123                  # print item 123 and mark it read
+heron search sqlite             # substring search (3+ characters) over titles and text
+heron mark-all-read lwn         # one source, or all sources with no name
+----
 
-=== Use case 1: <short title>
+=== Watch a site
 
-(Replace with real content.)
+Add a monitor and run the daemon; the first successful check is a silent
+baseline. A DOWN alert is raised after two consecutive failures, an UP alert
+when it recovers, a change alert (at most one per hour) when the content hash
+changes, and an expiry alert when the leaf certificate is within
+`cert_warn_days`. Alerts are items of kind `alert`, so `list` and `search`
+show them; `heron monitors` prints the current state per monitor.
 
-=== Use case 2: <short title>
+=== Recover after a crash or a lost index
+
+The NDJSON log in the data directory is the source of truth; the SQLite
+index is derived from it. `heron rebuild` rebuilds the index and the FTS5
+search tables from the log. The daemon also replays any log records newer than
+`meta.indexed_offset` on start, so an unclean shutdown needs no manual step.
 
 == Configuration reference
 
-Document every configurable field. Keep this section authoritative — if
-the code grows a new option, this table must grow too (CI can be wired
-to enforce this).
+One JSON file (no YAML). Unknown keys are rejected by `check-config`.
 
 [cols="1,1,1,3", options="header"]
 |===
 | Field | Type | Default | Meaning
 
-| `<key>` | `<type>` | `<default>` | <what it does>
+| `data_dir` | string | `--data` / `HERON_DATA` | Where the log, index and `heron.lock` live.
+| `user_agent` | string | built-in | Sent on every request; put a contact address in it.
+| `timeout_s` | integer | 30 | Wall-clock timeout per request.
+| `web.enabled` | boolean | `false` | Serve the web UI from the daemon.
+| `web.bind` | string | `127.0.0.1` | Bind address. Anything but loopback also needs `allow_non_loopback`.
+| `web.port` | integer | 8484 | Listening port.
+| `web.allow_non_loopback` | boolean | `false` | Required to bind a non-loopback address; the UI has no authentication.
+| `sources[].name` | string | required | Short unique name used by the CLI.
+| `sources[].type` | string | `feed` | Adapter. Only `feed` (RSS 2.0, Atom, RDF/RSS 1.0) exists today.
+| `sources[].url` | string | required | http(s) URL.
+| `sources[].interval_s` | integer | per adapter | Poll interval; jitter, backoff and `Retry-After` are applied on top.
+| `sources[].options` | object | `{}` | Adapter-specific options (reserved for future adapters).
+| `monitors[].name` | string | required | Short unique name.
+| `monitors[].url` | string | required | Page to check.
+| `monitors[].interval_s` | integer | per adapter | Check interval.
+| `monitors[].expect_status` | integer | 200 | HTTP status that counts as UP.
+| `monitors[].detect_changes` | boolean | `false` | Hash the body and alert on change (rate-limited to one alert per hour).
+| `monitors[].check_robots` | boolean | `false` | Fetch and honour `robots.txt` (RFC 9309) and alert when it changes.
+| `monitors[].cert_warn_days` | integer | 14 | Alert when the leaf certificate expires within this many days.
 |===
+
+`examples/heron.json` is a complete, valid example.
 
 == Stability guarantees
 
-Be explicit:
-
-* **Stable**: API surfaces that follow SemVer (breaking change = major bump).
-* **Unstable**: behind a flag / pre-1.0 / explicitly marked.
-* **Internal**: documented for reference but no compatibility promise.
+* **Stable (pre-1.0, best effort)**: the CLI command names above, the JSON
+  config keys above, the NDJSON log format (it is the source of truth; the
+  index can always be rebuilt from it).
+* **Unstable**: the web UI's URLs and markup; `sources[].options`.
+* **Internal**: the SQLite schema. Rebuild it rather than reading it.
 
 == Limits & known constraints
 
-* Maximum supported `<X>`: `<value>`.
-* `<Y>` is not yet implemented; track at issue `#<n>`.
-* On `<platform>`, `<Z>` behaves differently because `<reason>`.
+* Linux x86_64 only so far; no soak test against live sites has been run.
+* `search` needs at least three characters (trigram index) and has no
+  pagination yet.
+* The certificate probe has been verified only against a self-signed
+  certificate (not CA-signed, SNI-routed or TLS 1.2-only hosts).
+* No WebSub; feeds are polled.
 
 == See also
 
 * link:./architecture.adoc[Architecture] — how it works internally.
 * link:./troubleshooting.adoc[Troubleshooting] — when things go wrong.
+* link:./status/ROADMAP.adoc[Roadmap] — what is next and what is untested.

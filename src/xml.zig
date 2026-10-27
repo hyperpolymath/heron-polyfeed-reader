@@ -73,7 +73,7 @@ pub const Node = struct {
 pub const ParseError = error{ NoRoot, TooLarge } || Allocator.Error;
 
 const html_entities = [_]struct { []const u8, u21 }{
-    .{ "nbsp", 0xA0 },   .{ "copy", 0xA9 },   .{ "reg", 0xAE },     .{ "hellip", 0x2026 },
+    .{ "nbsp", 0xA0 },    .{ "copy", 0xA9 },    .{ "reg", 0xAE },     .{ "hellip", 0x2026 },
     .{ "mdash", 0x2014 }, .{ "ndash", 0x2013 }, .{ "lsquo", 0x2018 }, .{ "rsquo", 0x2019 },
     .{ "ldquo", 0x201C }, .{ "rdquo", 0x201D }, .{ "bull", 0x2022 },  .{ "trade", 0x2122 },
     .{ "euro", 0x20AC },  .{ "pound", 0xA3 },   .{ "yen", 0xA5 },     .{ "cent", 0xA2 },

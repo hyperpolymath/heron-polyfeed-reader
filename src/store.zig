@@ -575,7 +575,7 @@ pub fn plainText(a: Allocator, html: []const u8, cap: usize) Allocator.Error![]c
 const testing = std.testing;
 
 fn mkItem(source: []const u8, id: []const u8, title: []const u8, body: []const u8, pub_: ?i64) Item {
-    return .{ .source = source, .id = id, .title = title, .url = "http://x/" , .published = pub_, .body = body, .kind = .article };
+    return .{ .source = source, .id = id, .title = title, .url = "http://x/", .published = pub_, .body = body, .kind = .article };
 }
 
 fn tmpPath(a: Allocator, tmp: *testing.TmpDir) ![]u8 {

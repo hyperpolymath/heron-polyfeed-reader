@@ -32,11 +32,13 @@ pub fn fetch(ctx: *adapter.Context, source: adapter.Source, cond: adapter.Cond) 
 
     const retry = if (resp.retry_after) |h| adapter.parseRetryAfter(h, ctx.now) else null;
     switch (resp.status) {
-        304 => return .{ .not_modified = .{
-            // A 304 may omit validators; keep what we had.
-            .etag = resp.etag orelse cond.etag,
-            .last_modified = resp.last_modified orelse cond.last_modified,
-        } },
+        304 => return .{
+            .not_modified = .{
+                // A 304 may omit validators; keep what we had.
+                .etag = resp.etag orelse cond.etag,
+                .last_modified = resp.last_modified orelse cond.last_modified,
+            },
+        },
         200...299 => {},
         429 => return fail(.rate_limited, 429, retry, "429 Too Many Requests"),
         503 => return fail(.rate_limited, 503, retry, "503 Service Unavailable"),

@@ -141,9 +141,9 @@ fn run(init: std.process.Init) !u8 {
         if (std.mem.eql(u8, cmd, "show")) {
             var db: [32]u8 = undefined;
             try out.print("{s}\n{s}\n[{s}] {s}  ({s})\n\n{s}\n", .{
-                rec.title,                                                    rec.url,
-                rec.source,                                                   if (rec.published) |p| util.fmtDate(&db, p) else "undated",
-                @tagName(rec.kind),                                           try store_mod.plainText(arena, rec.body, 64 * 1024),
+                rec.title,          rec.url,
+                rec.source,         if (rec.published) |p| util.fmtDate(&db, p) else "undated",
+                @tagName(rec.kind), try store_mod.plainText(arena, rec.body, 64 * 1024),
             });
         }
         try store.setRead(rec.source, rec.id, !std.mem.eql(u8, cmd, "unread"), now);

@@ -2,79 +2,70 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 = Contributing — heron-polyfeed-reader
-:revdate: 2026-MM-DD
+:revdate: 2026-10-27
 
 == Audience
 
-Developers working *on* `heron-polyfeed-reader`. For consumers (people calling
-or depending on it) see link:./usage.adoc[usage.adoc].
+Developers working *on* `heron-polyfeed-reader`. For people running it see
+link:./usage.adoc[usage.adoc]. The root link:../CONTRIBUTING.adoc[CONTRIBUTING.adoc]
+is the authoritative version of this page (the estate docs gate requires it
+there); this copy keeps the developer loop short.
 
 == Local-dev setup
 
-Prerequisites — the minimum versions and where to get them:
+Prerequisites:
 
-* `<tool 1>` v`<version>` — `<install instruction>`.
-* `<tool 2>` v`<version>` — `<install instruction>`.
-* GPG signing key configured (estate policy — all commits must be
-  signed). See
-  link:https://github.com/hyperpolymath/standards/blob/main/docs/secure-coding-training.md[standards/docs/secure-coding-training.md].
-
-One-shot setup:
+* Zig *0.17.0 exactly* — `mise install` (pinned in `mise.toml`), or the
+  tarball from https://ziglang.org/download/ verified against the SHA-256
+  in the `Containerfile`.
+* `just` — for the estate recipes (`just setup` installs the rest).
+* An SSH signing key configured for git (estate policy: every commit signed).
 
 [source,bash]
 ----
 git clone git@github.com:hyperpolymath/heron-polyfeed-reader.git
 cd heron-polyfeed-reader
-just setup       # installs deps, sets up hooks
-just test        # runs the full test suite
+just setup
+zig build test --summary all
 ----
 
 == Running tests
 
-* **Unit**: `just test-unit` — fast, no I/O.
-* **Integration**: `just test-int` — uses real services (database,
-  HTTP, etc.). Estate policy: prefer real over mocked
-  (see `feedback_integration_tests_real_db` in maintainer's memory).
-* **Property**: `just test-prop` — randomised, slower; budget
-  documented in `docs/proof-debt.md` if applicable.
-* **Full**: `just test` — runs all of the above.
+* **Unit**: `zig build test --summary all` — 85 tests, all in-process; HTTP
+  goes through the fixture server in `src/localserver.zig`, time through
+  `FakeClock`.
+* **Container**: `podman build -f Containerfile --target test -t heron-test .`
+  — the same suite on the pinned toolchain, from a clean context.
+* **Smoke**: `just test-smoke` — builds and validates `examples/heron.json`.
+* **Estate**: `just test` — every detected language (Zig and the template's
+  Idris2 seam); `just quality` — `fmt-check`, `lint`, `test`.
 
 == Code style
 
-We enforce style via CI (governance-reusable.yml from hyperpolymath/standards).
-Locally:
-
 [source,bash]
 ----
-just fmt         # auto-format
-just lint        # static checks
+zig fmt build.zig src       # auto-format (just fmt)
+zig fmt --check build.zig src   # what just lint runs
 ----
 
-* All commits must be **GPG-signed** (CI enforces; see
-  link:https://github.com/hyperpolymath/standards[standards]).
-* All source files must carry an **SPDX-License-Identifier** header
-  (CI enforces).
-* Conventional commits — `feat`, `fix`, `chore`, `refactor`, `docs`,
-  `test`, `ci`, `revert` (CHANGELOG is auto-generated from these
-  via link:https://github.com/hyperpolymath/standards/blob/main/.github/workflows/changelog-reusable.yml[`changelog-reusable.yml`]).
+* Every source file carries an **SPDX-License-Identifier** header.
+* Hand-written FFI externs, no generated bindings.
+* Conventional commits — `feat`, `fix`, `chore`, `refactor`, `docs`, `test`,
+  `ci`, `revert`; milestone commits carry the milestone (`M8: …`).
 
 == Branching & PR workflow
 
 . Branch off `main` as `claude/<topic>` (for AI agents) or
   `<initials>/<topic>` (for humans).
-. Make focused, narrow commits — one logical change per commit.
-. Open a PR against `main`.
-. **Enable auto-merge immediately** on every PR you open
-  (`gh pr merge <num> --auto --squash`) — estate standing policy
-  (see standards#196 audit and policies).
-. CI must be green. The PR auto-merges when checks pass + reviews land.
+. Make focused, narrow commits — one logical change per commit, signed.
+. Open a PR against `main`; CI (`zig-ci.yml` and the estate gates) must be
+  green; squash-merge.
 
-== Adding a new dependency
+== Adding a dependency
 
-. State the *why* in the PR body — what does this dependency unlock?
-. Check provenance (maintained, audited, no malicious history).
-. Pin to a SHA, not a tag.
-. Update `docs/architecture.adoc#Dependencies`.
+`heron` has none beyond the vendored SQLite and the patched TLS client. If one
+is needed: say *why* in the PR, check provenance, pin by hash in
+`build.zig.zon`, and update link:./architecture.adoc#_dependencies[architecture § Dependencies].
 
 == Adding an ADR
 
@@ -83,6 +74,9 @@ When you make a non-obvious design decision, write it down:
 . Copy `docs/decisions/0001-template.adoc` → `0002-<slug>.adoc`.
 . Fill in: Context, Decision, Consequences, Alternatives.
 . Link the ADR from the README or relevant code as a comment.
+
+The decisions made without owner input during M0–M6 are listed in
+link:./status/ROADMAP.adoc[the roadmap]; each is a candidate ADR.
 
 == Reporting issues
 

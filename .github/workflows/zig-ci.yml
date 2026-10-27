@@ -1,0 +1,69 @@
+# This workflow is managed by gh actions-lock.
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# Zig CI — the project's own gate. The estate workflows cover shape, docs,
+# shell and security; nothing else runs `zig build`. The toolchain is the
+# exact release build.zig.zon requires, verified by SHA-256 against the same
+# digest the Containerfile pins, so CI, mise.lock and the container test the
+# same bits. No third-party setup action: one fewer dependency to lock.
+name: Zig CI
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+# Estate guardrail: scope push to default branches so a PR fires once (not
+# push+PR), and cancel superseded runs. Read-only check.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  ZIG_VERSION: "0.17.0"
+  # Must equal the Containerfile's ADD --checksum and mise.lock linux-x64.
+  ZIG_SHA256: "1cbe9df9f27e6b78d14ccbca43b6703a404ef79ef1c463de901d7f088d4e2026"
+
+jobs:
+  zig:
+    name: fmt, test, release build, smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install Zig (version-pinned, checksum-verified)
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/zig.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+          echo "${ZIG_SHA256}  /tmp/zig.tar.xz" | sha256sum -c -
+          mkdir -p "$HOME/zig"
+          tar -xJf /tmp/zig.tar.xz -C "$HOME/zig" --strip-components=1
+          echo "$HOME/zig" >> "$GITHUB_PATH"
+      - name: Zig version
+        run: zig version
+      - name: Format check
+        run: zig fmt --check build.zig src
+      - name: Unit tests
+        run: zig build test --summary all
+      - name: Release build (static musl, as the container does)
+        run: zig build -Doptimize=ReleaseSafe -Dtarget=x86_64-linux-musl
+      - name: Smoke (help, example config validates)
+        run: |
+          ./zig-out/bin/heron help >/dev/null
+          ./zig-out/bin/heron --config examples/heron.json --data "$(mktemp -d)" check-config
+
+  container:
+    name: Containerfile test and runtime stages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Test stage (runs the unit suite on the pinned toolchain)
+        run: docker build -f Containerfile --target test -t heron-test .
+      - name: Runtime stage (static binary on scratch)
+        run: docker build -f Containerfile --target runtime -t heron .
+      - name: Runtime image answers `help`
+        run: docker run --rm heron help >/dev/null

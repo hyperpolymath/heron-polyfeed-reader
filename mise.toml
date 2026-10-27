@@ -18,4 +18,4 @@ lockfile = true
 just = "latest"
 shellcheck = "latest"
 trivy = "latest"          # just deps-audit
-zig = "latest"
+zig = "0.17.0"              # heron needs this version EXACTLY (build.zig.zon minimum_zig_version; std.Io/std.http/TLS APIs changed from 0.16). The Containerfile and .github/workflows/zig-ci.yml pin the same release by SHA-256; move all three together.

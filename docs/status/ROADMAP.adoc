@@ -2,22 +2,116 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = heron-polyfeed-reader Roadmap
 
-== Current Status
+The STATE journal of heron-polyfeed-reader: milestones, blockers and next
+actions. Phase and maturity are not recorded here; they live in the repo deed,
+`heron-polyfeed-reader_chora.deed`, in the `(status …)` and `(maturity …)`
+clauses (`just state-phase` prints both).
 
-Initial development phase.
+This file absorbs the handoff note (`HANDOFF.md`, written 2026-10-19) that
+travelled with the M0–M6 import on 2026-10-27. That note is retired here; its
+build and test instructions moved to `README.adoc` and `CONTRIBUTING.adoc`.
+
+== Current status
+
+Milestones M0–M6 are complete and imported with their signed commit history.
+Ground truth at import (2026-10-27, Zig 0.17.0 exactly, x86_64 Linux host):
+
+* `zig build test --summary all`: 85/85 tests pass.
+* `zig build -Doptimize=ReleaseSafe` and the static musl build both succeed.
+* `zig fmt --check` was NOT clean on seven files (Zig 0.17 renames
+  `@intFromEnum` to `@backingInt` and re-wraps two literals); the formatter was
+  applied at import so that `just lint` passes.
+* Idle RSS ~8 MB (ReleaseSafe, 24 feeds + 6 monitors + web UI) was measured
+  before import over one ~45 s window; not re-measured since.
 
 == Milestones
 
-=== v0.1.0 - Foundation
-* [ ] Core functionality
-* [ ] Basic documentation
-* [ ] CI/CD pipeline
+[cols="5,1",options="header"]
+|===
+| Milestone | Done
 
-=== v1.0.0 - Stable Release
-* [ ] Full feature set
-* [ ] Comprehensive tests
-* [ ] Production ready
+| M0: scaffold, vendored SQLite (FTS5), hand-written FFI, Containerfile | 100%
+| M1: item model, adapter interface, XML/encoding/date parsers, feed adapter, fixtures | 100%
+| M2: scheduler (fake clock): intervals, jitter, backoff, Retry-After, no busy loop | 100%
+| M3: NDJSON log + SQLite state + FTS5 trigram index rebuilt from log, crash recovery | 100%
+| M4: HTTP transport (timeouts, manual redirects), config, engine, daemon, CLI | 100%
+| M5: monitor adapter (up/down transitions, change detection, TLS expiry, robots) | 100%
+| M6: localhost-only web UI (list/search/item/read marks/status), daemon integration, e2e test | 100%
+| M7: integrate into the RSR estate (template merge, mint, CI) | 90%
+| M8: second adapter (NNTP or Gemini) to prove the adapter seam | 0%
+| M9: live-site soak test and real-CA certificate-probe check | 0%
+| M10: web UI `monitors` summary and search pagination | 0%
+| M11: estate-integration pass (see Next actions) | 0%
+|===
 
-== Future Directions
+== Blockers
 
-_To be determined based on community feedback._
+. *Clade is UNASSIGNED* in the deed. Choosing it is the owner's act (the
+  template says so); `just validate-rsr` fails until it is chosen. The
+  ecosystem `:position-type` is UNASSIGNED for the same reason.
+. *Signing.* The M7 integration commits were prepared in a session with no
+  signing key. They must be committed with `id_ed25519_signing` locally
+  before push; the eleven imported milestone commits keep their own
+  signatures.
+. *Idris2 ABI seam.* `just test` and `just build` run every detected
+  language. The template's `src/interface/abi.ipkg` (Idris2) is detected
+  alongside `build.zig`; without `idris2` on PATH the Zig steps pass but the
+  recipe exits non-zero. Decide whether the seam stays (then provision
+  `idris2` via pack, as the template expects) or whether this project opts
+  out (then `validate-rsr`, which hard-requires `src/interface/{abi,ffi,generated}`,
+  needs a ruling).
+. *mise.lock was edited by hand* for the Zig 0.17.0 pin (no `mise` in the
+  import session). Checksums are the official ones from
+  `ziglang.org/download/index.json`; re-lock with `just toolchain-refresh` to
+  confirm.
+
+== Next actions
+
+* Push the branch, let `zig-ci.yml` and the estate gates run, triage every
+  review-app finding and CI anomaly, merge.
+* Owner: choose the clade (`ap` Applications is the obvious candidate: an
+  end-user desktop daemon), set `:position-type`, register in gv-clade-index.
+* M8: second adapter (NNTP/NNTPS or Gemini with TOFU) with no core changes;
+  that proves or disproves the adapter seam. Then ActivityPub / AT Protocol.
+* M9: soak against live public feeds; probe a CA-signed, SNI-routed and a
+  TLS 1.2-only host (only a self-signed certificate has been tested).
+* M10: `monitors`-style summary on the web UI index; search pagination.
+* M11, deliberately, not by accident (carried from the handoff): Idris2 for
+  APIs (none beyond the local web UI yet), the unified-hexadeca-api / estate
+  Zig API conventions, DoQ/DoH + DNSSEC resolution for fetches (`zig-dnssec`,
+  `zig-boringtls`), SDP/firewall gating, VeriSim/LMDB storage choices, the
+  type work (echo/tropical/choreographic) and januskey/mma-framework for
+  security.
+* Re-sync `src/vendor/tls_client.zig` whenever Zig is upgraded
+  (`src/vendor/NOTICE`); the `[sfr patch]` markers carry the old project
+  name and can be renamed then.
+* Re-count the container `test` stage after the rename (host run was 85/85;
+  `zig-ci.yml` now builds that stage on every push).
+
+== Known gaps / untested
+
+* Never run against live public sites; every HTTP test uses a local fixture
+  server.
+* Certificate probe verified only against a self-signed certificate.
+* Web UI exercised via raw HTTP, not a browser; no search pagination.
+* x86_64 Linux only; no soak test; RSS measured once.
+* The adapter interface is meant to take NNTP, Gopher, Gemini, ActivityPub
+  and AT Protocol without core changes; unproven until M8.
+
+== Design decisions made without owner input (revisit freely)
+
+* JSON config, no YAML; web UI off unless configured; default bind
+  `127.0.0.1:8484`; a non-loopback bind needs `web.allow_non_loopback`.
+* Web UI: Host-header allowlist (DNS rebinding), Origin check on POST, CSP,
+  no JavaScript, http(s)-only links, its own SQLite connection.
+* Monitor alerts are stored as items of kind `alert`; the first success is a
+  silent baseline; DOWN after two failures; change alerts rate-limited to
+  one per hour.
+* WebSub deliberately not implemented.
+* Binary `heron`, environment `HERON_CONFIG` / `HERON_DATA`, lock file
+  `heron.lock`.
+
+== Maintenance runs
+
+No maintenance run has been recorded. Reports go to
+`docs/reports/maintenance/latest.json`.
