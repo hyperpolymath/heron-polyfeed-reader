@@ -11,6 +11,8 @@ ADD --checksum=sha256:1cbe9df9f27e6b78d14ccbca43b6703a404ef79ef1c463de901d7f088d
     https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz /tmp/zig.tar.xz
 RUN mkdir /opt/zig && tar -xJf /tmp/zig.tar.xz -C /opt/zig --strip-components=1 && rm /tmp/zig.tar.xz
 ENV PATH=/opt/zig:$PATH
+# An empty, runtime-UID-owned directory to seed /data in the scratch image (see the runtime stage).
+RUN mkdir -p /seed/data && chown 10001:10001 /seed/data
 
 FROM toolchain AS test
 WORKDIR /src
@@ -26,6 +28,10 @@ FROM scratch AS runtime
 COPY --from=build /src/zig-out/bin/heron /heron
 # CA roots for HTTPS (Zig reads /etc/ssl/certs/ca-certificates.crt).
 COPY --from=toolchain /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+# /data must exist in the image, owned by the runtime UID: an anonymous or fresh named volume
+# inherits this directory's ownership, whereas a mount point the engine creates itself is root's
+# and heron (UID 10001) could not create its log, index or lock file there.
+COPY --from=toolchain --chown=10001:10001 /seed/data /data
 USER 10001:10001
 ENV HERON_DATA=/data HERON_CONFIG=/config/heron.json
 VOLUME ["/data"]

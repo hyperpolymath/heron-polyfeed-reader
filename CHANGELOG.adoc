@@ -40,6 +40,22 @@ the template commit.
   release build, config smoke and both `Containerfile` stages; Zig pinned to
   0.17.0 in `mise.toml` / `mise.lock`.
 
+==== Fixed
+
+* Review findings on the import PR (Codex), each with a test where one was possible:
+  an RSS channel without a title no longer panics the daemon; `deepText` keeps
+  mixed content in document order; mistyped booleans in the config are rejected
+  instead of silently taking the default; `heron fetch NAME` fails on an unknown
+  name; a stale robots.txt `blocked` flag is cleared when `check_robots` is turned
+  off and the cached robots.txt is no longer truncated below the fetch cap; the
+  web UI accepts its own bound address in Host, clamps the page number (no u32
+  overflow), does not mark items read on HEAD, refreshes its cached log length
+  before reading a record the poller appended, and bounds each connection with a
+  10 s socket deadline; records larger than the replay limit are refused at
+  ingest; relative Atom/RSS links are resolved against the feed URL; the scratch
+  image ships `/data` owned by the runtime UID; the template Tier-A image
+  (`build/container/Containerfile`) now builds and runs heron.
+
 ==== Changed
 
 * Renamed to heron-polyfeed-reader: binary `heron`, environment

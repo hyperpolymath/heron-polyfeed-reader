@@ -69,7 +69,7 @@ One JSON file (no YAML). Unknown keys are rejected by `check-config`.
 | `user_agent` | string | built-in | Sent on every request; put a contact address in it.
 | `timeout_s` | integer | 30 | Wall-clock timeout per request.
 | `web.enabled` | boolean | `false` | Serve the web UI from the daemon.
-| `web.bind` | string | `127.0.0.1` | Bind address. Anything but loopback also needs `allow_non_loopback`.
+| `web.bind` | string | `127.0.0.1` | Bind address. Anything but loopback also needs `allow_non_loopback`. Requests must carry a Host header naming `127.0.0.1`, `localhost`, `[::1]` or this bound address (with the port); a wildcard bind (`0.0.0.0`, `::`) is not special-cased, so name the address you expose.
 | `web.port` | integer | 8484 | Listening port.
 | `web.allow_non_loopback` | boolean | `false` | Required to bind a non-loopback address; the UI has no authentication.
 | `sources[].name` | string | required | Short unique name used by the CLI.
@@ -104,6 +104,8 @@ One JSON file (no YAML). Unknown keys are rejected by `check-config`.
 * The certificate probe has been verified only against a self-signed
   certificate (not CA-signed, SNI-routed or TLS 1.2-only hosts).
 * No WebSub; feeds are polled.
+* Relative entry links are resolved against the feed URL; `xml:base` is not consulted.
+* The web UI serves one request at a time with a 10 s per-connection deadline; it is a personal UI, not a public server.
 
 == See also
 

@@ -21,6 +21,9 @@ pub const Node = struct {
     name: []const u8,
     attrs: []const Attr = &.{},
     text_buf: std.ArrayList(u8) = .empty,
+    /// Length of the parent's `text_buf` when this child was opened: the parent's direct text
+    /// before this child ends there. Lets `deepText` keep mixed content in document order.
+    text_pos: usize = 0,
     parent: ?*Node = null,
     first_child: ?*Node = null,
     last_child: ?*Node = null,
@@ -56,7 +59,8 @@ pub const Node = struct {
         return null;
     }
 
-    /// All descendant text concatenated (used for xhtml content).
+    /// All descendant text concatenated in document order (used for xhtml content):
+    /// `<p>Hello <b>big</b> world</p>` -> `Hello big world`.
     pub fn deepText(self: *const Node, a: Allocator) Allocator.Error![]u8 {
         var out: std.ArrayList(u8) = .empty;
         try self.deepTextInto(a, &out);
@@ -64,9 +68,16 @@ pub const Node = struct {
     }
 
     fn deepTextInto(self: *const Node, a: Allocator, out: *std.ArrayList(u8)) Allocator.Error!void {
-        try out.appendSlice(a, self.text_buf.items);
+        const direct = self.text_buf.items;
+        var pos: usize = 0;
         var c = self.first_child;
-        while (c) |n| : (c = n.next) try n.deepTextInto(a, out);
+        while (c) |n| : (c = n.next) {
+            const end = @min(n.text_pos, direct.len);
+            if (end > pos) try out.appendSlice(a, direct[pos..end]);
+            pos = @max(pos, end);
+            try n.deepTextInto(a, out);
+        }
+        if (direct.len > pos) try out.appendSlice(a, direct[pos..]);
     }
 };
 
@@ -257,7 +268,7 @@ pub fn parse(a: Allocator, src: []const u8, limits: Limits) ParseError!*Node {
             count += 1;
             if (count > limits.max_nodes or depth >= limits.max_depth) return error.TooLarge;
             const node = try a.create(Node);
-            node.* = .{ .name = name, .attrs = attrs.items, .parent = cur };
+            node.* = .{ .name = name, .attrs = attrs.items, .parent = cur, .text_pos = cur.text_buf.items.len };
             if (cur.last_child) |l| l.next = node else cur.first_child = node;
             cur.last_child = node;
             if (!self_close) {
@@ -324,6 +335,16 @@ test "no root and limits" {
     try std.testing.expectError(error.NoRoot, parseT(a, "just text"));
     try std.testing.expectError(error.TooLarge, parse(a, "<a><b><c/></b></a>", .{ .max_nodes = 2 }));
     try std.testing.expectError(error.TooLarge, parse(a, "<a><b><c>", .{ .max_depth = 2 }));
+}
+
+test "deepText keeps mixed content in document order" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const doc = try parseT(a, "<t><p>Hello <b>big</b> world<br/>, <i>a<u>b</u>c</i>d</p></t>");
+    const p = rootElement(doc).?.child("p").?;
+    try std.testing.expectEqualStrings("Hello big world, abcd", try p.deepText(a));
+    try std.testing.expectEqualStrings("Hello  world, d", p.text()); // direct text only, as before
 }
 
 test "prefix handling and html entities" {

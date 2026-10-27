@@ -39,7 +39,10 @@ pub fn parse(a: Allocator, source: []const u8, bytes: []const u8, http_charset: 
     switch (fmt) {
         .rss2, .rdf => {
             const channel = if (root.is("channel")) root else root.child("channel");
-            if (channel) |ch| title = ch.child("title").?.text();
+            // A channel without a <title> is malformed but must not take the daemon down: untrusted input.
+            if (channel) |ch| {
+                if (ch.child("title")) |t| title = try nodeText(a, t);
+            }
             // Items are channel children in RSS 2.0 and root children in RSS 1.0; accept both.
             for ([_]?*xml.Node{ channel, root }) |maybe| {
                 const container = maybe orelse continue;
@@ -134,6 +137,30 @@ fn atomEntry(a: Allocator, source: []const u8, n: *const xml.Node) Allocator.Err
         .body = body,
         .kind = .article,
     };
+}
+
+/// Resolve `link` against the feed's own URL (RFC 3986 §5), so a relative Atom `href` or RSS
+/// `<link>` such as `/posts/1` becomes an absolute URL the UI will render. Empty links, links
+/// that already carry a scheme, and unparsable bases pass through unchanged. `xml:base` is not
+/// consulted: the fetched feed URL is the right base for the feeds seen in practice.
+pub fn resolveLink(a: Allocator, base_url: []const u8, link: []const u8) Allocator.Error![]const u8 {
+    if (link.len == 0 or hasScheme(link)) return link;
+    const base = std.Uri.parse(base_url) catch return link;
+    // resolveInPlace wants the reference at the start of a scratch buffer with room for a merged path.
+    const buf = try a.alloc(u8, link.len + base_url.len + 2);
+    @memcpy(buf[0..link.len], link);
+    var aux: []u8 = buf;
+    const resolved = std.Uri.resolveInPlace(base, link.len, &aux) catch return link;
+    return std.fmt.allocPrint(a, "{f}", .{resolved.fmt(.all)});
+}
+
+fn hasScheme(s: []const u8) bool {
+    if (s.len == 0 or !std.ascii.isAlphabetic(s[0])) return false;
+    for (s, 0..) |c, i| {
+        if (c == ':') return i > 0;
+        if (!(std.ascii.isAlphanumeric(c) or c == '+' or c == '-' or c == '.')) return false;
+    }
+    return false;
 }
 
 /// Item identity: the feed's own guid / atom:id when present; otherwise link plus
@@ -289,6 +316,31 @@ test "dedupe: guid wins; link+date fallback; hash fallback; in-batch duplicates 
     try testing.expectEqualStrings("link:http://example.com/a#946771200", p.items[2].id); // re-dated post is a new item
     try testing.expect(std.mem.startsWith(u8, p.items[3].id, "hash:"));
     try testing.expectEqualStrings("guid-2", p.items[4].id);
+}
+
+test "edge: channel without a title yields an empty title, not a panic" {
+    var arena = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena.deinit();
+    const p = try parse(arena.allocator(), "t", "<rss><channel><item><title>x</title><link>http://x/1</link></item></channel></rss>", null);
+    try testing.expectEqualStrings("", p.title);
+    try testing.expectEqual(@as(usize, 1), p.items.len);
+    const r = try parse(arena.allocator(), "t", "<rdf:RDF><channel/><item><title>y</title></item></rdf:RDF>", null);
+    try testing.expectEqualStrings("", r.title);
+    try testing.expectEqual(@as(usize, 1), r.items.len);
+}
+
+test "resolveLink: relative references resolve against the feed URL; absolute and schemed pass through" {
+    var arena = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    try testing.expectEqualStrings("http://x/posts/1", try resolveLink(a, "http://x/feed.xml", "/posts/1"));
+    try testing.expectEqualStrings("http://x/blog/posts/1", try resolveLink(a, "http://x/blog/feed.xml", "posts/1"));
+    try testing.expectEqualStrings("http://x/a/c?q=1", try resolveLink(a, "http://x/a/b/feed", "../c?q=1"));
+    try testing.expectEqualStrings("https://x:8443/p", try resolveLink(a, "https://x:8443/feed", "/p"));
+    try testing.expectEqualStrings("https://other/z", try resolveLink(a, "http://x/feed", "https://other/z"));
+    try testing.expectEqualStrings("mailto:a@b", try resolveLink(a, "http://x/feed", "mailto:a@b"));
+    try testing.expectEqualStrings("//cdn/x", try resolveLink(a, "not a url", "//cdn/x"));
+    try testing.expectEqualStrings("", try resolveLink(a, "http://x/feed", ""));
 }
 
 test "not a feed" {

@@ -181,6 +181,17 @@ fn printRows(out: *Io.Writer, rows: []const store_mod.Row) !void {
 
 fn cmdFetch(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, names: []const []const u8, now: i64) !u8 {
     var eng: engine_mod.Engine = .{ .gpa = app.gpa, .store = store, .registry = &app.registry, .transport = app.transport() };
+    // A misspelled or removed name must not look like a successful poll of nothing.
+    for (names) |n| {
+        var known = false;
+        for (app.jobs) |job| if (std.mem.eql(u8, n, job.name)) {
+            known = true;
+        };
+        if (!known) {
+            try out.print("fetch: no source or monitor named '{s}' (see: heron sources)\n", .{n});
+            return 2;
+        }
+    }
     var failures: u8 = 0;
     for (app.jobs) |job| {
         if (names.len > 0) {

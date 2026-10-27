@@ -17,6 +17,16 @@ pub fn port(server: *const net.Server) u16 {
     return server.socket.address.getPort();
 }
 
+/// Per-connection read/write deadline in seconds. Generous for a loopback UI; short enough that a
+/// stuck client cannot park the accept loop.
+const io_timeout_s: u32 = 10;
+
+fn setSocketTimeouts(handle: std.posix.socket_t, seconds: u32) !void {
+    const tv: std.posix.timeval = .{ .sec = @intCast(seconds), .usec = 0 };
+    try std.posix.setsockopt(handle, std.posix.SOL.SOCKET, std.posix.SO.RCVTIMEO, std.mem.asBytes(&tv));
+    try std.posix.setsockopt(handle, std.posix.SOL.SOCKET, std.posix.SO.SNDTIMEO, std.mem.asBytes(&tv));
+}
+
 /// Accept loop. Returns when cancelled (or the listener is closed).
 pub fn serve(io: Io, server: *net.Server, ctx: *anyopaque, handler: Handler) void {
     while (true) {
@@ -25,6 +35,9 @@ pub fn serve(io: Io, server: *net.Server, ctx: *anyopaque, handler: Handler) voi
             else => continue,
         };
         defer stream.close(io);
+        // The loop is sequential, so a client that connects and never finishes its request (or never
+        // reads the response) would hold the UI for everyone. A socket deadline bounds both.
+        setSocketTimeouts(stream.socket.handle, io_timeout_s) catch {};
         var rbuf: [4096]u8 = undefined;
         var wbuf: [4096]u8 = undefined;
         var r = stream.reader(io, &rbuf);

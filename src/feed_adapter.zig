@@ -53,6 +53,8 @@ pub fn fetch(ctx: *adapter.Context, source: adapter.Source, cond: adapter.Cond) 
         error.NotAFeed => return fail(.malformed, resp.status, null, "response is XML but not RSS, Atom or RDF"),
         error.NoRoot => return fail(.malformed, resp.status, null, "response is not XML"),
     };
+    // Relative links (Atom permits them; some RSS carries them) are resolved against the feed URL.
+    for (parsed.items) |*it| it.url = feed.resolveLink(ctx.arena, source.url, it.url) catch it.url;
     return .{ .items = .{
         .items = parsed.items,
         .title = parsed.title,
@@ -132,6 +134,22 @@ test "status classes and transport errors" {
     }
     var ft: FakeTransport = .{ .responses = &.{}, .err = error.Timeout };
     try std.testing.expectEqual(adapter.FailureClass.transient, run(&ft, .{}, 0, arena.allocator()).failed.class);
+}
+
+test "relative entry links are resolved against the feed URL" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const atom =
+        \\<feed xmlns="http://www.w3.org/2005/Atom"><title>t</title>
+        \\<entry><id>e1</id><title>one</title><link rel="alternate" href="/posts/1"/></entry>
+        \\<entry><id>e2</id><title>two</title><link href="https://other.example/2"/></entry>
+        \\</feed>
+    ;
+    var ft: FakeTransport = .{ .responses = &.{.{ .status = 200, .body = atom }} };
+    const o = run(&ft, .{}, 0, arena.allocator());
+    try std.testing.expectEqual(@as(usize, 2), o.items.items.len);
+    try std.testing.expectEqualStrings("http://x/posts/1", o.items.items[0].url);
+    try std.testing.expectEqualStrings("https://other.example/2", o.items.items[1].url);
 }
 
 test "HTML and garbage bodies are malformed, not crashes" {

@@ -25,6 +25,9 @@ pub const Web = struct {
     store: *store_mod.Store,
     /// Port actually bound (differs from config when 0 was requested, e.g. in tests).
     port: u16 = 0,
+    /// Address actually bound; accepted in the Host header alongside the loopback names, so a
+    /// server on 127.0.0.2 or on an explicitly allowed non-loopback address answers its own name.
+    bind: []const u8 = "127.0.0.1",
     /// Fixed-clock override for tests (seconds); 0 = real time.
     fixed_now: i64 = 0,
 
@@ -78,13 +81,17 @@ fn send(req: *std.http.Server.Request, status: std.http.Status, ctype: []const u
 }
 
 fn hostOk(w: *Web, host: []const u8) bool {
-    // Accept exactly 127.0.0.1:PORT, localhost:PORT, [::1]:PORT (with or without the port for default 80 is not applicable).
-    var buf: [64]u8 = undefined;
+    // Accept exactly 127.0.0.1:PORT, localhost:PORT, [::1]:PORT, and the bound address itself
+    // (bracketed when IPv6). Anything else is a DNS-rebinding attempt or a misdirected request.
+    // A wildcard bind (0.0.0.0 / ::) is deliberately not special-cased: name the address you expose.
+    var buf: [320]u8 = undefined;
     inline for (.{ "127.0.0.1", "localhost", "[::1]" }) |h| {
         const want = std.fmt.bufPrint(&buf, "{s}:{d}", .{ h, w.port }) catch return false;
         if (std.ascii.eqlIgnoreCase(host, want)) return true;
     }
-    return false;
+    const is_v6 = std.mem.indexOfScalar(u8, w.bind, ':') != null;
+    const own = (if (is_v6) std.fmt.bufPrint(&buf, "[{s}]:{d}", .{ w.bind, w.port }) else std.fmt.bufPrint(&buf, "{s}:{d}", .{ w.bind, w.port })) catch return false;
+    return std.ascii.eqlIgnoreCase(host, own);
 }
 
 fn handle(w: *Web, a: Allocator, req: *std.http.Server.Request) !void {
@@ -119,7 +126,8 @@ fn handle(w: *Web, a: Allocator, req: *std.http.Server.Request) !void {
         try pageList(w, a, o, query);
     } else if (std.mem.startsWith(u8, path, "/item/")) {
         const rowid = std.fmt.parseInt(i64, path["/item/".len..], 10) catch return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
-        if (!try pageItem(w, a, o, rowid)) return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
+        // Only a real GET marks the item read; HEAD (link checkers, previews) must not mutate.
+        if (!try pageItem(w, a, o, rowid, req.head.method == .GET)) return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
     } else if (std.mem.eql(u8, path, "/status")) {
         try pageStatus(w, a, o);
     } else return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
@@ -182,6 +190,9 @@ fn head(o: *Io.Writer, title: []const u8) !void {
         "<form action=\"/\" method=get><input type=search name=q placeholder=\"search (3+ chars)\"> <button>Search</button></form></nav></header>");
 }
 
+/// Highest list page served; 1e6 pages of 50 is 5e7 rows, far beyond any log, and 5e7 fits u32.
+const max_page: u32 = 1_000_000;
+
 fn isWebUrl(u: []const u8) bool {
     return std.ascii.startsWithIgnoreCase(u, "http://") or std.ascii.startsWithIgnoreCase(u, "https://");
 }
@@ -193,7 +204,8 @@ fn pageList(w: *Web, a: Allocator, o: *Io.Writer, query: []const u8) !void {
         break :blk if (s) |v| (if (v.len > 0) v else null) else null;
     };
     const all = (try queryParam(a, query, "all")) != null;
-    const page: u32 = if (try queryParam(a, query, "page")) |p| (std.fmt.parseInt(u32, p, 10) catch 0) else 0;
+    // Clamp the page so `page * per` can never overflow u32 (a ReleaseSafe panic on a crafted URL).
+    const page: u32 = if (try queryParam(a, query, "page")) |p| @min(std.fmt.parseInt(u32, p, 10) catch 0, max_page) else 0;
     const per: u32 = 50;
 
     try head(o, "heron-polyfeed-reader");
@@ -239,9 +251,9 @@ fn pageList(w: *Web, a: Allocator, o: *Io.Writer, query: []const u8) !void {
     try o.writeAll("</body></html>");
 }
 
-fn pageItem(w: *Web, a: Allocator, o: *Io.Writer, rowid: i64) !bool {
+fn pageItem(w: *Web, a: Allocator, o: *Io.Writer, rowid: i64, mark_read: bool) !bool {
     const rec = (try w.store.getRecord(a, rowid)) orelse return false;
-    try w.store.setRead(rec.source, rec.id, true, w.now()); // opening an item marks it read
+    if (mark_read) try w.store.setRead(rec.source, rec.id, true, w.now()); // opening an item marks it read
     try head(o, rec.title);
     try o.writeAll("<h2>");
     try esc(o, rec.title);
@@ -451,4 +463,13 @@ test "web UI end to end: pages, escaping, read marks, host/origin checks, loopba
     try testing.expectEqual(@as(i64, 0), (try st.count()).unread);
     const nf = try get(a, io, w.port, "GET", "/item/999", hostline);
     try testing.expect(std.mem.startsWith(u8, nf, "HTTP/1.1 404"));
+
+    // HEAD must not mark an item read; an absurd page number must not overflow (ReleaseSafe panic).
+    _ = try get(a, io, w.port, "POST", "/unread/1", hostline);
+    try testing.expectEqual(@as(i64, 1), (try st.count()).unread);
+    const hd = try get(a, io, w.port, "HEAD", "/item/1", hostline);
+    try testing.expect(std.mem.startsWith(u8, hd, "HTTP/1.1 200"));
+    try testing.expectEqual(@as(i64, 1), (try st.count()).unread);
+    const big = try get(a, io, w.port, "GET", "/?page=4294967295", hostline);
+    try testing.expect(std.mem.startsWith(u8, big, "HTTP/1.1 200"));
 }

@@ -27,7 +27,11 @@ const robots_ttl_s: i64 = day_s;
 const cert_recheck_s: i64 = 6 * 3600;
 const change_alert_gap_s: i64 = 3600;
 const max_body: usize = 2 * 1024 * 1024;
-const max_robots_cache = 16 * 1024;
+/// Must equal the robots.txt fetch cap below: a cached copy shorter than what was fetched would drop
+/// rules past the cut and could allow a path the file disallows. (RFC 9309 §2.5 lets a crawler stop
+/// parsing at a size limit; the limit is the fetch cap, applied once, not a second cut here.)
+const max_robots_fetch: usize = 256 * 1024;
+const max_robots_cache = max_robots_fetch;
 
 pub const Options = struct {
     expect_status: u16 = 200,
@@ -183,7 +187,7 @@ pub fn check(self: *MonitorAdapter, ctx: *adapter.Context, source: adapter.Sourc
     var skip_request = false;
     if (opt.check_robots) {
         if (st.robots_at == 0 or now - st.robots_at >= robots_ttl_s) {
-            if (ctx.transport.request(a, .{ .url = target.robots_url, .max_body_bytes = 256 * 1024 })) |rr| {
+            if (ctx.transport.request(a, .{ .url = target.robots_url, .max_body_bytes = max_robots_fetch })) |rr| {
                 switch (robots_mod.availabilityForStatus(rr.status)) {
                     .rules => {
                         st.robots_txt = rr.body[0..@min(rr.body.len, max_robots_cache)];
@@ -208,7 +212,7 @@ pub fn check(self: *MonitorAdapter, ctx: *adapter.Context, source: adapter.Sourc
                 );
             }
         } else if (robots_failed == null) st.blocked = false;
-    }
+    } else st.blocked = false; // check_robots turned off: a stale block must not outlive the rule that set it
 
     // ---- the request ------------------------------------------------------------------------
     var resp: ?transport.Response = null;
@@ -559,6 +563,17 @@ test "robots.txt: 404 allows; 5xx or network error fails the check without reque
     _ = try h4.step(1000);
     try testing.expectEqual(@as(u32, 0), h4.fake.robots_calls); // not even fetched
     try testing.expectEqual(@as(u32, 1), h4.fake.main_calls);
+
+    // A monitor blocked by robots.txt, then restarted with check_robots=false, is no longer "blocked".
+    var h5 = Harness.init();
+    defer h5.deinit();
+    h5.fake.robots = .{ .status = 200, .body = "User-agent: *\nDisallow: /\n" };
+    try expectTitle(try h5.step(1000), "BLOCKED");
+    try testing.expect(h5.state().blocked);
+    h5.src.options = "{\"check_robots\":false}";
+    _ = try h5.step(1060);
+    try testing.expect(!h5.state().blocked);
+    try testing.expectEqual(@as(?bool, true), h5.state().up);
 }
 
 test "tls certificate: warn once per cert, expired, renewal re-arms, http skipped, probe throttled" {

@@ -224,8 +224,6 @@ pub const Store = struct {
             if (seenImpl(self, it.source, it.id)) continue;
             const key = try std.fmt.allocPrint(a, "{s}\x00{s}", .{ it.source, it.id });
             if ((try batch_ids.getOrPut(a, key)).found_existing) continue;
-            try offsets.append(a, self.log_size + buf.items.len);
-            try fresh.append(a, it);
             const line = try std.json.Stringify.valueAlloc(a, Record{
                 .t = now,
                 .source = it.source,
@@ -236,6 +234,14 @@ pub const Store = struct {
                 .body = it.body,
                 .kind = it.kind,
             }, .{});
+            // Replay (`rebuild`, crash recovery) skips any line longer than max_line, so a record
+            // that size would be visible now and vanish later. Refuse it at ingest instead.
+            if (line.len + 1 > max_line) {
+                std.log.warn("store: dropping {s}/{s}: serialised record ({d} bytes) exceeds the replay limit", .{ it.source, it.id, line.len });
+                continue;
+            }
+            try offsets.append(a, self.log_size + buf.items.len);
+            try fresh.append(a, it);
             try buf.appendSlice(a, line);
             try buf.append(a, '\n');
         }
@@ -499,6 +505,9 @@ pub const Store = struct {
         try st.bindInt(1, rowid);
         if (!try st.step()) return null;
         const off: u64 = @intCast(st.colInt(0));
+        // A read-only instance (the web UI) caches the log length at open; the poller's appends
+        // show up in SQLite at once. Refresh the length when the index points past what we know.
+        if (off >= self.log_size) self.log_size = try self.log.length(self.io);
         var line: std.ArrayList(u8) = .empty;
         var pos = off;
         var chunk: [16 * 1024]u8 = undefined;
@@ -661,10 +670,16 @@ test "reopen keeps everything; second instance is refused; read-only open works 
         var ro = try Store.open(testing.allocator, testing.io, dir, false);
         defer ro.close();
         try testing.expectEqual(@as(usize, 1), (try ro.list(a, .{})).len);
+        // Appended after the read-only open: listed via SQLite, and the record is readable too
+        // (the cached log length must not be trusted past what the index points at).
+        _ = try s.ingest(&.{mkItem("a", "2", "appended later", "<p>later body</p>", 2)}, 11);
+        const rows = try ro.list(a, .{ .limit = 10 });
+        try testing.expectEqual(@as(usize, 2), rows.len);
+        for (rows) |r| try testing.expect((try ro.getRecord(a, r.rowid)) != null);
     }
     var s = try Store.open(testing.allocator, testing.io, dir, true);
     defer s.close();
-    try testing.expectEqual(@as(usize, 1), (try s.list(a, .{})).len);
+    try testing.expectEqual(@as(usize, 2), (try s.list(a, .{})).len);
 }
 
 test "rebuild from the log restores items, FTS and dedupe, and keeps read marks" {

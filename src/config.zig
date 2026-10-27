@@ -88,9 +88,12 @@ fn getInt(obj: std.json.ObjectMap, key: []const u8) ?i64 {
     return if (v == .integer) v.integer else null;
 }
 
-fn getBool(obj: std.json.ObjectMap, key: []const u8) ?bool {
+/// A boolean field: absent -> null; present but not a JSON boolean -> InvalidConfig. A mistyped
+/// `"enabled": "false"` must never silently take the default (which for web.enabled is true).
+fn getBool(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?bool {
     const v = obj.get(key) orelse return null;
-    return if (v == .bool) v.bool else null;
+    if (v != .bool) return bad(a, diag, "{s} must be true or false (unquoted)", .{what});
+    return v.bool;
 }
 
 /// Parse and validate. All returned memory belongs to `a` (use an arena).
@@ -109,9 +112,9 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
     }
     if (obj.get("web")) |w| {
         if (w != .object) return bad(a, diag, "web must be an object", .{});
-        cfg.web.enabled = getBool(w.object, "enabled") orelse true;
+        cfg.web.enabled = (try getBool(a, diag, w.object, "enabled", "web.enabled")) orelse true;
         if (getStr(w.object, "bind")) |b| cfg.web.bind = b;
-        cfg.web.allow_non_loopback = getBool(w.object, "allow_non_loopback") orelse false;
+        cfg.web.allow_non_loopback = (try getBool(a, diag, w.object, "allow_non_loopback", "web.allow_non_loopback")) orelse false;
         if (getInt(w.object, "port")) |p| {
             if (p < 1 or p > 65535) return bad(a, diag, "web.port out of range", .{});
             cfg.web.port = @intCast(p);
@@ -161,9 +164,13 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
                 if (s < 100 or s > 599) return bad(a, diag, "monitor '{s}': expect_status out of range", .{name});
                 m.expect_status = @intCast(s);
             }
-            if (getBool(o, "detect_changes")) |b| m.detect_changes = b;
-            if (getBool(o, "check_robots")) |b| m.check_robots = b;
-            if (getInt(o, "cert_warn_days")) |d| m.cert_warn_days = @intCast(@max(0, d));
+            if (try getBool(a, diag, o, "detect_changes", "monitor detect_changes")) |b| m.detect_changes = b;
+            if (try getBool(a, diag, o, "check_robots", "monitor check_robots")) |b| m.check_robots = b;
+            if (getInt(o, "cert_warn_days")) |d| {
+                // Bound before the narrowing cast: an out-of-range integer is a diagnostic, not a trap.
+                if (d < 0 or d > 3650) return bad(a, diag, "monitor '{s}': cert_warn_days must be 0..3650", .{name});
+                m.cert_warn_days = @intCast(d);
+            }
             try monitors.append(a, m);
         }
     }
@@ -206,6 +213,11 @@ test "rejections carry a message" {
         "{\"monitors\":[{\"name\":\"a\",\"url\":\"http://x/\"}],\"sources\":[{\"name\":\"a\",\"url\":\"http://y/\"}]}", // dup across kinds
         "{\"web\":{\"port\":70000}}",
         "{\"timeout_s\":0}",
+        "{\"web\":{\"enabled\":\"false\"}}", // a quoted boolean must not silently enable the UI
+        "{\"web\":{\"allow_non_loopback\":1}}",
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"check_robots\":\"no\"}]}",
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"cert_warn_days\":4294967296}]}", // would trap the u32 cast
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"cert_warn_days\":-1}]}",
     };
     for (cases) |text| {
         var d: Diagnostic = .{};
