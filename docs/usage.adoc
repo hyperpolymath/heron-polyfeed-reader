@@ -81,8 +81,8 @@ One JSON file (no YAML). `check-config` rejects unknown keys at every level and 
 | `monitors[].url` | string | required | Page to check.
 | `monitors[].interval_s` | integer | per adapter | Check interval.
 | `monitors[].expect_status` | integer | 200 | HTTP status that counts as UP.
-| `monitors[].detect_changes` | boolean | `false` | Hash the body and alert on change (rate-limited to one alert per hour).
-| `monitors[].check_robots` | boolean | `false` | Fetch and honour `robots.txt` (RFC 9309) and alert when it changes.
+| `monitors[].detect_changes` | boolean | `true` | Fetch the body (GET), hash its visible text and alert on change (rate-limited to one alert per hour). `false` checks reachability with HEAD only.
+| `monitors[].check_robots` | boolean | `true` | Fetch and honour `robots.txt` (RFC 9309, cached 24 h): a BLOCKED alert when it starts disallowing the monitored path, and redirects to another origin are refused. Changes to robots.txt that leave the path allowed raise no alert.
 | `monitors[].cert_warn_days` | integer | 14 | Alert when the leaf certificate expires within this many days.
 |===
 

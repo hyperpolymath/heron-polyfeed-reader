@@ -66,6 +66,15 @@ the template commit.
   the compose stack mounts a config, publishes the UI on host loopback only
   and drops the unusable health check; `.dockerignore` no longer hides the
   Tier-A entrypoint from its own build.
+* Third review round: network-derived text printed by the CLI (`list`,
+  `search`, `show`, `sources`, `monitors`) has control characters replaced,
+  so a feed cannot inject terminal escape sequences; `check-config` rejects
+  non-string values for string fields and source types no adapter serves;
+  a log replaced by a shorter one clears the derived index before
+  reindexing; web pagination keeps the source filter; `24:mm` timestamps
+  other than `24:00:00` are rejected; `heron fetch` cannot overflow its
+  failure counter; the compose build context is the repository root; the
+  documented monitor defaults and robots.txt behaviour now match the code.
 
 ==== Changed
 

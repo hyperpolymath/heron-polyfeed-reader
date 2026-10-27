@@ -14,6 +14,47 @@ pub fn fmtDate(buf: []u8, unix: i64) []const u8 {
     }) catch "-";
 }
 
+/// Network-derived text made safe to print on a terminal: every C0 control except TAB (this
+/// includes ESC, so no CSI/OSC sequence survives), DEL, and the C1 controls U+0080..U+009F
+/// become U+FFFD. Newlines go too, so a feed title cannot forge extra output lines.
+/// Returns `s` itself when nothing needed replacing.
+pub fn termSafe(a: std.mem.Allocator, s: []const u8) std.mem.Allocator.Error![]const u8 {
+    if (!needsTermEscape(s)) return s;
+    var out: std.ArrayList(u8) = .empty;
+    var i: usize = 0;
+    while (i < s.len) {
+        const c = s[i];
+        if ((c < 0x20 and c != '\t') or c == 0x7f) {
+            try out.appendSlice(a, "\u{FFFD}");
+            i += 1;
+        } else if (c == 0xC2 and i + 1 < s.len and s[i + 1] >= 0x80 and s[i + 1] <= 0x9F) {
+            try out.appendSlice(a, "\u{FFFD}"); // UTF-8 encoding of a C1 control
+            i += 2;
+        } else {
+            try out.append(a, c);
+            i += 1;
+        }
+    }
+    return out.items;
+}
+
+fn needsTermEscape(s: []const u8) bool {
+    for (s, 0..) |c, i| {
+        if ((c < 0x20 and c != '\t') or c == 0x7f) return true;
+        if (c == 0xC2 and i + 1 < s.len and s[i + 1] >= 0x80 and s[i + 1] <= 0x9F) return true;
+    }
+    return false;
+}
+
+test "termSafe neutralises escape sequences, newlines and C1 controls; leaves text alone" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    try std.testing.expectEqualStrings("plain \u{e9}t\u{e9}\tok", try termSafe(a, "plain \u{e9}t\u{e9}\tok"));
+    try std.testing.expectEqualStrings("\u{FFFD}[31mred\u{FFFD}]52;c;Zm9v\u{FFFD}", try termSafe(a, "\x1b[31mred\x1b]52;c;Zm9v\x07"));
+    try std.testing.expectEqualStrings("a\u{FFFD}b\u{FFFD}c", try termSafe(a, "a\nb\u{9b}c"));
+}
+
 /// Human duration like "5m", "3h", "2d".
 pub fn fmtSpan(buf: []u8, secs: i64) []const u8 {
     const s = if (secs < 0) -secs else secs;

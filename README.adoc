@@ -21,8 +21,8 @@ image:https://img.shields.io/badge/Zig-0.17.0-F7A41D?logo=zig&logoColor=black[Zi
 image:https://api.thegreenwebfoundation.org/greencheckimage/github.com[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url=github.com"]
 
 A small local feed reader and site monitor. `heron` polls RSS, Atom and RDF
-feeds, watches sites for downtime, content change, robots.txt changes and TLS
-certificate expiry, keeps everything in an append-only NDJSON log with a SQLite
+feeds, watches sites for downtime, content change and TLS certificate expiry
+(honouring robots.txt), keeps everything in an append-only NDJSON log with a SQLite
 (FTS5) index rebuilt from it, and serves a localhost-only web UI. Written in
 Zig; Linux first.
 
@@ -35,7 +35,8 @@ Zig; Linux first.
   Retry-After.
 * *A site monitor.* Up/down transitions (DOWN after two failures, first
   success is a silent baseline), content-change hashes (alerts rate-limited to
-  one per hour), robots.txt (RFC 9309) and leaf-certificate expiry. Alerts are
+  one per hour), robots.txt compliance (RFC 9309: a BLOCKED alert when it
+  disallows the monitored path) and leaf-certificate expiry. Alerts are
   stored as items of kind `alert`, so they appear in the same lists and
   searches as articles.
 * *A daemon with a CLI.* One binary, one JSON config, one data directory.

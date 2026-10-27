@@ -78,9 +78,12 @@ fn validHttpUrl(u: []const u8) bool {
     return uri.host != null;
 }
 
-fn getStr(obj: std.json.ObjectMap, key: []const u8) ?[]const u8 {
+/// A string field: absent -> null; present but not a JSON string -> InvalidConfig, so
+/// `"data_dir": false` cannot silently fall back to the default directory.
+fn getStr(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?[]const u8 {
     const v = obj.get(key) orelse return null;
-    return if (v == .string) v.string else null;
+    if (v != .string) return bad(a, diag, "{s} must be a string", .{what});
+    return v.string;
 }
 
 /// An integer field: absent -> null; present but not a JSON integer -> InvalidConfig, so a quoted
@@ -120,8 +123,8 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
     var cfg: Config = .{};
     try rejectUnknown(a, diag, obj, &.{ "data_dir", "user_agent", "timeout_s", "web", "sources", "monitors" }, "top level");
 
-    if (getStr(obj, "data_dir")) |d| cfg.data_dir = d;
-    if (getStr(obj, "user_agent")) |d| cfg.user_agent = d;
+    if (try getStr(a, diag, obj, "data_dir", "data_dir")) |d| cfg.data_dir = d;
+    if (try getStr(a, diag, obj, "user_agent", "user_agent")) |d| cfg.user_agent = d;
     if (try getInt(a, diag, obj, "timeout_s", "timeout_s")) |t| {
         if (t < 1 or t > 600) return bad(a, diag, "timeout_s must be 1..600", .{});
         cfg.timeout_s = @intCast(t);
@@ -130,7 +133,7 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
         if (w != .object) return bad(a, diag, "web must be an object", .{});
         try rejectUnknown(a, diag, w.object, &.{ "enabled", "bind", "port", "allow_non_loopback" }, "web");
         cfg.web.enabled = (try getBool(a, diag, w.object, "enabled", "web.enabled")) orelse true;
-        if (getStr(w.object, "bind")) |b| cfg.web.bind = b;
+        if (try getStr(a, diag, w.object, "bind", "web.bind")) |b| cfg.web.bind = b;
         cfg.web.allow_non_loopback = (try getBool(a, diag, w.object, "allow_non_loopback", "web.allow_non_loopback")) orelse false;
         if (try getInt(a, diag, w.object, "port", "web.port")) |p| {
             if (p < 1 or p > 65535) return bad(a, diag, "web.port out of range", .{});
@@ -146,11 +149,11 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
             if (item != .object) return bad(a, diag, "sources[{d}] must be an object", .{idx});
             const o = item.object;
             try rejectUnknown(a, diag, o, &.{ "name", "type", "url", "interval_s", "options" }, "source");
-            const name = getStr(o, "name") orelse return bad(a, diag, "sources[{d}]: missing name", .{idx});
+            const name = (try getStr(a, diag, o, "name", "source name")) orelse return bad(a, diag, "sources[{d}]: missing name", .{idx});
             if (!validName(name)) return bad(a, diag, "sources[{d}]: bad name '{s}' (use A-Z a-z 0-9 . _ -, max 64)", .{ idx, name });
             if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
-            const type_name = getStr(o, "type") orelse "feed";
-            const url = getStr(o, "url") orelse return bad(a, diag, "source '{s}': missing url", .{name});
+            const type_name = (try getStr(a, diag, o, "type", "source type")) orelse "feed";
+            const url = (try getStr(a, diag, o, "url", "source url")) orelse return bad(a, diag, "source '{s}': missing url", .{name});
             const interval = (try getInt(a, diag, o, "interval_s", "source interval_s")) orelse default_interval_s;
             if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "source '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
             if (std.mem.eql(u8, type_name, "feed") and !validHttpUrl(url)) return bad(a, diag, "source '{s}': url must be http(s)", .{name});
@@ -171,10 +174,10 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
             if (item != .object) return bad(a, diag, "monitors[{d}] must be an object", .{idx});
             const o = item.object;
             try rejectUnknown(a, diag, o, &.{ "name", "url", "interval_s", "expect_status", "detect_changes", "check_robots", "cert_warn_days" }, "monitor");
-            const name = getStr(o, "name") orelse return bad(a, diag, "monitors[{d}]: missing name", .{idx});
+            const name = (try getStr(a, diag, o, "name", "monitor name")) orelse return bad(a, diag, "monitors[{d}]: missing name", .{idx});
             if (!validName(name)) return bad(a, diag, "monitors[{d}]: bad name '{s}'", .{ idx, name });
             if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
-            const url = getStr(o, "url") orelse return bad(a, diag, "monitor '{s}': missing url", .{name});
+            const url = (try getStr(a, diag, o, "url", "monitor url")) orelse return bad(a, diag, "monitor '{s}': missing url", .{name});
             if (!validHttpUrl(url)) return bad(a, diag, "monitor '{s}': url must be http(s)", .{name});
             const interval = (try getInt(a, diag, o, "interval_s", "monitor interval_s")) orelse 300;
             if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "monitor '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
@@ -243,6 +246,10 @@ test "rejections carry a message" {
         "{\"web\":{\"enable\":true}}",
         "{\"sources\":[{\"name\":\"a\",\"url\":\"http://x/\",\"interval\":60}]}",
         "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"expect\":200}]}",
+        "{\"data_dir\":false}", // a non-string must not silently take the default data directory
+        "{\"user_agent\":1}",
+        "{\"web\":{\"bind\":[]}}",
+        "{\"sources\":[{\"name\":\"a\",\"type\":7,\"url\":\"http://x/\"}]}",
     };
     for (cases) |text| {
         var d: Diagnostic = .{};

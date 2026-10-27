@@ -22,7 +22,7 @@ services:
   # ──────────────────────────────────────────────────────────────────────
   "heron":
     build:
-      context: ..
+      context: ../..          # the repository root (relative contexts resolve from this file's directory)
       dockerfile: build/container/Containerfile
     image: "ghcr.io/hyperpolymath/heron:latest"
     # The web UI has no authentication: publish it on the host loopback only (a mapping without a

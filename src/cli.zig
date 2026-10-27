@@ -85,6 +85,12 @@ fn run(init: std.process.Init) !u8 {
     try app.setup();
 
     if (std.mem.eql(u8, cmd, "check-config")) {
+        // A source type no registered adapter serves (a typo such as "fead") would otherwise pass
+        // here and then fail permanently on every scheduled poll.
+        for (app.jobs) |job| if (app.registry.find(job.type_name) == null) {
+            try out.print("error: source '{s}': no adapter for type '{s}' (available: feed)\n", .{ job.name, job.type_name });
+            return 1;
+        };
         try out.print("ok: {d} source(s), {d} monitor(s); data dir {s}\n", .{ app.cfg.sources.len, app.cfg.monitors.len, app.data_dir });
         return 0;
     }
@@ -121,7 +127,7 @@ fn run(init: std.process.Init) !u8 {
                 o.limit = std.fmt.parseInt(u32, args[j], 10) catch return usageErr(out);
             } else return usageErr(out);
         }
-        try printRows(out, try store.list(arena, o));
+        try printRows(out, arena, try store.list(arena, o));
         return 0;
     } else if (std.mem.eql(u8, cmd, "search")) {
         if (args.len != 1) return usageErr(out);
@@ -129,7 +135,7 @@ fn run(init: std.process.Init) !u8 {
             try out.writeAll("search needs at least 3 characters (trigram index)\n");
             return 2;
         }
-        try printRows(out, try store.search(arena, args[0], 50));
+        try printRows(out, arena, try store.search(arena, args[0], 50));
         return 0;
     } else if (std.mem.eql(u8, cmd, "show") or std.mem.eql(u8, cmd, "read") or std.mem.eql(u8, cmd, "unread")) {
         if (args.len != 1) return usageErr(out);
@@ -140,10 +146,12 @@ fn run(init: std.process.Init) !u8 {
         };
         if (std.mem.eql(u8, cmd, "show")) {
             var db: [32]u8 = undefined;
+            // Everything below except the date and kind came off the network: neutralise
+            // terminal control sequences before it reaches the user's terminal.
             try out.print("{s}\n{s}\n[{s}] {s}  ({s})\n\n{s}\n", .{
-                rec.title,          rec.url,
-                rec.source,         if (rec.published) |p| util.fmtDate(&db, p) else "undated",
-                @tagName(rec.kind), try store_mod.plainText(arena, rec.body, 64 * 1024),
+                try util.termSafe(arena, rec.title),  try util.termSafe(arena, rec.url),
+                try util.termSafe(arena, rec.source), if (rec.published) |p| util.fmtDate(&db, p) else "undated",
+                @tagName(rec.kind),                   try util.termSafe(arena, try store_mod.plainText(arena, rec.body, 64 * 1024)),
             });
         }
         try store.setRead(rec.source, rec.id, !std.mem.eql(u8, cmd, "unread"), now);
@@ -170,11 +178,11 @@ fn usageErr(out: *Io.Writer) !u8 {
     return 2;
 }
 
-fn printRows(out: *Io.Writer, rows: []const store_mod.Row) !void {
+fn printRows(out: *Io.Writer, arena: Allocator, rows: []const store_mod.Row) !void {
     for (rows) |r| {
         var db: [32]u8 = undefined;
         const when = if (r.published) |p| util.fmtDate(&db, p) else "                ";
-        try out.print("{d:>6} {s} {s} [{s}] {s}\n", .{ @as(u64, @intCast(r.rowid)), if (r.read) " " else "*", when, r.source, r.title });
+        try out.print("{d:>6} {s} {s} [{s}] {s}\n", .{ @as(u64, @intCast(r.rowid)), if (r.read) " " else "*", when, r.source, try util.termSafe(arena, r.title) });
     }
     if (rows.len == 0) try out.writeAll("(nothing)\n");
 }
@@ -192,7 +200,7 @@ fn cmdFetch(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, names: 
             return 2;
         }
     }
-    var failures: u8 = 0;
+    var failures: usize = 0; // only zero/non-zero matters; usize cannot overflow on a job count
     for (app.jobs) |job| {
         if (names.len > 0) {
             var want = false;
@@ -221,7 +229,7 @@ fn cmdSources(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, arena
         var b2: [16]u8 = undefined;
         const ok_ago = if (st.last_ok) |t| util.fmtSpan(&b1, now - t) else "never";
         const next = if (st.next_poll) |t| (if (t <= now) "due" else util.fmtSpan(&b2, t - now)) else "-";
-        try out.print("{s:<20} {s:<8} {s:>9} {d:>6} {s:>9}  {s}\n", .{ job.name, job.type_name, ok_ago, st.failures, next, st.last_error orelse "" });
+        try out.print("{s:<20} {s:<8} {s:>9} {d:>6} {s:>9}  {s}\n", .{ job.name, job.type_name, ok_ago, st.failures, next, try util.termSafe(arena, st.last_error orelse "") });
     }
     return 0;
 }
@@ -242,7 +250,7 @@ fn cmdMonitors(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, aren
             (if (ms.cert_not_after <= now) "EXPIRED" else util.fmtSpan(&b3, ms.cert_not_after - now))
         else
             "-";
-        try out.print("{s:<20} {s:<8} {s:>9} {s:>6} {s:>10}  {s}\n", .{ job.name, state, since, http_s, cert, ms.err });
+        try out.print("{s:<20} {s:<8} {s:>9} {s:>6} {s:>10}  {s}\n", .{ job.name, state, since, http_s, cert, try util.termSafe(arena, ms.err) });
     }
     return 0;
 }

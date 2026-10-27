@@ -32,6 +32,7 @@ fn daysInMonth(y: i64, m: i64) i64 {
 fn build(y: i64, mo: i64, d: i64, h: i64, mi: i64, s: i64, off_min: i64) ?i64 {
     if (mo < 1 or mo > 12 or d < 1 or d > daysInMonth(y, mo)) return null;
     if (h < 0 or h > 24 or mi < 0 or mi > 59 or s < 0 or s > 60) return null;
+    if (h == 24 and (mi != 0 or s != 0)) return null; // ISO 8601 allows 24:00:00 only (end of day)
     if (y < 1 or y > 9999) return null;
     return daysFromCivil(y, mo, d) * 86400 + h * 3600 + mi * 60 + s - off_min * 60;
 }
@@ -244,6 +245,9 @@ test "invalid dates rejected" {
     try expectDate(null, "Sat, 01 Foo 2000 00:00:00 GMT");
     try expectDate(null, "01/02/2000"); // ambiguous: refuse to guess
     try expectDate(null, "2000-01-01T25:00:00Z");
+    try expectDate(null, "2000-01-01T24:59:00Z"); // 24 is valid only as 24:00:00
+    try expectDate(null, "2000-01-01T24:00:01Z");
+    try expectDate(946684800 + 86400, "2000-01-01T24:00:00Z"); // end of day = next midnight
 }
 
 test "leap day and pre-epoch" {

@@ -193,6 +193,12 @@ fn head(o: *Io.Writer, title: []const u8) !void {
 /// Highest list page served; 1e6 pages of 50 is 5e7 rows, far beyond any log, and 5e7 fits u32.
 const max_page: u32 = 1_000_000;
 
+fn sourceParam(o: *Io.Writer, source: ?[]const u8) !void {
+    const s = source orelse return;
+    try o.writeAll("&amp;source=");
+    try urlEnc(o, s);
+}
+
 fn isWebUrl(u: []const u8) bool {
     return std.ascii.startsWithIgnoreCase(u, "http://") or std.ascii.startsWithIgnoreCase(u, "https://");
 }
@@ -245,8 +251,17 @@ fn pageList(w: *Web, a: Allocator, o: *Io.Writer, query: []const u8) !void {
     }
     try o.writeAll("</ul>");
     if (q == null) {
-        if (page > 0) try o.print("<a href=\"/?page={d}{s}\">« newer</a> ", .{ page - 1, if (all) "&all=1" else "" });
-        if (rows.len > per) try o.print("<a href=\"/?page={d}{s}\">older »</a>", .{ page + 1, if (all) "&all=1" else "" });
+        // Pagination keeps every filter the page was opened with (all, source).
+        if (page > 0) {
+            try o.print("<a href=\"/?page={d}{s}", .{ page - 1, if (all) "&amp;all=1" else "" });
+            try sourceParam(o, source);
+            try o.writeAll("\">« newer</a> ");
+        }
+        if (rows.len > per) {
+            try o.print("<a href=\"/?page={d}{s}", .{ page + 1, if (all) "&amp;all=1" else "" });
+            try sourceParam(o, source);
+            try o.writeAll("\">older »</a>");
+        }
     }
     try o.writeAll("</body></html>");
 }
@@ -463,6 +478,10 @@ test "web UI end to end: pages, escaping, read marks, host/origin checks, loopba
     try testing.expectEqual(@as(i64, 0), (try st.count()).unread);
     const nf = try get(a, io, w.port, "GET", "/item/999", hostline);
     try testing.expect(std.mem.startsWith(u8, nf, "HTTP/1.1 404"));
+
+    // Pagination keeps the source filter (and `all`). Two items, 50 per page: page 1 shows a "newer" link.
+    const p1 = try get(a, io, w.port, "GET", "/?page=1&all=1&source=s1", hostline);
+    try testing.expect(std.mem.indexOf(u8, p1, "href=\"/?page=0&amp;all=1&amp;source=s1\"") != null);
 
     // HEAD must not mark an item read; an absurd page number must not overflow (ReleaseSafe panic).
     _ = try get(a, io, w.port, "POST", "/unread/1", hostline);

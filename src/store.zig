@@ -300,7 +300,17 @@ pub const Store = struct {
     /// Index any log content beyond `meta.indexed_offset` (crash recovery / rebuild).
     pub fn catchUp(self: *Store) !void {
         var from: u64 = @intCast(@max(0, try self.getMetaInt("indexed_offset")));
-        if (from > self.log_size) from = 0; // log was replaced/truncated: reindex everything
+        if (from > self.log_size) {
+            // The log was replaced or truncated: the derived rows may name records (and offsets)
+            // the authoritative log no longer has. Clear them, as `rebuild` does, then reindex.
+            try self.db.exec("BEGIN");
+            errdefer self.db.exec("ROLLBACK") catch {};
+            try self.db.exec("DELETE FROM items");
+            try self.db.exec("INSERT INTO fts(fts) VALUES('delete-all')");
+            try self.setMetaInt("indexed_offset", 0);
+            try self.db.exec("COMMIT");
+            from = 0;
+        }
         if (from == self.log_size) return;
         var arena = std.heap.ArenaAllocator.init(self.gpa);
         defer arena.deinit();
@@ -750,4 +760,30 @@ test "crash recovery: log ahead of the index (and a torn last line) heals on ope
     try testing.expectEqual(@as(usize, 3), (try s.list(a, .{})).len);
     try s.rebuild();
     try testing.expectEqual(@as(usize, 3), (try s.list(a, .{})).len);
+}
+
+test "a log replaced by a shorter one clears derived rows before reindexing" {
+    var arena = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    var tmp = testing.tmpDir(.{});
+    defer tmp.cleanup();
+    const dir = try tmpPath(a, &tmp);
+    var first_len: u64 = 0;
+    {
+        var s = try Store.open(testing.allocator, testing.io, dir, true);
+        defer s.close();
+        _ = try s.ingest(&.{mkItem("a", "1", "kept", "b", 1)}, 10);
+        first_len = s.log_size;
+        _ = try s.ingest(&.{mkItem("a", "2", "gone", "needle", 2)}, 11);
+        // Restore an older log: only the first record survives.
+        try s.log.setLength(testing.io, first_len);
+    }
+    var s = try Store.open(testing.allocator, testing.io, dir, true);
+    defer s.close();
+    const rows = try s.list(a, .{ .limit = 10 });
+    try testing.expectEqual(@as(usize, 1), rows.len); // "gone" no longer listed
+    try testing.expectEqualStrings("kept", rows[0].title);
+    try testing.expectEqual(@as(usize, 0), (try s.search(a, "needle", 10)).len); // nor searchable
+    try testing.expect((try s.getRecord(a, rows[0].rowid)) != null);
 }
