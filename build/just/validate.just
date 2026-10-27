@@ -35,7 +35,7 @@ validate-rsr:
         [ -f "$f" ] || MISSING="$MISSING $f"
     done
     # Identity, lifecycle, maintenance axes, the anchor and the maintenance
-    # policies are all clauses of the repo deed (rsr-template-repo#209).
+    # policies are all clauses of the repo deed (heron-polyfeed-reader#209).
     DEED=$(bash scripts/deed-field.sh --find . || true)
     if [ -n "$DEED" ] && bash scripts/deed-field.sh --has "$DEED" status; then
         # Prints the field, or nothing when it is absent.

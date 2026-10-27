@@ -45,7 +45,7 @@ K9!
     descriptiles = [
       # The repo deed at the root (<repo>_chora.deed), read through
       # scripts/deed-field.sh; it replaced CLADE/STATE/ECOSYSTEM/AGENTIC.a2ml
-      # (rsr-template-repo#209).
+      # (heron-polyfeed-reader#209).
       # Its (anchor …) clause replaced descriptiles/anchors/ANCHOR.a2ml.
       "*_chora.deed",
     ],

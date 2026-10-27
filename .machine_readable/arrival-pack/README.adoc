@@ -24,7 +24,7 @@ Two halves of the generated region:
   position, constraints, golden path, state.
 
 The repo deed (`<repo>_chora.deed`) is the single source of truth; it took
-over the former CLADE / ECOSYSTEM / AGENTIC / STATE records (rsr-template-repo#209), and
+over the former CLADE / ECOSYSTEM / AGENTIC / STATE records (heron-polyfeed-reader#209), and
 `extract.sh` reads it through `scripts/deed-field.sh`. The golden path
 comes from its `(anchor (golden-path))` clause. CLAUDE.md is a *view*. Content
 outside the `ARRIVAL-PACK:BEGIN/END` markers is hand-authorable and preserved.

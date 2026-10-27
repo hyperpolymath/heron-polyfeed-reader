@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns="http://purl.org/rss/1.0/"
+ xmlns:admin="http://webns.net/mvcb/"
+ xmlns:content="http://purl.org/rss/1.0/modules/content/"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+ xmlns:syn="http://purl.org/rss/1.0/modules/syndication/"
+ xmlns:taxo="http://purl.org/rss/1.0/modules/taxonomy/"
+>
+
+<channel rdf:about="https://slashdot.org/">
+<title>Slashdot</title>
+<link>https://slashdot.org/</link>
+<description>News for nerds, stuff that matters</description>
+<dc:language>en-us</dc:language>
+<dc:rights>Copyright Slashdot Media. All Rights Reserved.</dc:rights>
+<dc:date>2026-10-13T10:39:15+00:00</dc:date>
+<dc:publisher>Slashdot Media</dc:publisher>
+<dc:creator>feedback@slashdot.org</dc:creator>
+<dc:subject>Technology</dc:subject>
+<syn:updateBase>1970-01-01T00:00+00:00</syn:updateBase>
+<syn:updateFrequency>1</syn:updateFrequency>
+<syn:updatePeriod>hourly</syn:updatePeriod>
+<items>
+ <rdf:Seq>
+  <rdf:li rdf:resource="https://science.slashdot.org/story/26/10/13/0428248/a-new-super-ice-is-10-times-stronger-bringing-it-close-to-the-strength-of-concrete?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://linux.slashdot.org/story/26/10/13/034206/linus-torvalds-on-why-ai-works-for-him?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://news.slashdot.org/story/26/10/12/2131234/firefox-158-now-available-with-jpeg-xl-support-by-default?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://games.slashdot.org/story/26/10/12/2128209/epic-games-delays-disney-project-asks-developers-to-use-more-ai?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://meta.slashdot.org/story/26/10/12/1910233/mark-zuckerberg-says-meta-has-reached-ai-frontier-rejects-calls-for-slowdown?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://tech.slashdot.org/story/26/10/12/1841208/googles-fitbit-edge-debuts-a-replaceable-battery-brings-back-the-screen?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://tech.slashdot.org/story/26/10/12/1832205/russia-was-not-ready-for-the-data-center-war-it-started-with-ukraine?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://it.slashdot.org/story/26/10/12/1748203/hackers-heat-french-supermarket-fridges-sparking-fires-and-spoiling-food?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://tech.slashdot.org/story/26/10/12/0234217/ai-coding-agents-generate-more-code-but-not-more-software?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://hardware.slashdot.org/story/26/10/12/0059238/amazon-in-talks-to-buy-ai-startup-decart-for-around-7-billion?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://hardware.slashdot.org/story/26/10/12/0134221/q3-2026-was-historically-bad-for-pc-shipments?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://yro.slashdot.org/story/26/10/09/2131241/should-we-beware-of-other-license-plate-surveillance-companies-besides-flock?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://hardware.slashdot.org/story/26/10/12/0445233/how-the-us-nuclear-plant-fleet-is-leaning-into-ai?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://it.slashdot.org/story/26/10/12/0211238/lets-encrypt-to-cut-ssl-certificate-lifetimes-to-64-days-in-february-2027?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://hardware.slashdot.org/story/26/10/12/018224/game-console-market-craters-xbox-and-ps5-sales-plummet-over-25?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+ </rdf:Seq>
+</items>
+<image rdf:resource="https://a.fsdn.com/sd/topics/topicslashdot.gif" />
+<textinput rdf:resource="https://slashdot.org/search.pl" />
+</channel>
+<image rdf:about="https://a.fsdn.com/sd/topics/topicslashdot.gif">
+<title>Slashdot</title>
+<url>https://a.fsdn.com/sd/topics/topicslashdot.gif</url>
+<link>https://slashdot.org/</link>
+</image>
+<item rdf:about="https://science.slashdot.org/story/26/10/13/0428248/a-new-super-ice-is-10-times-stronger-bringing-it-close-to-the-strength-of-concrete?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>A New 'Super Ice' Is 10 Times Stronger, Bringing It Close to The Strength of Concrete</title>
+<link>https://science.slashdot.org/story/26/10/13/0428248/a-new-super-ice-is-10-times-stronger-bringing-it-close-to-the-strength-of-concrete?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Researchers have created a strengthened "BioPykrete" by combining ice with cellulose nanocrystals and a custom protein that binds the plant-based crystals to the ice structure. In small-scale tests, the material was about 10 times stronger than regular ice and absorbed 70 times more energy before breaking. ScienceAlert reports: Instead of wood pulp's larger, disordered fibers, the researchers used cellulose nanocrystals here. Cellulose is the main structural material in plants, and in nanocrystal form, it can act as a microscopic strengthening agent for other materials, including ice -- essentially stopping cracks from spreading easily. The protein used here was called CBM3a-AFPIII, a combination of an antifreeze protein (AFP) and a carbohydrate-binding module (CBM). Its job was to act like glue, keeping the cellulose nanocrystals and ice bonded together.
+ 
+It's a clever approach, and the researchers think that by tweaking their ingredients and methods, they might be able to improve their 'super ice' even further. "Optimizing solidification kinetics and freezing protocols, alongside developing diverse AFP-CBM variants, could yield even higher-strength composites," write the researchers. Besides further tests of the durability of the material, the researchers are also keen to take a closer look at how cracks propagate through BioPykrete, to confirm that the underlying strengthening mechanisms are what they think they are.
+ 
+Further down the line, this approach could open up a whole new landscape for materials used in packaging, construction, and more: Using a custom protein to bring two unlikely compounds (ice and cellulose) together. "By bridging the gap between recombinant protein design and structural engineering, we have developed a high-performance material specifically engineered for the rigors of the world's most extreme environments," write the researchers. The findings have been published in the journal Colloids and Surfaces B: Biointerfaces.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=A+New+'Super+Ice'+Is+10+Times+Stronger%2C+Bringing+It+Close+to+The+Strength+of+Concrete%3A+https%3A%2F%2Fscience.slashdot.org%2Fstory%2F26%2F10%2F13%2F0428248%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fscience.slashdot.org%2Fstory%2F26%2F10%2F13%2F0428248%2Fa-new-super-ice-is-10-times-stronger-bringing-it-close-to-the-strength-of-concrete%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://science.slashdot.org/story/26/10/13/0428248/a-new-super-ice-is-10-times-stronger-bringing-it-close-to-the-strength-of-concrete?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122502&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-13T07:00:00+00:00</dc:date>
+<dc:subject>science</dc:subject>
+<slash:department>future-building-materials</slash:department>
+<slash:section>science</slash:section>
+<slash:comments>7</slash:comments>
+<slash:hit_parade>7,7,7,7,3,0,0</slash:hit_parade>
+</item>
+<item rdf:about="https://linux.slashdot.org/story/26/10/13/034206/linus-torvalds-on-why-ai-works-for-him?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Linus Torvalds On Why AI Works For Him</title>
+<link>https://linux.slashdot.org/story/26/10/13/034206/linus-torvalds-on-why-ai-works-for-him?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>An anonymous reader quotes a report from ZDNet: Many open-source developers still dislike AI. The latest example is System76 banning AI-generated content from its COSMIC desktop. At Open Source Summit Europe, Linux creator Linus Torvalds offered a different take: "I actually really like using AI," Torvald told Dirk Hohndel, his good friend and head of Ericsson Software Technology, in their latest discussion. [...] Torvalds said, "I think that you need to be very careful using AI when you're doing something real and important." Torvalds explained he hadn't always felt that way about AI programming. "I used to think it was just not very good -- but now I'm at the point where I actually really like using AI."
+ 
+"To be fair," he continued, "I don't do a lot of kernel programming. I'm a maintainer. The Linux kernel is a project where other people do the real work, and I act as the collection point. But I still enjoy programming immensely. I think AI is a wonderful tool if you use it correctly and treat it as a tool, and I find it makes programming much more enjoyable." Torvalds recalled, "I started programming in 1981 or so, and back then computers were much simpler, and you could understand what they were doing, and also the programs you compared your own programs to were much simpler."
+ 
+"It's a different story today," Torvalds said. "The bar in software engineering has grown so high that it's hard to see your own small efforts as worth anything, because you're used to all these polished, professional programs. [...] A lot of people make fun of vibe coding, but I think it's a wonderful way to find joy in programming. It makes you feel like you're doing something relevant. It allows you, as a new programmer, to do things that you would otherwise have a really hard time with."
+ 
+He continued: "I love the concept of AI as a gateway drug because I was working on my own toy project, the guitar pedal, and I knew what I was doing. I had a user interface that I had written myself in C that was running on a microcontroller that was running on this small screen, and I was like, "This is just stupid. It looks like something from the '80s; I wanted it to look like something from this century. But I don't do Java. I do kernels." "So, I use AI to do the things that I'm bad at," Torvalds went on, "I'd seen all the same YouTube videos you have. Give AI a prompt, and it will do it. So I gave it a prompt, and it did it, and it was horrendous. Then I said, 'Hey, look! I already did this in C. I did it the right way. It's just ugly." Torvalds acknowledged that AI tools are helping identify security vulnerabilities and improve the Linux kernel, but at the cost of overwhelming maintainers with questionable bug reports and superficial fixes. He called some submissions "mindless band-aid kind of patches."
+ 
+That said, despite AI's growing influence, Torvalds believes Linux's success comes from steady, incremental development rather than sweeping changes. "I'm a big believer in the whole incremental small changes that, over time, turn into big features," he said. The development goal remains "incremental improvement and steady progress all the time."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Linus+Torvalds+On+Why+AI+Works+For+Him%3A+https%3A%2F%2Flinux.slashdot.org%2Fstory%2F26%2F10%2F13%2F034206%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Flinux.slashdot.org%2Fstory%2F26%2F10%2F13%2F034206%2Flinus-torvalds-on-why-ai-works-for-him%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://linux.slashdot.org/story/26/10/13/034206/linus-torvalds-on-why-ai-works-for-him?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122470&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-13T03:30:00+00:00</dc:date>
+<dc:subject>programming</dc:subject>
+<slash:department>pros-and-cons</slash:department>
+<slash:section>linux</slash:section>
+<slash:comments>31</slash:comments>
+<slash:hit_parade>31,30,29,24,5,2,2</slash:hit_parade>
+</item>
+<item rdf:about="https://news.slashdot.org/story/26/10/12/2131234/firefox-158-now-available-with-jpeg-xl-support-by-default?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Firefox 158 Now Available With JPEG-XL Support By Default</title>
+<link>https://news.slashdot.org/story/26/10/12/2131234/firefox-158-now-available-with-jpeg-xl-support-by-default?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Firefox 158 is now available with JPEG XL image support enabled by default, making .jxl images a standard part of the browser rather than an experimental feature. The release also adds JPEG XL to Firefox's default image Accept header, improves Smart Window form filling, and brings new CSS typed-arithmetic support for developers. Phoronix reports: At long last, Firefox 158 is ready to go with JPEG-XL image support as an alternative to the likes of WebP, JPEG, PNG, and GIF. The default HTTP Accept header for image requests also now supports "image/jxl" for the JPEG-XL image format. Prior releases of Firefox had JPEG-XL gated by an experimental option.
+ 
+Firefox 158 also now supports filling forms faster in Smart Window when clicking into a form field or selecting Fill from sources. On the developer side, CSS typed arithmetic are now supported to use functions like calc() to divide two values of the same data type even if of different units. Developer changes and release binaries can be found at their respective links.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Firefox+158+Now+Available+With+JPEG-XL+Support+By+Default%3A+https%3A%2F%2Fnews.slashdot.org%2Fstory%2F26%2F10%2F12%2F2131234%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fnews.slashdot.org%2Fstory%2F26%2F10%2F12%2F2131234%2Ffirefox-158-now-available-with-jpeg-xl-support-by-default%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://news.slashdot.org/story/26/10/12/2131234/firefox-158-now-available-with-jpeg-xl-support-by-default?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122248&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T23:00:00+00:00</dc:date>
+<dc:subject>firefox</dc:subject>
+<slash:department>no-longer-experimental</slash:department>
+<slash:section>news</slash:section>
+<slash:comments>24</slash:comments>
+<slash:hit_parade>24,22,21,20,4,3,1</slash:hit_parade>
+</item>
+<item rdf:about="https://games.slashdot.org/story/26/10/12/2128209/epic-games-delays-disney-project-asks-developers-to-use-more-ai?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Epic Games Delays Disney Project, Asks Developers To Use More AI</title>
+<link>https://games.slashdot.org/story/26/10/12/2128209/epic-games-delays-disney-project-asks-developers-to-use-more-ai?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>An anonymous reader quotes a report from Bloomberg: Epic Games delayed the release of an upcoming video-game collaboration with Walt Disney and told its developers to use more artificial intelligence tools to finish the game, according to people familiar with the project. The title had been slated for release in March, but is now delayed with no new date communicated, said the people familiar, who asked to not be identified because they weren't authorized to speak publicly.
+ 
+Developers on the game, a shooter featuring characters from the Marvel and Star Wars franchises, were instructed to implement an "AI first" production model using tools such as Anthropic's Claude. Humans will then manage and guide that work. "No more hand-written code," one of the game's directors told staff in an internal message reviewed by Bloomberg. The director added that all art for the game would be "generated with full AI workflows."
+ 
+Even before this announcement, the maker of the popular Fortnite game had been pushing hard for the use of AI across all of its divisions. But this is the first time a major video-game company has attempted to build a title primarily with AI. "We're embracing AI-accelerated development, led by Epic developers who are the visionaries and creative drivers for everything we do," said Jake Jones, communications director at Epic Games, in a statement to Bloomberg News.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Epic+Games+Delays+Disney+Project%2C+Asks+Developers+To+Use+More+AI%3A+https%3A%2F%2Fgames.slashdot.org%2Fstory%2F26%2F10%2F12%2F2128209%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fgames.slashdot.org%2Fstory%2F26%2F10%2F12%2F2128209%2Fepic-games-delays-disney-project-asks-developers-to-use-more-ai%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://games.slashdot.org/story/26/10/12/2128209/epic-games-delays-disney-project-asks-developers-to-use-more-ai?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122246&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T22:00:00+00:00</dc:date>
+<dc:subject>ai</dc:subject>
+<slash:department>AI-first</slash:department>
+<slash:section>games</slash:section>
+<slash:comments>38</slash:comments>
+<slash:hit_parade>38,37,35,30,10,6,4</slash:hit_parade>
+</item>
+<item rdf:about="https://meta.slashdot.org/story/26/10/12/1910233/mark-zuckerberg-says-meta-has-reached-ai-frontier-rejects-calls-for-slowdown?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Mark Zuckerberg Says Meta Has Reached AI 'Frontier', Rejects Calls For Slowdown</title>
+<link>https://meta.slashdot.org/story/26/10/12/1910233/mark-zuckerberg-says-meta-has-reached-ai-frontier-rejects-calls-for-slowdown?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Meta CEO Mark Zuckerberg says the company has reached the AI "frontier" with its new Muse Wonder model and will be offered as a closed, paid product for businesses. Zuckerberg also rejected calls for an industry-wide slowdown, arguing that AI can be managed with conventional guardrails as Meta continues spending heavily on models, infrastructure, and talent. The Financial Times reports: Speaking with the FT as Meta releases its Muse Wonder AI model on Monday, the billionaire chief executive claimed the new system was "going to allow much more sophisticated behaviours that are at the frontier of what is being done in the AI field." [...] "Getting to this point both required a large amount of compute and investment, and a lot of very rigorous scientific work by the group working on it over an extended period of time," said Zuckerberg. [...] Meta said Muse Wonder outperforms Anthropic's Claude Opus 5.5 and Fable 5.1 and OpenAI's GPT-6 Astra on some technical benchmarks. It said the new model can be used to carry out complex tasks from "understanding a lease to making sense of financial or health information." However, Muse Wonder will also be "closed," with its best versions sold directly to businesses. That pits it against Anthropic and OpenAI for corporate AI contracts in a serious test of its ambitions. Zuckerberg signaled further spending as Meta was "already working on the next step up," adding that its model development would "probably feel like it'll go quite a bit faster from here."
+ 
+However, he also shrugged off mounting fears that the technology was advancing at a rate that will soon surpass human control. [...] The Meta chief declined to be drawn on his figure for "P(doom)" -- a much-discussed Silicon Valley term to describe the probability that AI will lead to mass destruction. Instead, he argued that responsibility should fall on the individual lab to ensure model safety. "I'm much closer to the belief that AI is a technology that can be engineered with normal guardrails and built responsibly than the anthropomorphic vision of AI, which is that it is just going to go do its own thing," he said. Zuckerberg has previously rejected calls by the heads of AI labs such as Anthropic's Dario Amodei and OpenAI's Sam Altman for an industry-wide "slowdown" in AI development. He also played a key role in crafting US President Donald Trump's White House "Accord on Super Intelligence," setting out principles for self-regulation of the industry, which critics say falls far short of a formal global AI governance regime.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Mark+Zuckerberg+Says+Meta+Has+Reached+AI+'Frontier'%2C+Rejects+Calls+For+Slowdown%3A+https%3A%2F%2Fmeta.slashdot.org%2Fstory%2F26%2F10%2F12%2F1910233%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fmeta.slashdot.org%2Fstory%2F26%2F10%2F12%2F1910233%2Fmark-zuckerberg-says-meta-has-reached-ai-frontier-rejects-calls-for-slowdown%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://meta.slashdot.org/story/26/10/12/1910233/mark-zuckerberg-says-meta-has-reached-ai-frontier-rejects-calls-for-slowdown?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122158&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T21:00:00+00:00</dc:date>
+<dc:subject>ai</dc:subject>
+<slash:department>open-no-more</slash:department>
+<slash:section>meta</slash:section>
+<slash:comments>35</slash:comments>
+<slash:hit_parade>35,34,33,30,14,5,4</slash:hit_parade>
+</item>
+<item rdf:about="https://tech.slashdot.org/story/26/10/12/1841208/googles-fitbit-edge-debuts-a-replaceable-battery-brings-back-the-screen?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Google's Fitbit Edge Debuts a Replaceable Battery, Brings Back the Screen</title>
+<link>https://tech.slashdot.org/story/26/10/12/1841208/googles-fitbit-edge-debuts-a-replaceable-battery-brings-back-the-screen?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Google has introduced the $179 Fitbit Edge, a new fitness tracker with a 1.34-inch OLED display, built-in GPS, ECG support, week-long battery life, and Fitbit's first user-replaceable battery. "And unlike the Pixel Watch, it's compatible with Android and iPhones via the Google Health app," reports Wired. From the report: The Edge has a user-replaceable battery, a Fitbit first, aligning with Google's efforts to make its Pixel Watch more repairable. (Likely also due to new battery regulations set to take effect next year in the European Union.) Repair options will vary by region and availability. If you find the Pixel Watch's round face too bulky, the Edge's capsule-shaped alternative might suit smaller wrists better. If the Charge 6's 1.04-inch display was too small, the Edge upgrades it to a larger 1.34-inch screen. The difference is noticeable, and that extra real estate could make a real impact when glancing at your metrics mid-workout.
+ 
+The Edge borrows a few more attributes from the Pixel Watch, including an altimeter that uses atmospheric pressure to measure elevation changes. That means it can record elevation gain and loss during outdoor activities, track floors climbed, and add more context to your outdoor stats. It also has a far-field skin temperature sensor, replacing the standard device temperature sensor found in other Fitbits. By bringing some of the Pixel Watch's more advanced hardware to a fitness-first wearable, Google is giving the Edge a compelling middle-ground position in its lineup at a Fitbit-friendly price.
+ 
+The Edge inherits the Fitbit Air's improvements while restoring several Charge 6 features the screenless tracker lacks, including built-in GPS and electrical sensors that work with the electrocardiogram (ECG) app. You can also control music playback on a connected Bluetooth device, as you could with the Charge 6, and Google Maps turn-by-turn directions will arrive later this year. [...] With a Google Health Premium subscription, the Edge can track blood pressure trends without manual calibration and insulin resistance trends without requiring a blood draw. Google first announced these capabilities alongside the Pixel Watch 5's debut, but they only became available at the end of September. They're also available on the Air, keeping Google's screenless tracker up to date as its lineup expands.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Google's+Fitbit+Edge+Debuts+a+Replaceable+Battery%2C+Brings+Back+the+Screen%3A+https%3A%2F%2Ftech.slashdot.org%2Fstory%2F26%2F10%2F12%2F1841208%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Ftech.slashdot.org%2Fstory%2F26%2F10%2F12%2F1841208%2Fgoogles-fitbit-edge-debuts-a-replaceable-battery-brings-back-the-screen%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://tech.slashdot.org/story/26/10/12/1841208/googles-fitbit-edge-debuts-a-replaceable-battery-brings-back-the-screen?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122140&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T20:00:00+00:00</dc:date>
+<dc:subject>google</dc:subject>
+<slash:department>new-and-shiny</slash:department>
+<slash:section>technology</slash:section>
+<slash:comments>14</slash:comments>
+<slash:hit_parade>14,14,14,12,3,0,0</slash:hit_parade>
+</item>
+<item rdf:about="https://tech.slashdot.org/story/26/10/12/1832205/russia-was-not-ready-for-the-data-center-war-it-started-with-ukraine?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Russia Was Not Ready For the Data Center War It Started With Ukraine</title>
+<link>https://tech.slashdot.org/story/26/10/12/1832205/russia-was-not-ready-for-the-data-center-war-it-started-with-ukraine?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>An anonymous reader quotes a report from Ars Technica: When Russia began attacking Ukrainian data centers and telecommunication infrastructure, it apparently failed to prepare for possible retaliation. Now Russia's digital services are facing widespread outages after Ukrainian drone strikes knocked out three of the largest data centers owned by Russian tech giant Yandex within several days. Pro-Kremlin bloggers are warning that Russia's centralized digital economy could collapse because the country is not prepared for the "data center war" it started, according to posts translated by the pseudonymous independent researcher ChrisO_wiki. The Russian commentators also suggested that Ukraine's decentralized digital services could prove more resilient than Russia's system if the countries continue trading such blows.
+ 
+Russia initially launched a drone strike campaign targeting Ukrainian data centers and mobile phone networks in late September. The attacks temporarily disrupted Internet and cell phone service for up to 100,000 households in the Ukrainian capital of Kyiv and came as part of a broader long-range strike campaign that has involved Russian missiles and jet-powered drones hitting Ukraine's power grid infrastructure, transportation hubs, and even residential apartment building blocks. But Ukraine soon began striking back at data centers owned by the Russian company Yandex, also known as "Russia's Google," in what Ukrainian President Volodymyr Zelenskyy has described as a "symmetrical response."
+ 
+[...] More importantly for Russian society, the damage to Yandex's data centers has reportedly caused interruptions or outages to popular Russian payment apps and digital banking services, email, e-commerce platforms, video streaming services, ride-hailing and food delivery apps, and navigation and map services. Yandex's search engine also accounts for about 70 percent of the market share in Russia. The disruptions are even more widespread, because the data center damage also impacts Yandex's cloud computing service, which counts some of Russia's largest companies as customers, according to The Moscow Times, an independent newspaper. These include large grocery and fast-food chains as well as a household appliance retailer.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Russia+Was+Not+Ready+For+the+Data+Center+War+It+Started+With+Ukraine%3A+https%3A%2F%2Ftech.slashdot.org%2Fstory%2F26%2F10%2F12%2F1832205%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Ftech.slashdot.org%2Fstory%2F26%2F10%2F12%2F1832205%2Frussia-was-not-ready-for-the-data-center-war-it-started-with-ukraine%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://tech.slashdot.org/story/26/10/12/1832205/russia-was-not-ready-for-the-data-center-war-it-started-with-ukraine?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122122&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T19:00:00+00:00</dc:date>
+<dc:subject>military</dc:subject>
+<slash:department>data-center-wars</slash:department>
+<slash:section>technology</slash:section>
+<slash:comments>115</slash:comments>
+<slash:hit_parade>115,114,92,82,30,16,9</slash:hit_parade>
+</item>
+<item rdf:about="https://it.slashdot.org/story/26/10/12/1748203/hackers-heat-french-supermarket-fridges-sparking-fires-and-spoiling-food?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Hackers Heat French Supermarket Fridges, Sparking Fires and Spoiling Food</title>
+<link>https://it.slashdot.org/story/26/10/12/1748203/hackers-heat-french-supermarket-fridges-sparking-fires-and-spoiling-food?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Hackers remotely manipulated connected refrigeration systems at hundreds of French supermarkets, reportedly pushing some fridges and freezers to 50C (122F), spoiling food and even sparking fires. According to Reuters, French Prime Minister Sebastien Lecornu ordered a cybersecurity investigation into the hacks, with similar incidents reported in Spain, Portugal, Poland, Germany, and Belgium. In France, Carrefour reported 80 affected stores, Monoprix said 5% of its locations were hit, and Les Mousquetaires said refrigerators at roughly 150 Intermarche stores were heated to 50C for six hours. From the report: Supermarket cold aisles are typically run by control panels that manage an entire store's fridges and freezers and can be accessed over the internet, which lets maintenance companies adjust them from anywhere. The source close to Lecornu said ANSSI had identified a vulnerability in software supplied by Danish company Danfoss.
+ 
+Danfoss said it was "aware of incidents in France affecting a limited number of refrigeration management systems." The affected units "were running outdated firmware," Danfoss said, adding that it had "long advised customers to keep supported systems updated with the latest firmware and to migrate legacy systems to current-generation solutions."
+ 
+On August 9, cybersecurity firm Claroty's Team82 published research detailing vulnerabilities in the Danfoss AK-SM 800A controller. According to the report, software updates issued by Danfoss addressed issues that could have allowed attackers to bypass authentication controls and execute code on compromised devices.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Hackers+Heat+French+Supermarket+Fridges%2C+Sparking+Fires+and+Spoiling+Food%3A+https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F10%2F12%2F1748203%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F10%2F12%2F1748203%2Fhackers-heat-french-supermarket-fridges-sparking-fires-and-spoiling-food%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://it.slashdot.org/story/26/10/12/1748203/hackers-heat-french-supermarket-fridges-sparking-fires-and-spoiling-food?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24122086&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T18:00:00+00:00</dc:date>
+<dc:subject>security</dc:subject>
+<slash:department>hackers-turned-up-the-heat</slash:department>
+<slash:section>it</slash:section>
+<slash:comments>90</slash:comments>
+<slash:hit_parade>90,90,79,71,19,8,5</slash:hit_parade>
+</item>
+<item rdf:about="https://tech.slashdot.org/story/26/10/12/0234217/ai-coding-agents-generate-more-code-but-not-more-software?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>AI Coding Agents Generate More Code, But Not More Software</title>
+<link>https://tech.slashdot.org/story/26/10/12/0234217/ai-coding-agents-generate-more-code-but-not-more-software?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>A study of more than 700 software firms found that AI coding agents significantly increase the amount of code developers produce, but not the amount of software companies actually ship. Ars Technica reports: A recent study (PDF) of actual coding practices across hundreds of firms finds that human code review forms a significant "bottleneck" for the overall efficiency of AI coding tools, resulting in "little evidence that firms increase software output or reduce employment" by using them. Any efficiency increased during the actual coding phase, the study authors find, is "absorbed by downstream constraints in the production process"; as "the code review process significantly increases in length, pull requests are more likely to require revisions, and reviewers leave more comments."
+ 
+[...] In terms of raw code being produced, the results are clear and stark. The introduction of AI coding agents at a firm leads to a 30 percent increase in total lines of code generated, a 20 percent rise in the number of total commits, and a 23 percent increase in pull requests on average, the researchers write. But all that extra code doesn't translate directly into improved software output on the firm level. On the contrary, the resolution rate for Issues and Epics (i.e. wholesale software features) tracked by tools like Jira did not change in a statistically significant way after AI tools were introduced (the researchers also found no "compositional shift" in the size or complexity of those Jira-tracked issues across the AI introduction).
+ 
+The reason for that discrepancy can be found directly in the code review process, which takes markedly longer on average after the introduction of AI coding agents. Overall, the average "review process" time between a pull request getting submitted and it being merged into the codebase balloons 49 percent on average after AI agents are introduced. That effect can be seen in more granular data, too, with "the share of pull requests with changes requested nearly doubl[ing], and the number of comments per pull request increas[ing] by 35%" following the AI agent shift, the researchers write.
+ 
+In response to this change, the researchers found a 14 percent increase in the share of workers performing code reviews after AI agents' introduction. They also write that they "cannot attribute significant employment changes to AI" after looking at total active workers across Jellyfish and cross-referencing with LinkedIn data at those firms. While AI could also theoretically help with this review process, the researchers found that, so far, that impact has been marginal. Although 80 percent of measured firms used some form of AI code review by March 2026, AI agents were only responsible for 23.3 percent of all review comments and 10.8 percent of all pull requests, suggesting humans were still responsible for the vast majority of this work.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=AI+Coding+Agents+Generate+More+Code%2C+But+Not+More+Software%3A+https%3A%2F%2Ftech.slashdot.org%2Fstory%2F26%2F10%2F12%2F0234217%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Ftech.slashdot.org%2Fstory%2F26%2F10%2F12%2F0234217%2Fai-coding-agents-generate-more-code-but-not-more-software%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://tech.slashdot.org/story/26/10/12/0234217/ai-coding-agents-generate-more-code-but-not-more-software?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24121516&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T17:00:00+00:00</dc:date>
+<dc:subject>ai</dc:subject>
+<slash:department>human-review-bottleneck</slash:department>
+<slash:section>technology</slash:section>
+<slash:comments>66</slash:comments>
+<slash:hit_parade>66,65,59,59,9,2,1</slash:hit_parade>
+</item>
+<item rdf:about="https://hardware.slashdot.org/story/26/10/12/0059238/amazon-in-talks-to-buy-ai-startup-decart-for-around-7-billion?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Amazon In Talks To Buy AI Startup Decart For Around $7 Billion</title>
+<link>https://hardware.slashdot.org/story/26/10/12/0059238/amazon-in-talks-to-buy-ai-startup-decart-for-around-7-billion?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Amazon is reportedly in talks to acquire AI startup Decart in a deal that could value the company at up to $7 billion. Decart's DOS software helps developers optimize AI models for different processors in weeks rather than months, a capability that could be particularly useful to AWS as it pushes its own Trainium chips. SiliconANGLE reports: The company has developed software called DOS, which can help developers to speed up AI training and inference workloads by optimizing their neural networks to run on a specific processor. In most AI workloads, developers must optimize a neural network for the chip they plan to run it on. This process used to take months, but with DOS, the workflow necessary to do this can be compressed into just a couple of weeks. As a result, companies can use Decart's software to shift AI workloads to different processors if their requirements change, or if chip availability becomes an issue.
+ 
+In addition to DOS, Decart is also a model developer, responsible for creating the Lucy and Oasis world models, which are designed to generate and simulate realistic three-dimensional environments for video games, robotic training and other use cases. It's still possible another suitor could emerge and outbid Amazon. Last month, Anthropic PBC was reportedly engaged in talks to buy Decart, according to a report by Bloomberg. However, it ultimately pulled out of a reported $6 billion deal after conducting due diligence on the startup. It's not clear what ultimately dissuaded Anthropic from pursuing a deal. The Wall Street Journal first reported (paywalled) the news.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Amazon+In+Talks+To+Buy+AI+Startup+Decart+For+Around+%247+Billion%3A+https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F0059238%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F0059238%2Famazon-in-talks-to-buy-ai-startup-decart-for-around-7-billion%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://hardware.slashdot.org/story/26/10/12/0059238/amazon-in-talks-to-buy-ai-startup-decart-for-around-7-billion?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24121462&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T16:00:00+00:00</dc:date>
+<dc:subject>business</dc:subject>
+<slash:department>what-to-expect</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>12</slash:comments>
+<slash:hit_parade>12,12,10,9,3,1,0</slash:hit_parade>
+</item>
+<item rdf:about="https://hardware.slashdot.org/story/26/10/12/0134221/q3-2026-was-historically-bad-for-pc-shipments?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Q3 2026 Was Historically Bad For PC Shipments</title>
+<link>https://hardware.slashdot.org/story/26/10/12/0134221/q3-2026-was-historically-bad-for-pc-shipments?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>PC shipments fell 20.1% year over year to 62.7 million units in the third quarter of 2026, the worst Q3 decline IDC has recorded. "The top three PC makers -- Lenovo, Dell, and HP -- also saw their shipments fall by over 20% year over year," reports PCMag. From the report: "If looking at all quarters, then we have seen other quarters in recent years with larger declines, such as 2022Q4, which was -28.2%, and 2023Q1, which was -28.7%. Both were coming off pandemic highs," IDC Director Jitesh Ubrani told PCMag in an email. The numbers aren't a great sign, since third-quarter PC shipments usually outpace those in the second quarter as vendors introduce new products ahead of the holiday shopping season. Instead, PC shipments were at 62.7 million units, down 9.1% from the previous quarter.
+ 
+[...] Of course, the downturn isn't a surprise. IDC and other research firms have warned that the ongoing AI-driven memory shortage threatens to sap demand for PCs and phones due to soaring memory and storage costs. "What we're seeing is the result of the strong first half pull-in. Vendors and channels loaded up on inventory early in the year to get ahead of [memory-related] price hikes, and that has thrown off the usual seasonality, where Q3 is typically larger than Q2," Ubrani said in a report covering IDC's preliminary estimates for the quarter.
+ 
+In one bright spot, Ubrani said vendors and retailers might cut prices to generate interest and clear out products they have in stock. "Channels are now worried about carrying too much inventory into a market where high prices are suppressing demand. That could translate into promotions and some short-term relief for consumers, but we don't expect pricing anywhere near what it was a year ago. Prices will remain elevated," he added.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Q3+2026+Was+Historically+Bad+For+PC+Shipments%3A+https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F0134221%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F0134221%2Fq3-2026-was-historically-bad-for-pc-shipments%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://hardware.slashdot.org/story/26/10/12/0134221/q3-2026-was-historically-bad-for-pc-shipments?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24121486&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-10-12T15:00:00+00:00</dc:date>
+<dc:subject>hardware</dc:subject>
+<slash:department>would-you-look-at-that</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>48</slash:comments>
+<slash:hit_parade>48,48,45,43,10,4,2</slash:hit_parade>
+</item>
+<item rdf:about="https://yro.slashdot.org/story/26/10/09/2131241/should-we-beware-of-other-license-plate-surveillance-companies-besides-flock?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Should We Beware of Other License Plate Surveillance Companies Besides Flock?</title>
+<link>https://yro.slashdot.org/story/26/10/09/2131241/should-we-beware-of-other-license-plate-surveillance-companies-besides-flock?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>NPR reports:
+
+
+Police officers in cities across the U.S. are quick to extol the virtues of real-time crime centers as a game changer that helps them find missing children, monitor large events from the skies and scope out dangerous scenes before putting an officer in harm's way. Hundreds of police departments have one of these central hubs, which have existed for years. But many are now being powered with AI software, such as Fusus, from the public-safety technology giant Axon... synthesizing the data it pulls in and allowing police command centers to watch an entire city from one place. 
+
+Flock cameras, the automated license plate readers (ALPRs), have faced intense backlash in recent months amid stories of abuse. Yet privacy experts say they're just the tip of the iceberg when it comes to police surveillance. "I have been watching the debate about Flock with a little bit of puzzlement," says Andrew Guthrie Ferguson, a law professor at George Washington University. "Because real-time crime centers have not just ALPR cameras and sensors, but video analytics and drones and essentially a way to create a visual single-pane-of-glass vision of what's going on in a city, with time machine capabilities where you can go back and investigate crime." Tools like Axon Fusus, which is a leader in this type of software, also pull in footage and data from police body cameras, law enforcement dashcams, 911 dispatch, gunshot detectors and surveillance cameras, including sometimes those of private businesses that opt in. Its use is growing fast. In 2024, the technology news site 404 Media reported that just over 100 law enforcement agencies had deployed Fusus, which was then its own company and was acquired by Axon that year. The number of law enforcement agencies using the tool has more than doubled since then, according to Axon. 
+
+
+Even the American Civil Liberties Union warned concerned citizens in August that "Flock is far from the only vendor," adding that "it's important to realize that its competitors aren't so great either, and that simply replacing Flock surveillance with another company's surveillance won't necessarily solve any of the privacy and other civil liberties problems posed by this mass surveillance technology."
+
+Communities can't simply assume that their residents will be better off from a privacy and civil liberties perspective by dropping Flock and replacing it with another ALPR provider, as some customers have done. They should ask hard questions about whether they really want to create that kind of a system, and if they do, ensure it doesn't function as a mass surveillance system... 
+One of Flock's most significant competitors is Motorola. This company, which has been expanding its police technology offerings through an aggressive acquisition strategy in recent years, offers a nationwide law enforcement data sharing system similar to Flock's called the National Vehicle Location Service, operated by Motorola unit Vigilant Solutions. In addition to collecting data from law enforcement clients' cameras, it also runs a large separate commercial ALPR unit that makes deals for tow trucks and other fleet vehicles to carry cameras and collect data for Motorola as they drive around, amassing billions of plate reads (a claimed 500 million monthly, subject to no apparent data retention policy). Known as the Digital Recognition Network, that unit sells its data for commercial purposes but also makes it available to its law enforcement customers for an extra charge. Motorola tells agencies they can have "access to billions of detections beyond your own." 
+
+Abandoning Flock for another system doesn't protect privacy, their article argues. "If a jurisdiction decides to allow license scanners to be installed, how that system operates is more important than which vendor provides it..." They recommend strong restrictions like data retention limits &amp;mdash; and imposing them by law rather than in the language of contracts with vendors (which could always be renegotiated).&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Should+We+Beware+of+Other+License+Plate+Surveillance+Companies+Besides+Flock%3F%3A+https%3A%2F%2Fyro.slashdot.org%2Fstory%2F26%2F10%2F09%2F2131241%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fyro.slashdot.org%2Fstory%2F26%2F10%2F09%2F2131241%2Fshould-we-beware-of-other-license-plate-surveillance-companies-besides-flock%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://yro.slashdot.org/story/26/10/09/2131241/should-we-beware-of-other-license-plate-surveillance-companies-besides-flock?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24119880&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>EditorDavid</dc:creator>
+<dc:date>2026-10-12T11:34:00+00:00</dc:date>
+<dc:subject>privacy</dc:subject>
+<slash:department>Flock-my-life</slash:department>
+<slash:section>yro</slash:section>
+<slash:comments>60</slash:comments>
+<slash:hit_parade>60,59,50,45,13,7,4</slash:hit_parade>
+</item>
+<item rdf:about="https://hardware.slashdot.org/story/26/10/12/0445233/how-the-us-nuclear-plant-fleet-is-leaning-into-ai?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>How the US Nuclear Plant Fleet Is Leaning Into AI</title>
+<link>https://hardware.slashdot.org/story/26/10/12/0445233/how-the-us-nuclear-plant-fleet-is-leaning-into-ai?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>"This year, nearly the entire fleet of 94 U.S. nuclear reactors has been offered the chance to integrate AI into its operations, and most have taken it," reports IEEE Spectrum:
+
+
+In August, California-based Atomic Canyon launched NIVA, the Nuclear Industry Virtual Assistant, which was developed in cooperation with nuclear-industry groups. The assistant was pilot-tested in nuclear plants run by Constellation Energy and is now available to the United States' entire fleet of reactors.... Meanwhile, the AI-for-nuclear startup Nuclearn says its products have gone to work with more than 65 U.S. partners, a total that includes many traditional plants but also an integration with NuScale Power Corp. that is working toward advanced small nuclear reactors. Microsoft and Nvidia have collaborated on a project to apply AI toward optimizing "the entire life cycle of a nuclear plant, spanning site permitting, design, construction, and continuous operations." 
+
+The reason for the rapid adoption, according to Nuclearn CFO and cofounder Jerrold Vincent, is twofold. First, the technology companies banking their futures on AI are also keen on a revival of nuclear power to provide the electricity for all those data centers. Vincent says AI is also ideal for addressing some of the nuclear industry's most pressing problems. Many of the things that make reactors so difficult to operate &amp;mdash; intricate regulations, along with complex systems for management and maintenance &amp;mdash; are exactly the kinds of tasks that AI is good at. The industry is staggering to deal with aging hardware and an aging workforce. If it is going to survive, and have a real shot at a nuclear revival, it will need help from machine intelligence, Vincent says... 
+
+Right now, the principal output of a nuclear reactor (aside from electricity) is paperwork. Nuclear plants produce piles of documentation to demonstrate regulatory compliance and to record how they respond to any potential problem, from a crack in the sidewalk to a fault in the reactor... Nuclearn's AI products help plants search through large repositories of data more efficiently to more quickly file paperwork with the federal government or figure out how a particular problem was solved in the past. "If you think of it as ChatGPT for nuclear," he says, "it's actually not a bad place to start." 
+
+It's especially important because the nuclear power industry "has a remarkably skilled but quickly shrinking workforce tasked with keeping old reactors online and possibly starting up new ones to meet surging demand for electricity," the article points out. 
+
+It also stresses that "So far, both the Nuclearn and NIVA large language models used in the nuclear world report to humans and don't go anywhere near power plant operations."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=How+the+US+Nuclear+Plant+Fleet+Is+Leaning+Into+AI%3A+https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F0445233%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F0445233%2Fhow-the-us-nuclear-plant-fleet-is-leaning-into-ai%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://hardware.slashdot.org/story/26/10/12/0445233/how-the-us-nuclear-plant-fleet-is-leaning-into-ai?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24121556&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>EditorDavid</dc:creator>
+<dc:date>2026-10-12T07:22:00+00:00</dc:date>
+<dc:subject>power</dc:subject>
+<slash:department>ChatGPT-for-nuclear</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>56</slash:comments>
+<slash:hit_parade>56,56,55,51,9,3,3</slash:hit_parade>
+</item>
+<item rdf:about="https://it.slashdot.org/story/26/10/12/0211238/lets-encrypt-to-cut-ssl-certificate-lifetimes-to-64-days-in-february-2027?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Let's Encrypt to Cut SSL Certificate Lifetimes to 64 Days in February 2027</title>
+<link>https://it.slashdot.org/story/26/10/12/0211238/lets-encrypt-to-cut-ssl-certificate-lifetimes-to-64-days-in-february-2027?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Let's Encrypt "will shorten the default validity period of its TLS certificates from 90 days to 64 days, starting February 10, 2027," reports the blog Linuxiac:
+
+All certificates issued or renewed from that date will have a 64-day lifespan unless users explicitly select one of the shorter options already available: 45 or six days. 
+
+Existing certificates will remain valid until their expiration dates. Let's Encrypt expects the final 90-day certificate to expire on May 11, 2027. The organization also confirmed no valid certificates will be revoked during the transition. To help administrators prepare, Let's Encrypt will introduce 64-day certificates in its staging environment on October 14, 2026, allowing users to test their renewal setups before the change reaches production. 
+The move is part of a broader effort to improve web security by reducing how long compromised or incorrectly issued certificates remain usable... Looking further ahead, the organization plans to reduce the default certificate lifetime again, this time to 45 days in 2028. That makes the upcoming 64-day limit an intermediate step rather than the final destination.
+ 
+
+"Administrators using cron jobs or scripts with hardcoded renewal intervals should review their configurations," the article suggests. 
+"Another upcoming change concerns domain validation. Let's Encrypt will reduce the period during which a previously completed domain authorization can be reused from 30 days to 10 days. In 2028, that period will shrink further to just seven hours."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Let's+Encrypt+to+Cut+SSL+Certificate+Lifetimes+to+64+Days+in+February+2027%3A+https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F10%2F12%2F0211238%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F10%2F12%2F0211238%2Flets-encrypt-to-cut-ssl-certificate-lifetimes-to-64-days-in-february-2027%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://it.slashdot.org/story/26/10/12/0211238/lets-encrypt-to-cut-ssl-certificate-lifetimes-to-64-days-in-february-2027?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24121496&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>EditorDavid</dc:creator>
+<dc:date>2026-10-12T03:09:00+00:00</dc:date>
+<dc:subject>encryption</dc:subject>
+<slash:department>seeking-security</slash:department>
+<slash:section>it</slash:section>
+<slash:comments>110</slash:comments>
+<slash:hit_parade>110,110,101,88,15,7,6</slash:hit_parade>
+</item>
+<item rdf:about="https://hardware.slashdot.org/story/26/10/12/018224/game-console-market-craters-xbox-and-ps5-sales-plummet-over-25?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Game Console Market Craters: Xbox and PS5 Sales Plummet Over 25%</title>
+<link>https://hardware.slashdot.org/story/26/10/12/018224/game-console-market-craters-xbox-and-ps5-sales-plummet-over-25?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>"Video game console sales in the U.S. have cratered," reports Tom's Hardware, with sales through August far below where they'd been in 2025:
+
+
+Mat Piscatella, the video game industry advisor at research firm Circana, shared the numbers on his Bluesky account &amp;mdash; PlayStation 5 sales have dropped by 25%, putting it at its lowest point since 2013, when gamers held off buying PlayStation consoles in anticipation of the arrival of the PS4, while Xbox's retail figures have cratered by 33% YTD, putting its sales numbers at an all-time low since its launch almost 25 years ago. 
+
+Piscatella said price sensitivity is becoming a real problem among gamers, especially as the chip shortage has pushed console manufacturers to raise prices. Microsoft has raised the price of the Xbox three times in the past two years, with the 512GB versions jumping by $100 and 1TB models becoming $150 more expensive. Worse, the company has killed off the 2TB model. This brought the Xbox Series S to $499.99 (512GB) and $599.99 (1TB), while the Xbox Series X now costs $749.99 for the Digital Edition, and the disc version costs $50 more at $799.99. 
+
+PlayStation fans haven't escaped these price hikes, as Sony raised prices for that console by $100 to $150. The base Digital Edition PS5 now costs $599.99, while the version with an optical drive is priced at $649.99. If you want the PS5 Pro, you'll have to shell out $899.99, while those who want to stream games from their console via the PlayStation Portal must now pay $249.99 &amp;mdash; $50 higher than its $199.99 launch price. Even used consoles didn't escape inflation, with Sony bumping the price of refurbished PS5 Slim consoles by $100, bringing them to $399.
+
+ 
+
+"Still, Piscatella says the U.S. hardware market has never been more precarious since the early 1980s."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Game+Console+Market+Craters%3A+Xbox+and+PS5+Sales+Plummet+Over+25%25%3A+https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F018224%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fhardware.slashdot.org%2Fstory%2F26%2F10%2F12%2F018224%2Fgame-console-market-craters-xbox-and-ps5-sales-plummet-over-25%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://hardware.slashdot.org/story/26/10/12/018224/game-console-market-craters-xbox-and-ps5-sales-plummet-over-25?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24121464&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>EditorDavid</dc:creator>
+<dc:date>2026-10-12T01:09:00+00:00</dc:date>
+<dc:subject>playstation</dc:subject>
+<slash:department>games-over</slash:department>
+<slash:section>hardware</slash:section>
+<slash:comments>66</slash:comments>
+<slash:hit_parade>66,64,58,50,7,6,3</slash:hit_parade>
+</item>
+<textinput rdf:about="https://slashdot.org/search.pl">
+<title>Search Slashdot</title>
+<description>Search Slashdot stories</description>
+<name>query</name>
+<link>https://slashdot.org/search.pl</link>
+</textinput>
+</rdf:RDF>

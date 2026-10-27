@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// SPDX-FileCopyrightText: 2024-2026 Jonathan D.A. Jewell (hyperpolymath)
-= {{PROJECT_NAME}}
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath)
+= heron-polyfeed-reader
 :toc:
 :toc-placement: preamble
 
@@ -12,53 +12,148 @@ image:https://img.shields.io/badge/Provenance-Quantum--Safe-blueviolet[Quantum-S
 
 // ── Standard & quality gates ────────────────────────────────────────────────
 image:https://img.shields.io/badge/RSR-Rhodium_Standard-9C27B0[Rhodium Standard Repository,link="https://github.com/hyperpolymath/rhodium-standard-repositories"]
-image:https://www.bestpractices.dev/projects/{{OPENSSF_BP_ID}}/badge[OpenSSF Best Practices,link="https://www.bestpractices.dev/projects/{{OPENSSF_BP_ID}}"]
-image:https://api.scorecard.dev/projects/github.com/{{OWNER}}/{{REPO}}/badge[OpenSSF Scorecard,link="https://scorecard.dev/viewer/?uri=github.com/{{OWNER}}/{{REPO}}"]
-image:https://sonarcloud.io/api/project_badges/measure?project={{OWNER}}_{{REPO}}&metric=alert_status[SonarQube Quality Gate,link="https://sonarcloud.io/summary/new_code?id={{OWNER}}_{{REPO}}"]
-image:https://archive.softwareheritage.org/badge/origin/https://{{FORGE}}/{{OWNER}}/{{REPO}}/[Archived in Software Heritage,link="https://archive.softwareheritage.org/browse/origin/?origin_url=https://{{FORGE}}/{{OWNER}}/{{REPO}}"]
+image:https://api.scorecard.dev/projects/github.com/hyperpolymath/heron-polyfeed-reader/badge[OpenSSF Scorecard,link="https://scorecard.dev/viewer/?uri=github.com/hyperpolymath/heron-polyfeed-reader"]
+image:https://sonarcloud.io/api/project_badges/measure?project=hyperpolymath_heron-polyfeed-reader&metric=alert_status[SonarQube Quality Gate,link="https://sonarcloud.io/summary/new_code?id=hyperpolymath_heron-polyfeed-reader"]
+image:https://archive.softwareheritage.org/badge/origin/https://github.com/hyperpolymath/heron-polyfeed-reader/[Archived in Software Heritage,link="https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/hyperpolymath/heron-polyfeed-reader"]
 
 // ── Provenance & ecosystem ──────────────────────────────────────────────────
-image:https://img.shields.io/badge/Idris-Inside-5E5086?logo=idris&logoColor=white[Idris Inside,link="https://github.com/hyperpolymath/proven"]
-image:https://img.shields.io/badge/Zig-Zero--overhead-F7A41D?logo=zig&logoColor=black[Zig Zero-overhead FFI,link="https://github.com/hyperpolymath/typed-wasm"]
-image:https://api.thegreenwebfoundation.org/greencheckimage/{{FORGE}}[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url={{FORGE}}"]
+image:https://img.shields.io/badge/Zig-0.17.0-F7A41D?logo=zig&logoColor=black[Zig 0.17.0,link="https://ziglang.org/download/#release-0.17.0"]
+image:https://api.thegreenwebfoundation.org/greencheckimage/github.com[Green Web,link="https://www.thegreenwebfoundation.org/green-web-check/?url=github.com"]
 
-{{PROJECT_DESCRIPTION}}
-
-[IMPORTANT]
-====
-*This file is a template.* You are reading `README.adoc` from the *RSR template repo*
-(or a freshly-cloned copy of it). Run `just repo-init` to replace every `{{PLACEHOLDER}}`
-token with your project's details, then delete this admonition. Until you do, the
-`{{...}}` markers below are intentional placeholders, not content.
-====
+A small local feed reader and site monitor. `heron` polls RSS, Atom and RDF
+feeds, watches sites for downtime, content change and TLS certificate expiry
+(honouring robots.txt), keeps everything in an append-only NDJSON log with a SQLite
+(FTS5) index rebuilt from it, and serves a localhost-only web UI. Written in
+Zig; Linux first.
 
 == What this is
 
-A new repository scaffolded from the *Rhodium Standard Repository (RSR)* template:
-a batteries-included starting point that ships with CI/CD, machine-readable project
-metadata, an AI-agent gatekeeper protocol, a formally-typed ABI/FFI seam
-(Idris2 + Zig), container and reproducible-build scaffolding, and governance
-infrastructure — all wired and passing the RSR validators on day one.
+* *A feed reader.* Tolerant XML, encoding and date parsing (recorded real
+  feeds and hand-made edge cases are fixtures under `src/testdata/`);
+  guid/id then link+date de-duplication; conditional requests (ETag,
+  Last-Modified); per-source intervals with jitter, exponential backoff and
+  Retry-After.
+* *A site monitor.* Up/down transitions (DOWN after two failures, first
+  success is a silent baseline), content-change hashes (alerts rate-limited to
+  one per hour), robots.txt compliance (RFC 9309: a BLOCKED alert when it
+  disallows the monitored path) and leaf-certificate expiry. Alerts are
+  stored as items of kind `alert`, so they appear in the same lists and
+  searches as articles.
+* *A daemon with a CLI.* One binary, one JSON config, one data directory.
+  The web UI is off unless configured and binds `127.0.0.1:8484` by default.
 
-Replace this section with a description of *your* project once initialised.
+== What this is not
+
+* Not a hosted or multi-user service: one user, one machine, loopback only
+  unless you say otherwise (`web.allow_non_loopback`).
+* Not a WebSub subscriber (deliberately), and not a browser: the web UI has
+  no JavaScript and only follows http(s) links.
+* Not yet proven beyond HTTP: the adapter seam is designed for NNTP, Gopher,
+  Gemini, ActivityPub and AT Protocol, but no second adapter exists
+  (link:docs/status/ROADMAP.adoc[roadmap M8]).
 
 == Quick start
 
+Needs *Zig 0.17.0 exactly* (`build.zig.zon` says so; the `std.Io`, `std.http`
+and TLS APIs changed from 0.15/0.16). `mise.toml` pins it; `just setup`
+installs it.
+
 [source,bash]
 ----
-# 1. Create a repo from this template (or clone it), then from the repo root:
-just repo-init                # interactive bootstrap: fills every {{PLACEHOLDER}}
-
-# 2. See the available tasks:
-just                     # lists all phases (build, test, validate, audit, ...)
-
-# 3. Check the repo still satisfies the RSR shape:
-just validate            # structure + metadata checks
+zig build test --summary all            # 85 unit tests, fixtures from src/testdata/
+zig build -Doptimize=ReleaseSafe        # -> zig-out/bin/heron
+cp examples/heron.json ~/.config/heron.json  # edit sources, monitors, web
+heron --config ~/.config/heron.json check-config
+heron --config ~/.config/heron.json daemon   # foreground: poll, serve the UI if enabled
 ----
 
-`just repo-init` prompts for the project name, owner, author, licence contact, and the
-other values listed in `.machine_readable/ai/PLACEHOLDERS.adoc`, substitutes them
-across the tree, validates the result, and (if available) runs the `k9-svc` checks.
+Through `just`: `just test`, `just lint` (`zig fmt --check`), `just build`,
+`just build-release`, `just test-smoke`, `just quality`.
+
+[NOTE]
+====
+`just test` and `just build` run every language the estate provisioning
+library detects. This tree also carries the template's Idris2 ABI seam
+(`src/interface/abi.ipkg`), so those recipes need `idris2` on PATH as well;
+`zig build test` alone runs the project's own suite.
+====
+
+=== Commands
+
+[source,text]
+----
+heron [--config FILE] [--data DIR] <command> [args]
+
+  daemon                    run in the foreground: poll sources, serve the web UI if enabled
+  fetch [NAME...]           poll the named sources (default: all) once, now
+  list [--source NAME] [--unread] [--limit N]
+  search TEXT               substring search over titles and text (needs 3+ characters)
+  show ID                   print an item and mark it read
+  read ID | unread ID       change an item's read state
+  mark-all-read [NAME]
+  sources                   per-source status: last check, failures, next poll
+  monitors                  monitor status: up/down, HTTP status, TLS certificate expiry
+  rebuild                   rebuild the index and search tables from the log
+  check-config              validate the config file
+  help
+----
+
+Environment: `HERON_CONFIG` and `HERON_DATA` stand in for `--config` and
+`--data`. The data directory holds the NDJSON log (source of truth), the
+SQLite index and the `heron.lock` lock file.
+
+=== Container
+
+[source,bash]
+----
+podman build -f Containerfile --target test    -t heron-test .   # runs the unit tests
+podman build -f Containerfile --target runtime -t heron .        # static binary on scratch (~23 MB)
+----
+
+The toolchain is pinned by version and verified by SHA-256 inside the
+`Containerfile`; CI (`.github/workflows/zig-ci.yml`) pins the same digest.
+Inside a container the default loopback bind is unreachable from the host:
+set `"web": {"bind": "0.0.0.0", "allow_non_loopback": true}` only together
+with `-p 127.0.0.1:8484:8484` on the host side.
+
+== Layout
+
+[cols="1,3"]
+|===
+| Path | What lives there
+
+| `build.zig`, `build.zig.zon` | The build: core module `heron` (everything but `main.zig`), the vendored SQLite compiled by `zig cc`, `test` and `run` steps.
+| `src/item.zig`, `src/adapter.zig` | Item model; Adapter vtable, Registry, `Cond` (etag, last_modified, opaque state), `Outcome` (items / not_modified / failed), `FailureClass`, `parseRetryAfter`.
+| `src/transport.zig`, `src/http.zig` | Fakeable Transport interface; the HTTP(S) implementation (select-based wall-clock timeout, manual redirects, size cap, certificate probe).
+| `src/xml.zig`, `src/encoding.zig`, `src/dates.zig`, `src/feed.zig`, `src/feed_adapter.zig`, `src/dedupe.zig` | Tolerant XML DOM (XXE-safe), encoding detection and conversion, tolerant dates, RSS2/Atom/RDF mapping, de-duplication.
+| `src/scheduler.zig` | Pure logic over an injected clock and PRNG; `FakeClock` for tests.
+| `src/store.zig`, `src/sqlite.zig` | NDJSON log plus SQLite state and FTS5 trigram index; crash replay via `meta.indexed_offset`; hand-written SQLite externs (`@cImport` no longer exists in Zig 0.17).
+| `src/monitor.zig`, `src/robots.zig` | Monitor adapter and robots.txt.
+| `src/engine.zig`, `src/app.zig`, `src/daemon.zig`, `src/cli.zig`, `src/web.zig`, `src/localserver.zig`, `src/config.zig`, `src/util.zig` | Poll orchestration, wiring, daemon loop and signals, CLI, web UI, tiny HTTP server, JSON config.
+| `src/vendor/tls_client.zig` | Patched copy of std's TLS client used only to read the leaf certificate's expiry; re-sync on every Zig upgrade (`src/vendor/NOTICE`).
+| `vendor/sqlite/` | SQLite 3.50.4 amalgamation (FTS5, THREADSAFE=2, no load-extension).
+| `src/testdata/` | Recorded real feeds (`real/`) and hand-made edge cases.
+| `examples/heron.json` | A complete example configuration.
+| `src/interface/`, `docs/`, `.machine_readable/`, `build/`, `www/` | Estate scaffolding from the RSR template: ABI/FFI seam, documentation, the repo deed's machine-readable companions, `just` phase modules, site-operations bundle.
+|===
+
+== Where to go next
+
+* link:docs/status/ROADMAP.adoc[ROADMAP] — milestones, blockers, next actions, known gaps.
+* link:docs/usage.adoc[Usage] and link:docs/architecture.adoc[Architecture] — configuration reference and internals.
+* link:CONTRIBUTING.adoc[CONTRIBUTING] — toolchain, conventions, signing.
+* link:heron-polyfeed-reader_chora.deed[The repo deed] and link:CLAUDE.md[CLAUDE.md] — what this repo IS, for tools and agents.
+* link:docs/architecture/REPOSITORY-MAP.adoc[The repository map] — generated; what every directory is for.
+
+== Licence
+
+Code, configuration and scripts are link:LICENSE[Mozilla Public License 2.0]
+(`MPL-2.0`); prose documentation is `CC-BY-SA-4.0`. Both texts live in
+`LICENSES/`, and per-file `SPDX-License-Identifier` headers are authoritative.
+Long-term attribution uses Quantum-Safe Provenance — see
+link:docs/legal/EXHIBIT-B-QUANTUM-SAFE.txt[the Quantum-Safe Provenance exhibit].
+SQLite is public domain (`vendor/sqlite`); the patched TLS client in
+`src/vendor/` carries the Zig standard library's MIT licence (`src/vendor/NOTICE`).
 
 [[ai-install]]
 == AI-Assisted Installation (Recommended)
@@ -70,101 +165,29 @@ commands to paste):
 
 [source,text]
 ----
-Create a new repository from https://github.com/hyperpolymath/rsr-template-repo
+Set up heron-polyfeed-reader from https://github.com/hyperpolymath/heron-polyfeed-reader — follow docs/AI_INSTALLATION_GUIDE.adoc in that repo.
 ----
 
-The URL is the key: it leads the assistant to
-link:docs/AI_INSTALLATION_GUIDE.adoc[`docs/AI_INSTALLATION_GUIDE.adoc`], the
-complete step-by-step recipe. The assistant checks your system, installs the
-prerequisites, instantiates the template with `just repo-init`, and verifies the
-result with `just doctor`.
-
-* "Set up rsr-template-repo so I can work on the template itself — https://github.com/hyperpolymath/rsr-template-repo"
-* `./launcher.sh --ai-setup` (or `just ai-setup`) prints the line and the guide path.
-
-=== What you will be asked
-
-. Your operating system (Linux, macOS, or Windows via WSL2).
-. The new project's name, owner, author and licence contact (the values listed in
-  `.machine_readable/ai/PLACEHOLDERS.adoc`).
-. To confirm the privacy notice below.
+The URL leads the assistant to
+link:docs/AI_INSTALLATION_GUIDE.adoc[`docs/AI_INSTALLATION_GUIDE.adoc`]. The
+assistant checks your system, installs Zig 0.17.0 through mise (`just setup`),
+builds and tests `heron`, and proves the result with `just doctor`.
+`./launcher.sh --ai-setup` (or `just ai-setup`) prints the same line.
 
 === Privacy and security
 
 [IMPORTANT]
 ====
-Setting up rsr-template-repo clones this repository and installs its developer
-tools per-user with mise (no administrator rights, nothing sent anywhere).
-`just repo-init` rewrites files only inside the new checkout; it creates no
-remote repository and pushes nothing until you do.
+Setting up heron-polyfeed-reader clones this repository and installs its
+developer tools per-user with mise (no administrator rights, nothing sent
+anywhere). `heron` itself talks only to the feeds and sites you configure, and
+its web UI listens on loopback unless you say otherwise.
 ====
-
-=== The one trap
-
-If you are an AI agent: **do not set `RSR_NON_INTERACTIVE=1`**. It stubs the
-shell builtin `read`, which also disables the loops that perform token
-substitution — the run never terminates and substitutes nothing. Pipe answers to
-stdin instead.
 
 === Troubleshooting
 
 Run `just doctor`; each FAIL carries a code explained in
 link:docs/SETUP.adoc#troubleshooting[`docs/SETUP.adoc` §Troubleshooting], and
-`just heal` applies the automatic fixes. Prefer to do it yourself? The full
-manual route is link:docs/SETUP.adoc[`docs/SETUP.adoc`]; developers and
-maintainers can brief an AI with `just ai-warmup dev` / `just ai-warmup maintainer`.
-
-== What you get
-
-* *Machine-readable metadata* (`.machine_readable/descriptiles/`) — `STATE`, `META`,
-  `ECOSYSTEM`, `PLAYBOOK`, `AGENTIC`, `NEUROSYM`, `CLADE`, and `anchors/ANCHOR`,
-  in deed, so tools and agents can read the project's state and boundaries.
-* *AI gatekeeper protocol* — `rsr-template-repo_chora.deed` (the repo deed) is the
-  universal entry point that tells an AI agent how to work in this repo before it
-  touches anything; it carries the AI allocation policy and the ply directory tree.
-* *Typed ABI/FFI seam* — `src/interface/Abi/` (Idris2 type + layout proofs) over
-  `src/interface/ffi/` (Zig implementation), with generated C headers.
-* *CI/CD* — GitHub Actions for quality, security (CodeQL, Scorecard, secret
-  scanning), multi-forge mirroring, and RSR anti-pattern enforcement.
-* *Supply-chain & reproducibility* — container layering (stapeln), Guix shells,
-  SBOM, and signing hooks.
-* *Governance* — `GOVERNANCE.adoc`, `MAINTAINERS.adoc`, `.github/` community health
-  files, and a release `AUDIT.adoc` gate.
-
-== Repository map
-
-The authoritative map is generated, so it cannot drift from the tree:
-link:docs/architecture/REPOSITORY-MAP.adoc[docs/architecture/REPOSITORY-MAP.adoc]
-(regenerate with `just repo-map`; CI fails if it is stale).
-
-The short version:
-
-[cols="1,3"]
-|===
-| Path | What lives there
-
-| `README.adoc`, `CLAUDE.md` | Start here - humans and AI agents respectively.
-| `src/`, `tests/`           | The code and its tests.
-| `docs/`                    | Human documentation, including the full map above.
-| `.machine_readable/`        | Manifests, contractiles and policies that tools read.
-| `build/`, `Justfile`       | Every task runs through `just`; phases live in `build/just/`.
-| `ci/`, `.github/`          | CI configuration; GitHub reads `.github/` and no other path.
-|===
-
-== Where to go next
-
-* link:docs/architecture/REPOSITORY-MAP.adoc[The repository map] — generated; what every directory is for.
-* link:docs/EXPLAINME.adoc[EXPLAINME] — the engineering deep-dive: how the pieces actually work.
-* link:docs/AFFIRMATION.adoc[AFFIRMATION] — the dated, signed honesty snapshot of the repo's true state.
-* link:docs/AUDIT.adoc[AUDIT] — the release audit gate.
-* link:docs/AI_INSTALLATION_GUIDE.adoc[AI installation guide] — for agents instantiating this template.
-* link:.machine_readable/ai/PLACEHOLDERS.adoc[PLACEHOLDERS] — the full placeholder reference.
-
-== Licence
-
-Code, configuration and scripts are link:LICENSE[Mozilla Public License 2.0]
-(`MPL-2.0`); prose documentation is `CC-BY-SA-4.0`. Both texts live in
-`LICENSES/`, and per-file `SPDX-License-Identifier` headers are authoritative.
-The GitHub-detected licence is MPL-2.0 (the root `LICENSE`). Long-term
-attribution uses Quantum-Safe Provenance — see
-link:docs/legal/EXHIBIT-B-QUANTUM-SAFE.txt[the Quantum-Safe Provenance exhibit].
+`just heal` applies the automatic fixes. The manual route is
+link:docs/SETUP.adoc[`docs/SETUP.adoc`]; `docs/troubleshooting.adoc` lists
+`heron`'s own known failure modes.

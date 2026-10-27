@@ -30,7 +30,7 @@ grammar specification, never against a neighbouring file.
 
 The descriptiles are clauses of the repo deed (`*_chora.deed`), not
 separate files; no `.a2ml` file may be recreated anywhere
-(rsr-template-repo#209):
+(heron-polyfeed-reader#209):
 
 * `(neurosym)`: symbolic semantics, composition algebra;
 * `(playbook)`: executable plans, operational runbooks;

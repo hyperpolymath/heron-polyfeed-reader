@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Architecture — heron-polyfeed-reader
+:revdate: 2026-10-27
+
+== System overview
+
+`heron` polls a configured set of sources (feeds) and monitors (sites) on a
+jittered schedule, turns what it finds into *items*, appends them to an NDJSON
+log and indexes them in SQLite for the CLI and a localhost web UI. The
+invariant: *the log is the only source of truth; every other file in the data
+directory can be deleted and rebuilt from it.* If that stopped being true,
+crash recovery and `heron rebuild` would be lies.
+
+== Component diagram
+
+[source]
+----
+ config.zig ──► app.zig ──► engine.zig ──► scheduler.zig (Clock + PRNG, pure)
+                  │             │
+                  │             ├─► adapter.zig Registry
+                  │             │     ├─ feed_adapter.zig ─► xml / encoding / dates / feed / dedupe
+                  │             │     └─ monitor.zig ──────► robots.zig, cert probe
+                  │             │          (both over transport.zig ─► http.zig)
+                  │             ▼
+                  │         store.zig: NDJSON log ─► SQLite + FTS5 (sqlite.zig externs)
+                  │             ▲
+          daemon.zig / cli.zig  │  web.zig over localserver.zig (own SQLite connection)
+----
+
+== Data flow
+
+* **Source**: HTTP(S) responses from feeds and monitored pages; the
+  `Transport` interface is fakeable, and every test uses `localserver.zig`.
+* **Validation**: size cap and wall-clock timeout in `http.zig`; manual
+  redirects; XXE-safe tolerant XML DOM; encoding detection (declaration,
+  BOM, UTF-16) and conversion; tolerant date parsing; http(s)-only links.
+* **Transformation**: adapter maps a response to an `Outcome` (`items`,
+  `not_modified`, `failed` with a `FailureClass`); feed items are
+  de-duplicated by guid/id, then by link+date; monitor transitions become
+  `alert` items.
+* **Sink**: `store.zig` appends records to the NDJSON log, then updates the
+  SQLite state tables and the FTS5 trigram index. `meta.indexed_offset`
+  records how far the index has consumed the log.
+
+== Key invariants
+
+[cols="1,2,2,2", options="header"]
+|===
+| # | Invariant | Enforced at | Failure mode
+
+| 1
+| The index never claims to be ahead of the log.
+| `src/store.zig` (`meta.indexed_offset` written after the index transaction)
+| A crash between append and index would otherwise lose or duplicate items on replay.
+
+| 2
+| The scheduler never busy-loops and never polls a source before its `Retry-After`.
+| `src/scheduler.zig` (pure functions over an injected `Clock`; `FakeClock` tests)
+| Hammering upstreams; getting rate-limited or banned.
+
+| 3
+| One daemon per data directory.
+| `heron.lock` in the data directory (`src/store.zig`)
+| Two writers interleave log records.
+
+| 4
+| The web UI is reachable only from the machine unless explicitly allowed.
+| `src/web.zig`: loopback bind by default, `allow_non_loopback` gate, Host-header allowlist, Origin check on POST, CSP, no JavaScript.
+| DNS-rebinding or LAN exposure of an unauthenticated UI.
+
+| 5
+| A monitor alert is raised on a *transition*, not on every check.
+| `src/monitor.zig` (first success silent; DOWN after two failures; change alerts rate-limited to one per hour)
+| Alert floods that train the user to ignore them.
+|===
+
+== Dependencies
+
+* **Internal**: none yet. The roadmap's estate-integration milestone names
+  the candidates (`zig-dnssec`, `zig-boringtls`, the unified-hexadeca-api
+  conventions).
+* **External, vendored**: SQLite 3.50.4 amalgamation (`vendor/sqlite`, built
+  by `zig cc` with FTS5, THREADSAFE=2, no load-extension); a patched copy of
+  Zig std's TLS client (`src/vendor/tls_client.zig`, see `src/vendor/NOTICE`).
+* **Build-time**: Zig 0.17.0 exactly (`build.zig.zon`, `mise.toml`,
+  `Containerfile`, `.github/workflows/zig-ci.yml`), `just` for the estate
+  recipes.
+
+== Out of scope
+
+* WebSub / push: polling is simpler and sufficient for one user.
+* Multi-user or hosted operation: no authentication is designed in.
+* Full-text extraction from linked pages: the item body is what the feed
+  carries.
+* Any protocol beyond HTTP(S) until a second adapter proves the seam
+  (link:./status/ROADMAP.adoc[roadmap M8]).
+
+== See also
+
+* link:./usage.adoc[Usage] — consumer perspective.
+* link:./contributing.adoc[Contributing] — developer setup.
+* link:./decisions/[ADRs] — historical record of why this shape.

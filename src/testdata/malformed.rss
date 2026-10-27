@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Broken</title>
+<item><title>Fish & Chips < 5 quid</title><link>http://example.com/1?a=1&b=2</link><guid>m1</guid></item>
+<item><title>Second</title><guid>m2</guid><description>Unclosed description</item>
+</bogus>
+<item><title>Third</title><guid>m3</guid>
+</channel></rss>

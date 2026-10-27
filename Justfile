@@ -22,9 +22,9 @@ import? "build/contractile.just"
 mod provision 'build/just/provision.just'
 
 # Project metadata — customize these
-project := "rsr-template-repo"
+project := "heron-polyfeed-reader"
 OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+REPO := "heron-polyfeed-reader"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
@@ -51,7 +51,7 @@ help recipe="":
 
 # Show this project's info
 info:
-    @echo "Project: {{project}}"
+    @echo "Project: heron_polyfeed_reader"
     @echo "Version: {{version}}"
     @echo "RSR Tier: {{tier}}"
     @echo "Recipes: $(just --summary | wc -w)"
@@ -95,12 +95,7 @@ build: provision::build
 
 # Build in release mode with optimizations
 build-release *args:
-    # TODO: Replace with your release build command
-    # Examples:
-    #   cargo build --release {{args}}
-    #   MIX_ENV=prod mix compile {{args}}
-    #   zig build -Doptimize=ReleaseFast {{args}}
-    @echo "FAIL: 'just build-release' is not wired yet — nothing was built. Edit the 'build-release' recipe." >&2; exit 1
+    zig build -Doptimize=ReleaseSafe {{args}}
 
 # Build and watch for changes (requires entr or similar)
 build-watch:
@@ -120,7 +115,7 @@ clean:
     # directory in an RSR repo: it holds 11 tracked files, including
     # build/just/repo-init.just, which the root Justfile imports at line 65.
     # Deleting it destroys `just repo-init`, `just verify` and the proof gates.
-    rm -rf target/ _build/ dist/ out/ obj/ bin/
+    rm -rf target/ _build/ dist/ out/ obj/ bin/ zig-out/ .zig-cache/
 
 # Deep clean including caches [reversible: rebuild]
 clean-all: clean
@@ -141,8 +136,9 @@ test-verbose: provision::test
 
 # Smoke test
 test-smoke:
-    # TODO: Add basic sanity checks
-    @echo "FAIL: 'just test-smoke' is not wired yet — no smoke check ran. Edit the 'test-smoke' recipe." >&2; exit 1
+    zig build
+    ./zig-out/bin/heron help >/dev/null
+    ./zig-out/bin/heron --config examples/heron.json --data "$(mktemp -d)" check-config
 
 # Run end-to-end tests (full pipeline: build → run → verify)
 e2e:
@@ -228,7 +224,7 @@ run-verbose: run
 
 # Install to user path
 install: build-release
-    @echo "Installing {{project}}..."
+    @echo "Installing heron_polyfeed_reader..."
     # TODO: Replace with your install command
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -320,7 +316,7 @@ cookbook:
     #!/usr/bin/env bash
     mkdir -p docs
     OUTPUT="docs/just-cookbook.adoc"
-    echo "= {{project}} Justfile Cookbook" > "$OUTPUT"
+    echo "= heron_polyfeed_reader Justfile Cookbook" > "$OUTPUT"
     echo ":toc: left" >> "$OUTPUT"
     echo ":toclevels: 3" >> "$OUTPUT"
     echo "" >> "$OUTPUT"
@@ -346,10 +342,10 @@ cookbook:
 man:
     #!/usr/bin/env bash
     mkdir -p docs/man
-    cat > docs/man/{{project}}.1 << EOF
-    .TH {{project}} 1 "$(date +%Y-%m-%d)" "{{version}}" "{{project}} Manual"
+    cat > docs/man/heron_polyfeed_reader.1 << EOF
+    .TH heron_polyfeed_reader 1 "$(date +%Y-%m-%d)" "{{version}}" "heron_polyfeed_reader Manual"
     .SH NAME
-    {{project}} \- RSR-compliant project
+    heron_polyfeed_reader \- RSR-compliant project
     .SH SYNOPSIS
     .B just
     [recipe] [args...]
@@ -358,7 +354,7 @@ man:
     .SH AUTHOR
     $(git config user.name 2>/dev/null || echo "Author") <$(git config user.email 2>/dev/null || echo "email")>
     EOF
-    echo "Generated: docs/man/{{project}}.1"
+    echo "Generated: docs/man/heron_polyfeed_reader.1"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CI & AUTOMATION
@@ -408,7 +404,7 @@ import? "build/just/validate.just"
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Repo state lives in the repo deed's (status …) and (maturity …) clauses
-# (rsr-template-repo#209); the journal is docs/status/ROADMAP.adoc. There is
+# (heron-polyfeed-reader#209); the journal is docs/status/ROADMAP.adoc. There is
 # no last-updated stamp to touch: git log is the record of when it changed.
 
 # Show the lifecycle phase and maturity from the repo deed
@@ -574,7 +570,7 @@ opsm: provision::opsm
 
 # Guided tour of key features
 tour:
-    @echo "=== rsr-template-repo Tour ==="
+    @echo "=== heron-polyfeed-reader Tour ==="
     @echo ""
     @echo "1. Project structure:"
     @ls -la
@@ -589,12 +585,12 @@ tour:
 
 # Open feedback channel with diagnostic context
 help-me:
-    @echo "=== rsr-template-repo Help ==="
+    @echo "=== heron-polyfeed-reader Help ==="
     @echo "Platform: $(uname -s) $(uname -m)"
     @echo "Shell: $SHELL"
     @echo ""
     @echo "To report an issue:"
-    @echo "  https://github.com/hyperpolymath/rsr-template-repo/issues/new"
+    @echo "  https://github.com/hyperpolymath/heron-polyfeed-reader/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
 

@@ -90,6 +90,8 @@ workflows:
     '.github/workflows/workflow-linter.yml':
         - 'actions/checkout@v7.0.1'
         - 'oven-sh/setup-bun@v2.2.0'
+    '.github/workflows/zig-ci.yml':
+        - 'actions/checkout@v7.0.1'
 dependencies:
     'Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6':
         ref: '6323deb102c322ba6fcbdcafc7e3dddab59af2b6'

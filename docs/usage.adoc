@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Usage — heron-polyfeed-reader
+:revdate: 2026-10-27
+
+== Audience
+
+This document is for people who *run* `heron`. For developers working *on*
+it, see link:./contributing.adoc[contributing.adoc].
+
+== Quickstart
+
+[source,bash]
+----
+# 1. Build (Zig 0.17.0 exactly)
+zig build -Doptimize=ReleaseSafe          # -> zig-out/bin/heron
+
+# 2. Configure
+cp examples/heron.json ~/.config/heron.json
+$EDITOR ~/.config/heron.json              # sources, monitors, web
+heron --config ~/.config/heron.json check-config
+
+# 3. Run
+heron --config ~/.config/heron.json --data ~/.local/share/heron daemon
+----
+
+`HERON_CONFIG` and `HERON_DATA` stand in for `--config` and `--data`.
+With `"web": {"enabled": true}` the UI is at `http://127.0.0.1:8484/`.
+
+== Common use cases
+
+=== Read feeds from the terminal
+
+[source,bash]
+----
+heron fetch                     # poll every source once, now
+heron list --unread --limit 20  # newest unread items
+heron show 123                  # print item 123 and mark it read
+heron search sqlite             # substring search (3+ characters) over titles and text
+heron mark-all-read lwn         # one source, or all sources with no name
+----
+
+=== Watch a site
+
+Add a monitor and run the daemon; the first successful check is a silent
+baseline. A DOWN alert is raised after two consecutive failures, an UP alert
+when it recovers, a change alert (at most one per hour) when the content hash
+changes, and an expiry alert when the leaf certificate is within
+`cert_warn_days`. Alerts are items of kind `alert`, so `list` and `search`
+show them; `heron monitors` prints the current state per monitor.
+
+=== Recover after a crash or a lost index
+
+The NDJSON log in the data directory is the source of truth; the SQLite
+index is derived from it. `heron rebuild` rebuilds the index and the FTS5
+search tables from the log. The daemon also replays any log records newer than
+`meta.indexed_offset` on start, so an unclean shutdown needs no manual step.
+
+== Configuration reference
+
+One JSON file (no YAML). `check-config` rejects unknown keys at every level and values of the wrong JSON type (a quoted number or boolean is an error, not a default).
+
+[cols="1,1,1,3", options="header"]
+|===
+| Field | Type | Default | Meaning
+
+| `data_dir` | string | `--data` / `HERON_DATA` | Where the log, index and `heron.lock` live.
+| `user_agent` | string | built-in | Sent on every request; put a contact address in it.
+| `timeout_s` | integer | 30 | Wall-clock timeout per request.
+| `web.enabled` | boolean | `false` | Serve the web UI from the daemon.
+| `web.bind` | string | `127.0.0.1` | Bind address. Anything but loopback also needs `allow_non_loopback`. Requests must carry a Host header naming `127.0.0.1`, `localhost`, `[::1]` or this bound address (with the port); a wildcard bind (`0.0.0.0`, `::`) is not special-cased, so name the address you expose.
+| `web.port` | integer | 8484 | Listening port.
+| `web.allow_non_loopback` | boolean | `false` | Required to bind a non-loopback address; the UI has no authentication.
+| `sources[].name` | string | required | Short unique name used by the CLI.
+| `sources[].type` | string | `feed` | Adapter. Only `feed` (RSS 2.0, Atom, RDF/RSS 1.0) exists today.
+| `sources[].url` | string | required | http(s) URL.
+| `sources[].interval_s` | integer | per adapter | Poll interval; jitter, backoff and `Retry-After` are applied on top.
+| `sources[].options` | object | `{}` | Adapter-specific options (reserved for future adapters).
+| `monitors[].name` | string | required | Short unique name.
+| `monitors[].url` | string | required | Page to check.
+| `monitors[].interval_s` | integer | per adapter | Check interval.
+| `monitors[].expect_status` | integer | 200 | HTTP status that counts as UP.
+| `monitors[].detect_changes` | boolean | `true` | Fetch the body (GET), hash its visible text and alert on change (rate-limited to one alert per hour). `false` checks reachability with HEAD only.
+| `monitors[].check_robots` | boolean | `true` | Fetch and honour `robots.txt` (RFC 9309, cached 24 h): a BLOCKED alert when it starts disallowing the monitored path, and redirects to another origin are refused. Changes to robots.txt that leave the path allowed raise no alert.
+| `monitors[].cert_warn_days` | integer | 14 | Alert when the leaf certificate expires within this many days.
+|===
+
+`examples/heron.json` is a complete, valid example.
+
+== Stability guarantees
+
+* **Stable (pre-1.0, best effort)**: the CLI command names above, the JSON
+  config keys above, the NDJSON log format (it is the source of truth; the
+  index can always be rebuilt from it).
+* **Unstable**: the web UI's URLs and markup; `sources[].options`.
+* **Internal**: the SQLite schema. Rebuild it rather than reading it.
+
+== Limits & known constraints
+
+* Linux x86_64 only so far; no soak test against live sites has been run.
+* `search` needs at least three characters (trigram index) and has no
+  pagination yet.
+* The certificate probe has been verified only against a self-signed
+  certificate (not CA-signed, SNI-routed or TLS 1.2-only hosts).
+* No WebSub; feeds are polled.
+* Relative entry links are resolved against the feed URL; `xml:base` is not consulted.
+* The web UI serves one request at a time with a 10 s per-connection deadline; it is a personal UI, not a public server.
+
+== See also
+
+* link:./architecture.adoc[Architecture] — how it works internally.
+* link:./troubleshooting.adoc[Troubleshooting] — when things go wrong.
+* link:./status/ROADMAP.adoc[Roadmap] — what is next and what is untested.

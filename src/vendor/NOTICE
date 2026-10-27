@@ -1,0 +1,10 @@
+tls_client.zig is a modified copy of lib/std/crypto/tls/Client.zig from the Zig 0.17.0 standard
+library, which is licensed under the MIT License (Expat), Copyright (c) Zig contributors.
+
+Why it is vendored: std.http.Client verifies the server certificate during the TLS handshake but does
+not expose it, and superfeedreader's monitor must record certificate expiry. The patch (marked
+"[sfr patch]") adds two things only: Options.host = .sni_only (send SNI, skip verification) and
+Options.leaf_not_after (receive the leaf certificate's notAfter). Nothing else is changed, and the
+probe is never used to establish trust; actual requests still go through std.http.Client, which verifies.
+
+When upgrading Zig: re-copy the upstream file and re-apply the marked changes.

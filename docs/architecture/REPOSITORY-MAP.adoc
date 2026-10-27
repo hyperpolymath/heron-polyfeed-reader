@@ -37,6 +37,10 @@ predecessors did.
 | optional
 | VS Code dev container spec; present only where the container capability is declared
 
+| `.dockerignore`
+| yes
+| read by podman/docker beside the Containerfile
+
 | `.editorconfig`
 | yes
 | -
@@ -97,6 +101,10 @@ predecessors did.
 | optional
 | estate docs gate (standards scripts/check-docs-presence.sh) requires CONTRIBUTING at the ROOT; this is the copy it verifies
 
+| `Containerfile`
+| yes
+| OCI build (test + runtime stages); podman/docker read it from the build context root
+
 | `GEMINI.md`
 | optional
 | pointer to CLAUDE.md for repos without AGENTS.md yet
@@ -117,10 +125,6 @@ predecessors did.
 | yes
 | -
 
-| `archetypes/`
-| optional
-| template-only variation seam (ADR-0003); `just repo-init` removes it from minted repos
-
 | `benches/`
 | optional
 | Cargo-conventional at package root
@@ -128,6 +132,14 @@ predecessors did.
 | `build/`
 | yes
 | build orchestration: just/ phase modules, container/, docs-seed/, templates/, guix.scm (canon 1.2.1 guix-primary template_ref = build/)
+
+| `build.zig`
+| yes
+| Zig reads the build script from the package root only
+
+| `build.zig.zon`
+| yes
+| Zig package manifest; beside build.zig by definition
 
 | `ci/`
 | yes
@@ -149,6 +161,10 @@ predecessors did.
 | optional
 | optional feature packs
 
+| `heron-polyfeed-reader_chora.deed`
+| yes
+| the repo deed: universal AI entry point; family-7 allocation manifest + ply tree folded in (standards#837 pilot). Filename carries the repo slug (deed dispatch <stem>_chora.deed), so repo-init renames it at mint
+
 | `launcher.sh`
 | yes
 | --setup/--doctor/--heal/--ai-setup (launcher-standard 0.6.0); the one file a newcomer runs first
@@ -160,10 +176,6 @@ predecessors did.
 | `mise.toml`
 | yes
 | the toolchain: every tool at latest (PROVISIONING-STANDARD §4)
-
-| `rsr-template-repo_chora.deed`
-| yes
-| the repo deed: universal AI entry point; family-7 allocation manifest + ply tree folded in (standards#837 pilot). Filename carries the repo slug (deed dispatch <stem>_chora.deed), so repo-init renames it at mint
 
 | `scripts/`
 | yes
@@ -185,6 +197,10 @@ predecessors did.
 | yes
 | -
 
+| `vendor/`
+| yes
+| vendored SQLite amalgamation (tracked source; .gitignore un-ignores vendor/sqlite/)
+
 | `verification/`
 | optional
 | proofs; only where formal-proofs is declared
@@ -205,6 +221,7 @@ your own repo - but do not read their emptiness as neglect here.
 
 [cols="1"]
 |===
+| `.machine_readable/ai/`
 | `.machine_readable/bot_directives/`
 | `.machine_readable/descriptiles/anchors/`
 | `.machine_readable/scripts/verification/`
@@ -237,7 +254,6 @@ your own repo - but do not read their emptiness as neglect here.
 | `docs/whitepapers/academic/`
 | `docs/whitepapers/industry/`
 | `docs/whitepapers/outreach/`
-| `examples/`
 | `features/boj-server/`
 | `features/panic-attacker/`
 | `src/aspects/`

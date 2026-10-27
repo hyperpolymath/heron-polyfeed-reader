@@ -4,6 +4,11 @@
 #
 # Enforce the estate ban on the V programming language. Zig is the supported
 # systems/FFI language and must never be matched by this check.
+#
+# vendor/ is third-party code (here the SQLite amalgamation, whose FTS3 code
+# has an identifier `iPrevLangid` that the case-insensitive `vlang` pattern
+# matches). Estate policy makes third-party code untouchable, so it is
+# excluded rather than edited; the pattern itself is canon (standards).
 
 set -euo pipefail
 
@@ -23,6 +28,7 @@ if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     HITS=$(git -C "$REPO_ROOT" grep -n -i -E "$PATTERN" -- \
         . \
         ':(exclude)affinescript/**' \
+        ':(exclude)vendor/**' \
         ':(exclude)scripts/check-no-vlang.sh' \
         ':(exclude)tests/workflows/check_no_vlang_test.sh' \
         ':(exclude).github/workflows/estate-rules.yml' \
@@ -32,13 +38,14 @@ else
     HITS=$(grep -rni -E "$PATTERN" "$REPO_ROOT" \
         --exclude-dir=.git \
         --exclude-dir=affinescript \
+        --exclude-dir=vendor \
         --exclude-dir=node_modules \
         --exclude=check-no-vlang.sh \
         --exclude=check_no_vlang_test.sh \
         --exclude=estate-rules.yml \
         2>/dev/null || true)
     V_MODS=$(find "$REPO_ROOT" -type f -name v.mod \
-        -not -path '*/.git/*' -not -path '*/affinescript/*' \
+        -not -path '*/.git/*' -not -path '*/affinescript/*' -not -path '*/vendor/*' \
         -printf '%P\n' 2>/dev/null || true)
 fi
 

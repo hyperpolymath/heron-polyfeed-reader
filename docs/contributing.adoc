@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Contributing — heron-polyfeed-reader
+:revdate: 2026-10-27
+
+== Audience
+
+Developers working *on* `heron-polyfeed-reader`. For people running it see
+link:./usage.adoc[usage.adoc]. The root link:../CONTRIBUTING.adoc[CONTRIBUTING.adoc]
+is the authoritative version of this page (the estate docs gate requires it
+there); this copy keeps the developer loop short.
+
+== Local-dev setup
+
+Prerequisites:
+
+* Zig *0.17.0 exactly* — `mise install` (pinned in `mise.toml`), or the
+  tarball from https://ziglang.org/download/ verified against the SHA-256
+  in the `Containerfile`.
+* `just` — for the estate recipes (`just setup` installs the rest).
+* An SSH signing key configured for git (estate policy: every commit signed).
+
+[source,bash]
+----
+git clone git@github.com:hyperpolymath/heron-polyfeed-reader.git
+cd heron-polyfeed-reader
+just setup
+zig build test --summary all
+----
+
+== Running tests
+
+* **Unit**: `zig build test --summary all` — 85 tests, all in-process; HTTP
+  goes through the fixture server in `src/localserver.zig`, time through
+  `FakeClock`.
+* **Container**: `podman build -f Containerfile --target test -t heron-test .`
+  — the same suite on the pinned toolchain, from a clean context.
+* **Smoke**: `just test-smoke` — builds and validates `examples/heron.json`.
+* **Estate**: `just test` — every detected language (Zig and the template's
+  Idris2 seam); `just quality` — `fmt-check`, `lint`, `test`.
+
+== Code style
+
+[source,bash]
+----
+zig fmt build.zig src       # auto-format (just fmt)
+zig fmt --check build.zig src   # what just lint runs
+----
+
+* Every source file carries an **SPDX-License-Identifier** header.
+* Hand-written FFI externs, no generated bindings.
+* Conventional commits — `feat`, `fix`, `chore`, `refactor`, `docs`, `test`,
+  `ci`, `revert`; milestone commits carry the milestone (`M8: …`).
+
+== Branching & PR workflow
+
+. Branch off `main` as `claude/<topic>` (for AI agents) or
+  `<initials>/<topic>` (for humans).
+. Make focused, narrow commits — one logical change per commit, signed.
+. Open a PR against `main`; CI (`zig-ci.yml` and the estate gates) must be
+  green; squash-merge.
+
+== Adding a dependency
+
+`heron` has none beyond the vendored SQLite and the patched TLS client. If one
+is needed: say *why* in the PR, check provenance, pin by hash in
+`build.zig.zon`, and update link:./architecture.adoc#_dependencies[architecture § Dependencies].
+
+== Adding an ADR
+
+When you make a non-obvious design decision, write it down:
+
+. Copy `docs/decisions/0001-template.adoc` → `0002-<slug>.adoc`.
+. Fill in: Context, Decision, Consequences, Alternatives.
+. Link the ADR from the README or relevant code as a comment.
+
+The decisions made without owner input during M0–M6 are listed in
+link:./status/ROADMAP.adoc[the roadmap]; each is a candidate ADR.
+
+== Reporting issues
+
+* Bugs in `heron-polyfeed-reader`: file at `hyperpolymath/heron-polyfeed-reader/issues`.
+* Estate-wide concerns (policy, conventions, CI): file at
+  `hyperpolymath/standards/issues`.

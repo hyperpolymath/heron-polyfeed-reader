@@ -35,7 +35,7 @@
   },
   # must.six-directory-present has NO descriptile witness. Its probe needs
   # descriptiles/PLAYBOOK + NEUROSYM and exactly one deed, and no fact here
-  # attests that: state and ecosystem are deed clauses since rsr-template-repo#209,
+  # attests that: state and ecosystem are deed clauses since heron-polyfeed-reader#209,
   # and the anchor facts come from the deed. It is probe-deferred to the Hunt tier.
 
   # --- TRUST: deliberately NO descriptile witness. ---
@@ -56,15 +56,15 @@
   },
 
   # --- ADJUST: accessibility/hygiene posture (advisory; never gates) ---
-  # The ANCHOR identity block still carries {{PROJECT_NAME}}; for the template
+  # The ANCHOR identity block still carries heron-polyfeed-reader; for the template
   # itself that is expected, but it is honestly a posture dip worth surfacing.
   "adjust.placeholder-drift" = {
     kind = "descriptile",
     witnesses = [{ fact = "anchor.project", op = 'not_contains, arg = "{{" }],
-    note = "deed (anchor (identity :project)) is un-substituted ({{PROJECT_NAME}}) ⇒ posture dip",
+    note = "deed (anchor (identity :project)) is un-substituted (heron-polyfeed-reader) ⇒ posture dip",
   },
 
-  # --- BUST: deliberately NO descriptile witness since rsr-template-repo#209. ---
+  # --- BUST: deliberately NO descriptile witness since heron-polyfeed-reader#209. ---
   # The bust entries used to read STATE.a2ml open-failures / last-result. Those
   # were hand-written values ("0", "unknown") that no maintenance run ever
   # updated, and the deed has no such field, so there is no descriptive evidence

@@ -12,7 +12,6 @@
 # 4. Verifies builds work after instantiation
 # 5. Cleans up
 
-
 # Test configuration
 TEMPLATE_ROOT="${1:-.}"
 TEST_DIR="${TMPDIR:-/tmp}/rsr-template-test-$$"
@@ -223,7 +222,7 @@ for guix_file in build/guix.scm; do
         log_error "$guix_file does not contain the rendered project home page"
         exit 1
     fi
-    if grep -q 'rsr-template-repo' "$TEST_REPO_PATH/$guix_file"; then
+    if grep -q 'heron-polyfeed-reader' "$TEST_REPO_PATH/$guix_file"; then
         log_error "$guix_file still contains the template repository identity"
         exit 1
     fi
@@ -358,7 +357,7 @@ done
 log_step "Verifying machine-readable metadata"
 
 # Identity, state, meta and ecosystem are clauses of the minted repo's own
-# deed (rsr-template-repo#209); the journal is docs/status/ROADMAP.adoc.
+# deed (heron-polyfeed-reader#209); the journal is docs/status/ROADMAP.adoc.
 CHILD_DEED="${TEST_REPO_NAME}_chora.deed"
 for file in "$CHILD_DEED" "docs/status/ROADMAP.adoc"; do
     if [ -f "$TEST_REPO_PATH/$file" ]; then
@@ -394,7 +393,7 @@ fi
 # the {{PLACEHOLDER}} the deed's prose mentions.
 log_pass "Child deed carries the minted repo's identity"
 
-# Mint-time clauses (rsr-template-repo#209 follow-up): the profile is the
+# Mint-time clauses (heron-polyfeed-reader#209 follow-up): the profile is the
 # minimal one, not the template's maximal spine profile; provenance and the
 # variant record name the template commit; exactly one canon pin survives.
 if [ "$(bash "$DEED_READ" "$CHILD" rsr-profile role 2>/dev/null || true)" = "spine" ]; then

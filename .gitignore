@@ -22,7 +22,9 @@ _build/
 
 # Dependencies
 node_modules/
-/vendor/
+/vendor/*
+# heron: vendored SQLite amalgamation is tracked source (build.zig compiles it)
+!/vendor/sqlite/
 /deps/
 /.elixir_ls/
 
@@ -144,3 +146,9 @@ verification/proofs/coq/.*.aux
 # Agda compiled proof artifacts
 verification/proofs/agda/*.agdai
 
+
+# Zig (heron-polyfeed-reader): build cache, install prefix, local SQLite state
+zig-out/
+*.db
+*.db-wal
+*.db-shm

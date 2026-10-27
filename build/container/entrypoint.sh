@@ -1,63 +1,22 @@
 #!/bin/sh
 # SPDX-License-Identifier: MPL-2.0
-# {{PROJECT_NAME}} container entrypoint
+# heron-polyfeed-reader container entrypoint (build/container/Containerfile, Tier-A image).
 #
-# Handles signal propagation, startup logging, and health check
-# preparation before exec-ing into the main application process.
+# Logs the effective configuration, warns early when the data directory is not writable, then
+# execs heron so it is PID 1 and receives the engine's stop signals directly.
 
 set -e
 
-# ---------------------------------------------------------------------------
-# Signal handling
-# ---------------------------------------------------------------------------
-#
-# Trap SIGTERM and SIGINT so that the application can shut down gracefully
-# when Podman sends stop signals (e.g. `podman stop`, `selur-compose down`).
+echo "Starting heron..."
+echo "  Config: ${HERON_CONFIG:-/config/heron.json}"
+echo "  Data:   ${HERON_DATA:-/data}"
 
-cleanup() {
-    echo "Received shutdown signal — stopping {{SERVICE_NAME}}..."
-    # If the main process is backgrounded, kill it here:
-    # kill "$MAIN_PID" 2>/dev/null || true
-    # wait "$MAIN_PID" 2>/dev/null || true
-    exit 0
-}
-trap cleanup TERM INT
-
-# ---------------------------------------------------------------------------
-# Startup logging
-# ---------------------------------------------------------------------------
-
-echo "Starting {{SERVICE_NAME}}..."
-echo "  Host: ${APP_HOST:-[::]}"
-echo "  Port: ${APP_PORT:-{{PORT}}}"
-echo "  Data: ${APP_DATA_DIR:-/data}"
-echo "  Log:  ${APP_LOG_FORMAT:-json}"
-
-# ---------------------------------------------------------------------------
-# Health check preparation
-# ---------------------------------------------------------------------------
-#
-# Ensure the data directory exists and is writable.
-# The VOLUME directive in the Containerfile creates /data, but a bind-mount
-# might replace it with an empty directory owned by root.
-
-if [ -d "${APP_DATA_DIR:-/data}" ]; then
-    if [ ! -w "${APP_DATA_DIR:-/data}" ]; then
-        echo "WARNING: ${APP_DATA_DIR:-/data} is not writable by $(whoami)"
-    fi
+# A bind-mounted or engine-created data directory may be owned by root; heron cannot create its
+# log, index or lock file there. Say so before the daemon fails with StoreOpenFailed.
+if [ -d "${HERON_DATA:-/data}" ] && [ ! -w "${HERON_DATA:-/data}" ]; then
+    echo "WARNING: ${HERON_DATA:-/data} is not writable by $(id -un 2>/dev/null || echo "uid $(id -u)")" >&2
 fi
 
-# ---------------------------------------------------------------------------
-# Exec into main process
-# ---------------------------------------------------------------------------
-#
-# Replace the entrypoint shell with the application process so that
-# signals are delivered directly and PID 1 is the application.
-#
-# TODO: Replace the command below with your application binary.
-# Examples:
-#   exec /app/{{SERVICE_NAME}}
-#   exec /app/release/bin/{{SERVICE_NAME}} start
-#   exec /app/{{SERVICE_NAME}} serve --host "${APP_HOST}" --port "${APP_PORT}"
-
-exec "$@"
+# Default command is `daemon` (CMD in the Containerfile); any heron sub-command can be passed:
+#   podman run --rm heron:latest check-config
+exec /app/heron "$@"

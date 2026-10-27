@@ -1,0 +1,259 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+//! Configuration: a plain JSON file (no YAML). See `examples/heron.json`.
+//!
+//! {
+//!   "data_dir": "/var/lib/heron",                 // optional
+//!   "user_agent": "heron/0.1 (+contact)",         // optional
+//!   "timeout_s": 30,                            // optional, per request
+//!   "web": { "enabled": true, "bind": "127.0.0.1", "port": 8484, "allow_non_loopback": false },   // optional
+//!   "sources":  [ { "name": "lwn", "type": "feed", "url": "https://lwn.net/headlines/rss", "interval_s": 900 } ],
+//!   "monitors": [ { "name": "site", "url": "https://example.org/", "interval_s": 300,
+//!                  "expect_status": 200, "detect_changes": true, "check_robots": true } ]
+//! }
+//!
+//! Unknown keys inside a source are kept as that adapter's private `options` (raw JSON), so
+//! new source types can add settings without touching this file.
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+pub const min_interval_s: u32 = 60;
+pub const default_interval_s: u32 = 1800;
+
+pub const SourceCfg = struct {
+    name: []const u8,
+    type_name: []const u8,
+    url: []const u8,
+    interval_s: u32,
+    /// Raw JSON object text of adapter-specific settings ("" if none).
+    options: []const u8 = "",
+};
+
+pub const MonitorCfg = struct {
+    name: []const u8,
+    url: []const u8,
+    interval_s: u32,
+    expect_status: u16 = 200,
+    detect_changes: bool = true,
+    check_robots: bool = true,
+    /// Alert when the TLS certificate has fewer than this many days left (0 = off).
+    cert_warn_days: u32 = 14,
+};
+
+pub const WebCfg = struct {
+    enabled: bool = false,
+    bind: []const u8 = "127.0.0.1",
+    port: u16 = 8484,
+    /// Required to bind a non-loopback address (e.g. 0.0.0.0 inside a container whose port is published on host loopback only).
+    allow_non_loopback: bool = false,
+};
+
+pub const Config = struct {
+    data_dir: ?[]const u8 = null,
+    user_agent: []const u8 = "heron-polyfeed-reader/0.1 (+https://github.com/hyperpolymath/heron-polyfeed-reader)",
+    timeout_s: u32 = 30,
+    web: WebCfg = .{},
+    sources: []SourceCfg = &.{},
+    monitors: []MonitorCfg = &.{},
+};
+
+pub const Diagnostic = struct { message: []const u8 = "" };
+
+pub const Error = error{InvalidConfig} || Allocator.Error;
+
+fn bad(a: Allocator, diag: *Diagnostic, comptime fmt: []const u8, args: anytype) Error {
+    diag.message = std.fmt.allocPrint(a, fmt, args) catch "invalid configuration";
+    return error.InvalidConfig;
+}
+
+fn validName(n: []const u8) bool {
+    if (n.len == 0 or n.len > 64) return false;
+    for (n) |c| if (!(std.ascii.isAlphanumeric(c) or c == '.' or c == '_' or c == '-')) return false;
+    return true;
+}
+
+fn validHttpUrl(u: []const u8) bool {
+    const uri = std.Uri.parse(u) catch return false;
+    if (!(std.ascii.eqlIgnoreCase(uri.scheme, "http") or std.ascii.eqlIgnoreCase(uri.scheme, "https"))) return false;
+    return uri.host != null;
+}
+
+/// A string field: absent -> null; present but not a JSON string -> InvalidConfig, so
+/// `"data_dir": false` cannot silently fall back to the default directory.
+fn getStr(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?[]const u8 {
+    const v = obj.get(key) orelse return null;
+    if (v != .string) return bad(a, diag, "{s} must be a string", .{what});
+    return v.string;
+}
+
+/// An integer field: absent -> null; present but not a JSON integer -> InvalidConfig, so a quoted
+/// `"port": "9000"` cannot silently fall back to the default.
+fn getInt(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?i64 {
+    const v = obj.get(key) orelse return null;
+    if (v != .integer) return bad(a, diag, "{s} must be an integer (unquoted)", .{what});
+    return v.integer;
+}
+
+/// A typo such as "souces" must not parse as "no sources" and let the daemon run polling nothing.
+fn rejectUnknown(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, comptime allowed: []const []const u8, what: []const u8) Error!void {
+    var it = obj.iterator();
+    while (it.next()) |e| {
+        var known = false;
+        inline for (allowed) |k| {
+            if (std.mem.eql(u8, e.key_ptr.*, k)) known = true;
+        }
+        if (!known) return bad(a, diag, "{s}: unknown key '{s}'", .{ what, e.key_ptr.* });
+    }
+}
+
+/// A boolean field: absent -> null; present but not a JSON boolean -> InvalidConfig. A mistyped
+/// `"enabled": "false"` must never silently take the default (which for web.enabled is true).
+fn getBool(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?bool {
+    const v = obj.get(key) orelse return null;
+    if (v != .bool) return bad(a, diag, "{s} must be true or false (unquoted)", .{what});
+    return v.bool;
+}
+
+/// Parse and validate. All returned memory belongs to `a` (use an arena).
+pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
+    const root = std.json.parseFromSliceLeaky(std.json.Value, a, text, .{}) catch |e|
+        return bad(a, diag, "not valid JSON: {s}", .{@errorName(e)});
+    if (root != .object) return bad(a, diag, "top level must be an object", .{});
+    const obj = root.object;
+    var cfg: Config = .{};
+    try rejectUnknown(a, diag, obj, &.{ "data_dir", "user_agent", "timeout_s", "web", "sources", "monitors" }, "top level");
+
+    if (try getStr(a, diag, obj, "data_dir", "data_dir")) |d| cfg.data_dir = d;
+    if (try getStr(a, diag, obj, "user_agent", "user_agent")) |d| cfg.user_agent = d;
+    if (try getInt(a, diag, obj, "timeout_s", "timeout_s")) |t| {
+        if (t < 1 or t > 600) return bad(a, diag, "timeout_s must be 1..600", .{});
+        cfg.timeout_s = @intCast(t);
+    }
+    if (obj.get("web")) |w| {
+        if (w != .object) return bad(a, diag, "web must be an object", .{});
+        try rejectUnknown(a, diag, w.object, &.{ "enabled", "bind", "port", "allow_non_loopback" }, "web");
+        cfg.web.enabled = (try getBool(a, diag, w.object, "enabled", "web.enabled")) orelse true;
+        if (try getStr(a, diag, w.object, "bind", "web.bind")) |b| cfg.web.bind = b;
+        cfg.web.allow_non_loopback = (try getBool(a, diag, w.object, "allow_non_loopback", "web.allow_non_loopback")) orelse false;
+        if (try getInt(a, diag, w.object, "port", "web.port")) |p| {
+            if (p < 1 or p > 65535) return bad(a, diag, "web.port out of range", .{});
+            cfg.web.port = @intCast(p);
+        }
+    }
+
+    var names: std.StringHashMapUnmanaged(void) = .empty;
+    var sources: std.ArrayList(SourceCfg) = .empty;
+    if (obj.get("sources")) |sv| {
+        if (sv != .array) return bad(a, diag, "sources must be an array", .{});
+        for (sv.array.items, 0..) |item, idx| {
+            if (item != .object) return bad(a, diag, "sources[{d}] must be an object", .{idx});
+            const o = item.object;
+            try rejectUnknown(a, diag, o, &.{ "name", "type", "url", "interval_s", "options" }, "source");
+            const name = (try getStr(a, diag, o, "name", "source name")) orelse return bad(a, diag, "sources[{d}]: missing name", .{idx});
+            if (!validName(name)) return bad(a, diag, "sources[{d}]: bad name '{s}' (use A-Z a-z 0-9 . _ -, max 64)", .{ idx, name });
+            if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
+            const type_name = (try getStr(a, diag, o, "type", "source type")) orelse "feed";
+            const url = (try getStr(a, diag, o, "url", "source url")) orelse return bad(a, diag, "source '{s}': missing url", .{name});
+            const interval = (try getInt(a, diag, o, "interval_s", "source interval_s")) orelse default_interval_s;
+            if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "source '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
+            if (std.mem.eql(u8, type_name, "feed") and !validHttpUrl(url)) return bad(a, diag, "source '{s}': url must be http(s)", .{name});
+            var options: []const u8 = "";
+            if (o.get("options")) |opt| {
+                if (opt != .object) return bad(a, diag, "source '{s}': options must be an object", .{name});
+                options = try std.json.Stringify.valueAlloc(a, opt, .{});
+            }
+            try sources.append(a, .{ .name = name, .type_name = type_name, .url = url, .interval_s = @intCast(interval), .options = options });
+        }
+    }
+    cfg.sources = sources.items;
+
+    var monitors: std.ArrayList(MonitorCfg) = .empty;
+    if (obj.get("monitors")) |mv| {
+        if (mv != .array) return bad(a, diag, "monitors must be an array", .{});
+        for (mv.array.items, 0..) |item, idx| {
+            if (item != .object) return bad(a, diag, "monitors[{d}] must be an object", .{idx});
+            const o = item.object;
+            try rejectUnknown(a, diag, o, &.{ "name", "url", "interval_s", "expect_status", "detect_changes", "check_robots", "cert_warn_days" }, "monitor");
+            const name = (try getStr(a, diag, o, "name", "monitor name")) orelse return bad(a, diag, "monitors[{d}]: missing name", .{idx});
+            if (!validName(name)) return bad(a, diag, "monitors[{d}]: bad name '{s}'", .{ idx, name });
+            if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
+            const url = (try getStr(a, diag, o, "url", "monitor url")) orelse return bad(a, diag, "monitor '{s}': missing url", .{name});
+            if (!validHttpUrl(url)) return bad(a, diag, "monitor '{s}': url must be http(s)", .{name});
+            const interval = (try getInt(a, diag, o, "interval_s", "monitor interval_s")) orelse 300;
+            if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "monitor '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
+            var m: MonitorCfg = .{ .name = name, .url = url, .interval_s = @intCast(interval) };
+            if (try getInt(a, diag, o, "expect_status", "monitor expect_status")) |s| {
+                if (s < 100 or s > 599) return bad(a, diag, "monitor '{s}': expect_status out of range", .{name});
+                m.expect_status = @intCast(s);
+            }
+            if (try getBool(a, diag, o, "detect_changes", "monitor detect_changes")) |b| m.detect_changes = b;
+            if (try getBool(a, diag, o, "check_robots", "monitor check_robots")) |b| m.check_robots = b;
+            if (try getInt(a, diag, o, "cert_warn_days", "monitor cert_warn_days")) |d| {
+                // Bound before the narrowing cast: an out-of-range integer is a diagnostic, not a trap.
+                if (d < 0 or d > 3650) return bad(a, diag, "monitor '{s}': cert_warn_days must be 0..3650", .{name});
+                m.cert_warn_days = @intCast(d);
+            }
+            try monitors.append(a, m);
+        }
+    }
+    cfg.monitors = monitors.items;
+    return cfg;
+}
+
+test "valid config with defaults, options passthrough, monitors" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    var d: Diagnostic = .{};
+    const c = try parse(arena.allocator(),
+        \\{"sources":[{"name":"lwn","url":"https://lwn.net/headlines/rss","interval_s":900},
+        \\            {"name":"n","type":"nntp","url":"news://x/y","options":{"group":"a.b"}}],
+        \\ "monitors":[{"name":"site","url":"https://example.org/","expect_status":204,"check_robots":false}],
+        \\ "web":{"port":9000}}
+    , &d);
+    try std.testing.expectEqual(@as(usize, 2), c.sources.len);
+    try std.testing.expectEqualStrings("feed", c.sources[0].type_name);
+    try std.testing.expectEqual(@as(u32, 900), c.sources[0].interval_s);
+    try std.testing.expectEqual(default_interval_s, c.sources[1].interval_s);
+    try std.testing.expectEqualStrings("{\"group\":\"a.b\"}", c.sources[1].options);
+    try std.testing.expectEqual(@as(u16, 204), c.monitors[0].expect_status);
+    try std.testing.expect(!c.monitors[0].check_robots and c.monitors[0].detect_changes);
+    try std.testing.expectEqual(@as(u16, 9000), c.web.port);
+    try std.testing.expectEqualStrings("127.0.0.1", c.web.bind);
+}
+
+test "rejections carry a message" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const cases = [_][]const u8{
+        "[]",
+        "{not json",
+        "{\"sources\":[{\"url\":\"http://x/\"}]}", // no name
+        "{\"sources\":[{\"name\":\"a b\",\"url\":\"http://x/\"}]}", // bad name
+        "{\"sources\":[{\"name\":\"a\",\"url\":\"ftp://x/\"}]}", // bad scheme
+        "{\"sources\":[{\"name\":\"a\",\"url\":\"http://x/\",\"interval_s\":5}]}", // too fast
+        "{\"sources\":[{\"name\":\"a\",\"url\":\"http://x/\"},{\"name\":\"a\",\"url\":\"http://y/\"}]}", // dup
+        "{\"monitors\":[{\"name\":\"a\",\"url\":\"http://x/\"}],\"sources\":[{\"name\":\"a\",\"url\":\"http://y/\"}]}", // dup across kinds
+        "{\"web\":{\"port\":70000}}",
+        "{\"timeout_s\":0}",
+        "{\"web\":{\"enabled\":\"false\"}}", // a quoted boolean must not silently enable the UI
+        "{\"web\":{\"allow_non_loopback\":1}}",
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"check_robots\":\"no\"}]}",
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"cert_warn_days\":4294967296}]}", // would trap the u32 cast
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"cert_warn_days\":-1}]}",
+        "{\"web\":{\"port\":\"9000\"}}", // a quoted integer must not silently take the default port
+        "{\"timeout_s\":\"60\"}",
+        "{\"souces\":[]}", // a typo must not parse as "no sources"
+        "{\"web\":{\"enable\":true}}",
+        "{\"sources\":[{\"name\":\"a\",\"url\":\"http://x/\",\"interval\":60}]}",
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"expect\":200}]}",
+        "{\"data_dir\":false}", // a non-string must not silently take the default data directory
+        "{\"user_agent\":1}",
+        "{\"web\":{\"bind\":[]}}",
+        "{\"sources\":[{\"name\":\"a\",\"type\":7,\"url\":\"http://x/\"}]}",
+    };
+    for (cases) |text| {
+        var d: Diagnostic = .{};
+        try std.testing.expectError(error.InvalidConfig, parse(arena.allocator(), text, &d));
+        try std.testing.expect(d.message.len > 0);
+    }
+}

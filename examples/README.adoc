@@ -1,3 +1,8 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = examples Pillar
+
+`heron.json` is a complete, valid `heron` configuration: three feed sources,
+one monitor with change detection, robots.txt checking and certificate-expiry
+warning, and the web UI enabled on `127.0.0.1:8484`. `just test-smoke`
+validates it with `heron check-config`; `docs/usage.adoc` documents every key.

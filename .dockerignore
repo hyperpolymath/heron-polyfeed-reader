@@ -1,0 +1,15 @@
+.zig-cache
+zig-out
+.git
+*.db*
+# Estate scaffolding that the Zig build does not read (build.zig.zon .paths lists what the package is)
+.github
+.machine_readable
+archetypes
+ci
+docs
+features
+session
+tests
+verification
+www

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
-# {{PROJECT_NAME}} — portable compose stack (Tier B)
+# heron-polyfeed-reader — portable compose stack (Tier B)
 #
 # This is the runtime-agnostic, OCI compose-spec file. It works unchanged with:
 #   podman compose  -f build/container/compose.yaml up -d
@@ -20,27 +20,30 @@ services:
   # ──────────────────────────────────────────────────────────────────────
   # Primary application service
   # ──────────────────────────────────────────────────────────────────────
-  "{{SERVICE_NAME}}":
+  "heron":
     build:
-      context: ..
+      context: ../..          # the repository root (relative contexts resolve from this file's directory)
       dockerfile: build/container/Containerfile
-    image: "{{REGISTRY}}/{{SERVICE_NAME}}:latest"
+    image: "ghcr.io/hyperpolymath/heron:latest"
+    # The web UI has no authentication: publish it on the host loopback only (a mapping without a
+    # host IP binds 0.0.0.0 on every interface).
     ports:
-      - "{{PORT}}:{{PORT}}"
+      - "127.0.0.1:8484:8484"
     environment:
-      APP_HOST: "[::]"
-      APP_PORT: "{{PORT}}"
-      APP_LOG_FORMAT: "json"
-      APP_DATA_DIR: "/data"
+      HERON_CONFIG: "/config/heron.json"
+      HERON_DATA: "/data"
     volumes:
-      - "{{SERVICE_NAME}}-data:/data"
+      - "heron-data:/data"
+      # heron exits with ConfigNotFound without a config. This one binds the UI to 0.0.0.0 INSIDE the
+      # container (loopback there is unreachable from the host) and relies on the mapping above.
+      - "./heron.json:/config/heron.json:ro"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:{{PORT}}/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    # No healthcheck: heron has no /health route and the runtime image carries no curl. heron is
+    # PID 1 and exits non-zero on a fatal error, which `restart` handles.
+    #
+    # The rokur/svalinn gateway services below are template extras. The UI refuses a Host header
+    # that is not the bound address or a loopback name (DNS-rebinding defence), so a gateway must
+    # forward Host as 127.0.0.1:8484, or be removed (`just container-keep oci portable`).
 
   # ──────────────────────────────────────────────────────────────────────
   # rokur — secrets-management gate (stapeln). Fronts the app and refuses
@@ -50,7 +53,7 @@ services:
   rokur:
     image: ghcr.io/hyperpolymath/rokur:latest
     environment:
-      ROKUR_BACKEND: "http://{{SERVICE_NAME}}:{{PORT}}"
+      ROKUR_BACKEND: "http://heron:8484"
       ROKUR_LISTEN: "[::]:8081"
       ROKUR_REQUIRED_SECRETS: ""        # comma-separated env names that MUST be set
       ROKUR_AUDIT_LOG: "/var/log/rokur/audit.jsonl"
@@ -60,8 +63,8 @@ services:
     volumes:
       - rokur-audit:/var/log/rokur
     depends_on:
-      "{{SERVICE_NAME}}":
-        condition: service_healthy
+      "heron":
+        condition: service_started
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8081/health"]
@@ -95,5 +98,5 @@ services:
       retries: 3
 
 volumes:
-  "{{SERVICE_NAME}}-data":
+  "heron-data":
   rokur-audit:

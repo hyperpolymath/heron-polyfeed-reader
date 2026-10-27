@@ -1,0 +1,14 @@
+{
+  "user_agent": "heron-polyfeed-reader/0.1 (+mailto:you@example.org)",
+  "timeout_s": 30,
+  "web": { "enabled": true, "bind": "127.0.0.1", "port": 8484 },
+  "sources": [
+    { "name": "lwn",  "type": "feed", "url": "https://lwn.net/headlines/rss",       "interval_s": 900 },
+    { "name": "zig",  "type": "feed", "url": "https://ziglang.org/news/index.xml",  "interval_s": 3600 },
+    { "name": "rust", "type": "feed", "url": "https://blog.rust-lang.org/feed.xml", "interval_s": 3600 }
+  ],
+  "monitors": [
+    { "name": "example-site", "url": "https://example.org/", "interval_s": 300,
+      "expect_status": 200, "detect_changes": true, "check_robots": true, "cert_warn_days": 14 }
+  ]
+}

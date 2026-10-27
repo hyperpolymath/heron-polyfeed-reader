@@ -1,44 +1,68 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // SPDX-FileCopyrightText: Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
-= Contributing — rsr-template-repo
+= Contributing — heron-polyfeed-reader
 :toc: left
 
-Contributors work on the *spine*: the template every RSR repo is minted
-from. Changes here propagate to the whole estate at mint time, so the bar
-is the estate's bar.
+`heron` is a small Zig daemon with no dependencies beyond the vendored SQLite
+amalgamation. Most changes are a unit test plus the code that makes it pass.
 
 == Local-dev setup
 
+Needs *Zig 0.17.0 exactly*. `std.Io`, `std.http` and the TLS APIs changed from
+0.15/0.16; check against the installed `std`, not against older examples.
+
 [source,bash]
 ----
-# Clone the repository
-git clone https://github.com/hyperpolymath/rsr-template-repo.git
-cd rsr-template-repo
+git clone https://github.com/hyperpolymath/heron-polyfeed-reader.git
+cd heron-polyfeed-reader
 
-# Using Guix (recommended for reproducibility)
-guix shell -D -f build/guix.scm
+# Toolchain: mise pins zig = "0.17.0" (mise.toml / mise.lock)
+just setup                           # or: mise install
+just doctor                          # PASS/WARN/FAIL with codes
 
-# Or using toolbox/distrobox
-toolbox create rsr-template-repo-dev
-toolbox enter rsr-template-repo-dev
-# Install dependencies manually
+# The project's own loop
+zig build test --summary all         # 85 unit tests; fixtures under src/testdata/
+zig fmt --check build.zig src        # what `just lint` runs
+zig build -Doptimize=ReleaseSafe     # zig-out/bin/heron
 
-# Verify setup
-just check   # or: cargo check / mix compile / etc.
-just test    # Run test suite
+# Containerised (podman or docker)
+podman build -f Containerfile --target test -t heron-test .
 ----
+
+`just test` / `just build` / `just lint` go through the estate provisioning
+library and run every detected language; the template's Idris2 ABI seam under
+`src/interface/` is detected too, so those recipes also want `idris2` (from
+pack). `zig build …` alone is enough for the project.
 
 == Repository structure
 
 The authoritative map is *generated* from the tree and checked in CI, so
 it cannot drift:
 link:docs/architecture/REPOSITORY-MAP.adoc[docs/architecture/REPOSITORY-MAP.adoc].
-Regenerate it with `just repo-map`.
+Regenerate it with `just repo-map`. The short version is in
+link:README.adoc#_layout[README § Layout].
 
-A hand-written tree used to live here. It described `lib/`, `extensions/`,
-`plugins/` and `spec/` directories that this repository has never
-contained, which is precisely why the map is now generated rather than
-typed.
+== Conventions to keep
+
+* SPDX headers on every source file: `SPDX-License-Identifier: MPL-2.0` and
+  `SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell` (code); `CC-BY-SA-4.0`
+  for prose.
+* No Python in the repo (estate language policy; see `CLAUDE.md`). FFI is
+  hand-written Zig externs (`src/sqlite.zig`), not generated bindings:
+  `@cImport` no longer exists in Zig 0.17.
+* Containerise build and tests by default; the toolchain is pinned by version
+  and SHA-256 in the `Containerfile` and in `.github/workflows/zig-ci.yml`.
+  Change the pin in both, and in `mise.toml` / `mise.lock`, together.
+* `src/vendor/tls_client.zig` is a patched copy of std's TLS client (`[sfr patch]`
+  markers: `host.sni_only`, `leaf_not_after`). Re-sync it whenever Zig is
+  upgraded; `src/vendor/NOTICE` says how.
+* All HTTP tests use the local fixture server (`src/localserver.zig`); never
+  make a test depend on a live site.
+* Commit at each milestone, with the milestone in the subject
+  (`M8: …`). Record anything decided without the owner's input in
+  link:docs/status/ROADMAP.adoc[the roadmap] so it can be revisited.
+* Report faithfully: say what was run and what passed; a skipped check is
+  reported as skipped, never as green.
 
 == How to contribute
 
@@ -80,10 +104,10 @@ and include:
 
 Look for issues labelled:
 
-* https://github.com/hyperpolymath/rsr-template-repo/labels/good%20first%20issue[`good first issue`] — Simple Perimeter 3 tasks
-* https://github.com/hyperpolymath/rsr-template-repo/labels/help%20wanted[`help wanted`] — Community help needed
-* https://github.com/hyperpolymath/rsr-template-repo/labels/documentation[`documentation`] — Docs improvements
-* https://github.com/hyperpolymath/rsr-template-repo/labels/perimeter-3[`perimeter-3`] — Community sandbox scope
+* https://github.com/hyperpolymath/heron-polyfeed-reader/labels/good%20first%20issue[`good first issue`] — Simple Perimeter 3 tasks
+* https://github.com/hyperpolymath/heron-polyfeed-reader/labels/help%20wanted[`help wanted`] — Community help needed
+* https://github.com/hyperpolymath/heron-polyfeed-reader/labels/documentation[`documentation`] — Docs improvements
+* https://github.com/hyperpolymath/heron-polyfeed-reader/labels/perimeter-3[`perimeter-3`] — Community sandbox scope
 
 == Development workflow
 
