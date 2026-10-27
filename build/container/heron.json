@@ -1,0 +1,1 @@
+{"monitors":[],"sources":[{"interval_s":900,"name":"lwn","type":"feed","url":"https://lwn.net/headlines/rss"}],"timeout_s":30,"user_agent":"heron-polyfeed-reader/0.1 (+https://github.com/hyperpolymath/heron-polyfeed-reader)","web":{"allow_non_loopback":true,"bind":"0.0.0.0","enabled":true,"port":8484}}

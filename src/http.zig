@@ -187,6 +187,8 @@ pub const HttpTransport = struct {
             }
 
             var out: transport.Response = .{ .status = status };
+            if (hops > 0) out.final_url = try std.fmt.allocPrint(arena, "{f}", .{uri.fmt(.all)});
+            if (resp.head.location) |l| out.location = try arena.dupe(u8, l);
             out.content_type = try dupeOpt(arena, resp.head.content_type);
             var it = resp.head.iterateHeaders();
             while (it.next()) |h| {
@@ -322,8 +324,12 @@ test "http transport: 200 with validators, conditional 304, 429 Retry-After, 404
     const rr = try tr.request(a, .{ .url = try std.fmt.allocPrint(a, "{s}/redir", .{base}) });
     try testing.expectEqual(@as(u16, 200), rr.status); // relative redirect followed
     try testing.expect(std.mem.startsWith(u8, rr.body, "<rss"));
+    try testing.expect(std.mem.endsWith(u8, rr.final_url.?, "/feed")); // the post-redirect URL is reported
+    try testing.expect(std.mem.startsWith(u8, rr.final_url.?, "http://"));
     const r302 = try tr.request(a, .{ .url = try std.fmt.allocPrint(a, "{s}/redir", .{base}), .follow_redirects = false });
     try testing.expectEqual(@as(u16, 302), r302.status);
+    try testing.expectEqualStrings("/feed", r302.location.?); // unfollowed: the caller gets the hop
+    try testing.expect(r302.final_url == null);
     try testing.expectError(error.BadResponse, tr.request(a, .{ .url = try std.fmt.allocPrint(a, "{s}/loop", .{base}) })); // redirect loop is bounded
 
     const r4 = try tr.request(a, .{ .url = try std.fmt.allocPrint(a, "{s}/missing", .{base}) });

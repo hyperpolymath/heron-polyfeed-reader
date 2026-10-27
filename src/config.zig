@@ -83,9 +83,24 @@ fn getStr(obj: std.json.ObjectMap, key: []const u8) ?[]const u8 {
     return if (v == .string) v.string else null;
 }
 
-fn getInt(obj: std.json.ObjectMap, key: []const u8) ?i64 {
+/// An integer field: absent -> null; present but not a JSON integer -> InvalidConfig, so a quoted
+/// `"port": "9000"` cannot silently fall back to the default.
+fn getInt(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?i64 {
     const v = obj.get(key) orelse return null;
-    return if (v == .integer) v.integer else null;
+    if (v != .integer) return bad(a, diag, "{s} must be an integer (unquoted)", .{what});
+    return v.integer;
+}
+
+/// A typo such as "souces" must not parse as "no sources" and let the daemon run polling nothing.
+fn rejectUnknown(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, comptime allowed: []const []const u8, what: []const u8) Error!void {
+    var it = obj.iterator();
+    while (it.next()) |e| {
+        var known = false;
+        inline for (allowed) |k| {
+            if (std.mem.eql(u8, e.key_ptr.*, k)) known = true;
+        }
+        if (!known) return bad(a, diag, "{s}: unknown key '{s}'", .{ what, e.key_ptr.* });
+    }
 }
 
 /// A boolean field: absent -> null; present but not a JSON boolean -> InvalidConfig. A mistyped
@@ -103,19 +118,21 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
     if (root != .object) return bad(a, diag, "top level must be an object", .{});
     const obj = root.object;
     var cfg: Config = .{};
+    try rejectUnknown(a, diag, obj, &.{ "data_dir", "user_agent", "timeout_s", "web", "sources", "monitors" }, "top level");
 
     if (getStr(obj, "data_dir")) |d| cfg.data_dir = d;
     if (getStr(obj, "user_agent")) |d| cfg.user_agent = d;
-    if (getInt(obj, "timeout_s")) |t| {
+    if (try getInt(a, diag, obj, "timeout_s", "timeout_s")) |t| {
         if (t < 1 or t > 600) return bad(a, diag, "timeout_s must be 1..600", .{});
         cfg.timeout_s = @intCast(t);
     }
     if (obj.get("web")) |w| {
         if (w != .object) return bad(a, diag, "web must be an object", .{});
+        try rejectUnknown(a, diag, w.object, &.{ "enabled", "bind", "port", "allow_non_loopback" }, "web");
         cfg.web.enabled = (try getBool(a, diag, w.object, "enabled", "web.enabled")) orelse true;
         if (getStr(w.object, "bind")) |b| cfg.web.bind = b;
         cfg.web.allow_non_loopback = (try getBool(a, diag, w.object, "allow_non_loopback", "web.allow_non_loopback")) orelse false;
-        if (getInt(w.object, "port")) |p| {
+        if (try getInt(a, diag, w.object, "port", "web.port")) |p| {
             if (p < 1 or p > 65535) return bad(a, diag, "web.port out of range", .{});
             cfg.web.port = @intCast(p);
         }
@@ -128,12 +145,13 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
         for (sv.array.items, 0..) |item, idx| {
             if (item != .object) return bad(a, diag, "sources[{d}] must be an object", .{idx});
             const o = item.object;
+            try rejectUnknown(a, diag, o, &.{ "name", "type", "url", "interval_s", "options" }, "source");
             const name = getStr(o, "name") orelse return bad(a, diag, "sources[{d}]: missing name", .{idx});
             if (!validName(name)) return bad(a, diag, "sources[{d}]: bad name '{s}' (use A-Z a-z 0-9 . _ -, max 64)", .{ idx, name });
             if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
             const type_name = getStr(o, "type") orelse "feed";
             const url = getStr(o, "url") orelse return bad(a, diag, "source '{s}': missing url", .{name});
-            const interval = getInt(o, "interval_s") orelse default_interval_s;
+            const interval = (try getInt(a, diag, o, "interval_s", "source interval_s")) orelse default_interval_s;
             if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "source '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
             if (std.mem.eql(u8, type_name, "feed") and !validHttpUrl(url)) return bad(a, diag, "source '{s}': url must be http(s)", .{name});
             var options: []const u8 = "";
@@ -152,21 +170,22 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
         for (mv.array.items, 0..) |item, idx| {
             if (item != .object) return bad(a, diag, "monitors[{d}] must be an object", .{idx});
             const o = item.object;
+            try rejectUnknown(a, diag, o, &.{ "name", "url", "interval_s", "expect_status", "detect_changes", "check_robots", "cert_warn_days" }, "monitor");
             const name = getStr(o, "name") orelse return bad(a, diag, "monitors[{d}]: missing name", .{idx});
             if (!validName(name)) return bad(a, diag, "monitors[{d}]: bad name '{s}'", .{ idx, name });
             if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
             const url = getStr(o, "url") orelse return bad(a, diag, "monitor '{s}': missing url", .{name});
             if (!validHttpUrl(url)) return bad(a, diag, "monitor '{s}': url must be http(s)", .{name});
-            const interval = getInt(o, "interval_s") orelse 300;
+            const interval = (try getInt(a, diag, o, "interval_s", "monitor interval_s")) orelse 300;
             if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "monitor '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
             var m: MonitorCfg = .{ .name = name, .url = url, .interval_s = @intCast(interval) };
-            if (getInt(o, "expect_status")) |s| {
+            if (try getInt(a, diag, o, "expect_status", "monitor expect_status")) |s| {
                 if (s < 100 or s > 599) return bad(a, diag, "monitor '{s}': expect_status out of range", .{name});
                 m.expect_status = @intCast(s);
             }
             if (try getBool(a, diag, o, "detect_changes", "monitor detect_changes")) |b| m.detect_changes = b;
             if (try getBool(a, diag, o, "check_robots", "monitor check_robots")) |b| m.check_robots = b;
-            if (getInt(o, "cert_warn_days")) |d| {
+            if (try getInt(a, diag, o, "cert_warn_days", "monitor cert_warn_days")) |d| {
                 // Bound before the narrowing cast: an out-of-range integer is a diagnostic, not a trap.
                 if (d < 0 or d > 3650) return bad(a, diag, "monitor '{s}': cert_warn_days must be 0..3650", .{name});
                 m.cert_warn_days = @intCast(d);
@@ -218,6 +237,12 @@ test "rejections carry a message" {
         "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"check_robots\":\"no\"}]}",
         "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"cert_warn_days\":4294967296}]}", // would trap the u32 cast
         "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"cert_warn_days\":-1}]}",
+        "{\"web\":{\"port\":\"9000\"}}", // a quoted integer must not silently take the default port
+        "{\"timeout_s\":\"60\"}",
+        "{\"souces\":[]}", // a typo must not parse as "no sources"
+        "{\"web\":{\"enable\":true}}",
+        "{\"sources\":[{\"name\":\"a\",\"url\":\"http://x/\",\"interval\":60}]}",
+        "{\"monitors\":[{\"name\":\"m\",\"url\":\"http://x/\",\"expect\":200}]}",
     };
     for (cases) |text| {
         var d: Diagnostic = .{};

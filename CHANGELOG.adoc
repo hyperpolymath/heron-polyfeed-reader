@@ -55,6 +55,17 @@ the template commit.
   ingest; relative Atom/RSS links are resolved against the feed URL; the scratch
   image ships `/data` owned by the runtime UID; the template Tier-A image
   (`build/container/Containerfile`) now builds and runs heron.
+* Second review round: unknown config keys and wrongly typed integers are
+  rejected (the documentation already promised the first); a failed SQLite
+  transaction after a durable log append no longer lets the next ingest skip
+  those records; `plainText` treats a bare `<` as text; change detection
+  decodes character references before hashing; the transport reports the
+  post-redirect URL (used as the base for relative links) and the Location of
+  an unfollowed redirect; with `check_robots` on, the monitor steps through
+  redirects itself and refuses a hop to another origin before fetching it;
+  the compose stack mounts a config, publishes the UI on host loopback only
+  and drops the unusable health check; `.dockerignore` no longer hides the
+  Tier-A entrypoint from its own build.
 
 ==== Changed
 

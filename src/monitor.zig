@@ -121,8 +121,15 @@ pub fn normalizeText(a: Allocator, html: []const u8) Allocator.Error![]u8 {
         i += 1;
     }
     while (out.items.len > 0 and out.items[out.items.len - 1] == ' ') out.items.len -= 1;
-    return out.items;
+    // Character references are presentation, not content: "A &amp; B" and "A &#38; B" are the same
+    // text and must hash the same, or an escaping change would raise a CHANGED alert.
+    var decoded: std.ArrayList(u8) = .empty;
+    try xml.appendDecoded(&decoded, a, out.items);
+    return decoded.items;
 }
+
+const xml = @import("xml.zig");
+const feed = @import("feed.zig");
 
 fn startsWithIgnoreCase(s: []const u8, prefix: []const u8) bool {
     return s.len >= prefix.len and std.ascii.eqlIgnoreCase(s[0..prefix.len], prefix);
@@ -154,6 +161,16 @@ const Alerts = struct {
 };
 
 const Target = struct { https: bool, host: []const u8, port: u16, path_query: []const u8, robots_url: []const u8 };
+
+const max_redirect_hops = 5;
+
+fn isRedirect(status: u16) bool {
+    return status == 301 or status == 302 or status == 303 or status == 307 or status == 308;
+}
+
+fn sameOrigin(x: Target, y: Target) bool {
+    return x.https == y.https and x.port == y.port and std.ascii.eqlIgnoreCase(x.host, y.host);
+}
 
 fn parseTarget(a: Allocator, url: []const u8) !Target {
     const uri = try std.Uri.parse(url);
@@ -227,15 +244,49 @@ pub fn check(self: *MonitorAdapter, ctx: *adapter.Context, source: adapter.Sourc
             .max_body_bytes = max_body,
             .etag = if (want_body) cond.etag else null,
             .last_modified = if (want_body) cond.last_modified else null,
+            // With robots checking on, redirects are stepped through here, one hop at a time: every
+            // hop's path is checked against the rules, and a hop to another origin is refused before
+            // that origin is fetched (RFC 9309 §2.3: robots.txt is per scheme and authority).
+            .follow_redirects = !opt.check_robots,
         };
+        var refused: ?[]const u8 = null;
+        var hops: u8 = 0;
         var result = ctx.transport.request(a, req);
-        if (result) |r| {
+        while (result) |r| {
             if (req.method == .head and (r.status == 405 or r.status == 501)) {
                 req.method = .get;
                 result = ctx.transport.request(a, req);
+                continue;
             }
+            if (!(opt.check_robots and isRedirect(r.status))) break;
+            hops += 1;
+            if (hops > max_redirect_hops) {
+                refused = "too many redirects";
+                break;
+            }
+            const loc = r.location orelse {
+                refused = "redirect without a Location header";
+                break;
+            };
+            const next_url = try feed.resolveLink(a, req.url, loc);
+            const next = parseTarget(a, next_url) catch {
+                refused = try std.fmt.allocPrint(a, "redirect to an unusable URL: {s}", .{next_url});
+                break;
+            };
+            if (!sameOrigin(next, target)) {
+                refused = try std.fmt.allocPrint(a, "redirected to another origin ({s}); its robots.txt was not checked — point the monitor at the final URL", .{next_url});
+                break;
+            }
+            if (!robots_mod.allowed(st.robots_txt, self.ua_token, next.path_query)) {
+                refused = try std.fmt.allocPrint(a, "robots.txt disallows the redirect target {s}", .{next.path_query});
+                break;
+            }
+            req.url = next_url;
+            result = ctx.transport.request(a, req);
         } else |_| {}
-        if (result) |r| resp = r else |e| err_text = try std.fmt.allocPrint(a, "{s}", .{@errorName(e)});
+        if (refused) |m| {
+            err_text = m;
+        } else if (result) |r| resp = r else |e| err_text = try std.fmt.allocPrint(a, "{s}", .{@errorName(e)});
     }
 
     if (!skip_request) {
@@ -576,6 +627,24 @@ test "robots.txt: 404 allows; 5xx or network error fails the check without reque
     try testing.expectEqual(@as(?bool, true), h5.state().up);
 }
 
+test "robots.txt on: a redirect to another origin is refused before that origin is fetched" {
+    var h = Harness.init();
+    defer h.deinit();
+    h.src.options = "{\"down_after\":1}";
+    h.fake.main = .{ .status = 302, .location = "https://other.example/x" };
+    const t = try h.step(1000);
+    try expectTitle(t, "DOWN");
+    try testing.expect(std.mem.indexOf(u8, t[0], "another origin") != null);
+    try testing.expectEqual(@as(u32, 1), h.fake.main_calls); // nothing was requested from the other origin
+
+    // With robots checking off the transport follows redirects itself (the fake just answers 302).
+    var h2 = Harness.init();
+    defer h2.deinit();
+    h2.src.options = "{\"check_robots\":false,\"down_after\":1}";
+    h2.fake.main = .{ .status = 302, .location = "https://other.example/x" };
+    try expectTitle(try h2.step(1000), "DOWN"); // HTTP 302 (expected 200), no origin check involved
+}
+
 test "tls certificate: warn once per cert, expired, renewal re-arms, http skipped, probe throttled" {
     var h = Harness.init();
     defer h.deinit();
@@ -610,5 +679,7 @@ test "normalizeText" {
     defer arena.deinit();
     const a = arena.allocator();
     try testing.expectEqualStrings("a b c", try normalizeText(a, "<p>a</p>\n<!-- x --><SCRIPT>bad()</SCRIPT> <b>b</b>   c "));
+    try testing.expectEqualStrings("A & B", try normalizeText(a, "A &amp; B"));
+    try testing.expectEqualStrings(try normalizeText(a, "A &amp; B"), try normalizeText(a, "A &#38; B")); // same text, same hash
     try testing.expectEqualStrings("x", try normalizeText(a, "<style>p{}</style>x<script>unterminated"));
 }

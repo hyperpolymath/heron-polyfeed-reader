@@ -6,7 +6,6 @@ zig-out
 .github
 .machine_readable
 archetypes
-build
 ci
 docs
 features

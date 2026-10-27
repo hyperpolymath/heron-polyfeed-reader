@@ -76,6 +76,10 @@ pub const Store = struct {
     log: Io.File,
     lock_file: ?Io.File,
     log_size: u64,
+    /// Set when a log append succeeded but its SQLite indexing did not (the transaction rolled
+    /// back while `log_size` had already advanced). The next ingest replays from
+    /// `meta.indexed_offset` first, so those durable records are never skipped over.
+    index_lagging: bool = false,
     db: sqlite.Db,
     ins_item: sqlite.Stmt,
     ins_fts: sqlite.Stmt,
@@ -212,6 +216,10 @@ pub const Store = struct {
 
     /// Append unseen items to the log (fsync) then index them. Returns how many were new.
     pub fn ingest(self: *Store, items: []const Item, now: i64) !usize {
+        if (self.index_lagging) {
+            try self.catchUp();
+            self.index_lagging = false;
+        }
         var arena = std.heap.ArenaAllocator.init(self.gpa);
         defer arena.deinit();
         const a = arena.allocator();
@@ -250,6 +258,9 @@ pub const Store = struct {
         try self.log.writePositionalAll(self.io, buf.items, self.log_size);
         try self.log.sync(self.io);
         self.log_size += buf.items.len;
+        // From here the records are durable; if indexing them fails, replay them next time rather
+        // than letting the next batch's `indexed_offset` jump past them.
+        errdefer self.index_lagging = true;
 
         try self.db.exec("BEGIN");
         errdefer self.db.exec("ROLLBACK") catch {};
@@ -548,9 +559,10 @@ pub fn plainText(a: Allocator, html: []const u8, cap: usize) Allocator.Error![]c
     var out: std.ArrayList(u8) = .empty;
     var in_tag = false;
     var space = true;
-    for (html) |c| {
+    for (html, 0..) |c, i| {
         if (out.items.len >= cap) break;
-        if (c == '<') {
+        // Only a plausible tag opener starts markup: a bare "<" in decoded text ("2 < 3") is text.
+        if (c == '<' and !in_tag and i + 1 < html.len and tagOpener(html[i + 1])) {
             in_tag = true;
             continue;
         }
@@ -578,6 +590,10 @@ pub fn plainText(a: Allocator, html: []const u8, cap: usize) Allocator.Error![]c
     return out.items[0..n];
 }
 
+fn tagOpener(c: u8) bool {
+    return std.ascii.isAlphabetic(c) or c == '/' or c == '!' or c == '?';
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -596,6 +612,7 @@ test "plainText strips tags and caps at a code point boundary" {
     defer arena.deinit();
     const a = arena.allocator();
     try testing.expectEqualStrings("Hello big world", try plainText(a, "<p>Hello <b>big</b>\n world</p>", 100));
+    try testing.expectEqualStrings("2 < 3 and x y<", try plainText(a, "2 < 3 and <b>x</b> y<", 100)); // a bare < is text
     const t = try plainText(a, "ab\u{e9}\u{e9}", 3); // cap lands inside é
     try testing.expect(std.unicode.utf8ValidateSlice(t));
 }

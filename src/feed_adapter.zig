@@ -53,8 +53,10 @@ pub fn fetch(ctx: *adapter.Context, source: adapter.Source, cond: adapter.Cond) 
         error.NotAFeed => return fail(.malformed, resp.status, null, "response is XML but not RSS, Atom or RDF"),
         error.NoRoot => return fail(.malformed, resp.status, null, "response is not XML"),
     };
-    // Relative links (Atom permits them; some RSS carries them) are resolved against the feed URL.
-    for (parsed.items) |*it| it.url = feed.resolveLink(ctx.arena, source.url, it.url) catch it.url;
+    // Relative links (Atom permits them; some RSS carries them) are resolved against the URL the
+    // feed was actually retrieved from: after a redirect that is the final URL, not the configured one.
+    const base_url = resp.final_url orelse source.url;
+    for (parsed.items) |*it| it.url = feed.resolveLink(ctx.arena, base_url, it.url) catch it.url;
     return .{ .items = .{
         .items = parsed.items,
         .title = parsed.title,
@@ -150,6 +152,11 @@ test "relative entry links are resolved against the feed URL" {
     try std.testing.expectEqual(@as(usize, 2), o.items.items.len);
     try std.testing.expectEqualStrings("http://x/posts/1", o.items.items[0].url);
     try std.testing.expectEqualStrings("https://other.example/2", o.items.items[1].url);
+
+    // After a redirect the base is the final URL, not the configured one.
+    var ft2: FakeTransport = .{ .responses = &.{.{ .status = 200, .body = atom, .final_url = "https://moved.example/blog/feed.xml" }} };
+    const o2 = run(&ft2, .{}, 0, arena.allocator());
+    try std.testing.expectEqualStrings("https://moved.example/posts/1", o2.items.items[0].url);
 }
 
 test "HTML and garbage bodies are malformed, not crashes" {

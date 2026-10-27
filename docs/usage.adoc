@@ -59,7 +59,7 @@ search tables from the log. The daemon also replays any log records newer than
 
 == Configuration reference
 
-One JSON file (no YAML). Unknown keys are rejected by `check-config`.
+One JSON file (no YAML). `check-config` rejects unknown keys at every level and values of the wrong JSON type (a quoted number or boolean is an error, not a default).
 
 [cols="1,1,1,3", options="header"]
 |===

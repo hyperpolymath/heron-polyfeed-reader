@@ -26,6 +26,9 @@ pub const Response = struct {
     body: []const u8 = "",
     /// Final URL after redirects, if different.
     final_url: ?[]const u8 = null,
+    /// The Location header of a 3xx response that was NOT followed (`follow_redirects = false`),
+    /// so a caller that steps through redirects itself can resolve the next hop.
+    location: ?[]const u8 = null,
 };
 
 pub const Error = error{
