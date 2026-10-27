@@ -6,7 +6,7 @@
 #
 # Step 1 of the build path (descriptile half): give each descriptive fact a
 # STABLE ID. Reads this repo's deed (<repo>_chora.deed, which took over
-# CLADE / STATE / ECOSYSTEM / AGENTIC .a2ml in rsr-template-repo#209) through
+# CLADE / STATE / ECOSYSTEM / AGENTIC .a2ml in heron-polyfeed-reader#209) through
 # scripts/deed-field.sh, including its (anchor …) clause (which took over
 # descriptiles/anchors/ANCHOR.a2ml), and projects the
 # fields that can bear witness to contractile obligations into one

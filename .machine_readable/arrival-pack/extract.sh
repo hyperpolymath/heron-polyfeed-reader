@@ -8,7 +8,7 @@
 # (<repo>_chora.deed: identity, clade, lineage, status, maturity, ecosystem,
 # agentic, and the golden path in its (anchor) clause) into a single
 # deterministic JSON document on stdout. Every deed read goes through
-# scripts/deed-field.sh; there are no .a2ml inputs (rsr-template-repo#209).
+# scripts/deed-field.sh; there are no .a2ml inputs (heron-polyfeed-reader#209).
 #
 # This is a READER only — it authors nothing. The deed remains the single
 # source of truth; arrival-pack.ncl renders this JSON into the CLAUDE.md region.

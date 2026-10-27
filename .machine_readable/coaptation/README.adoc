@@ -88,7 +88,7 @@ the "how far is too far" that proposes a re-anchor: `green` (nothing) /
 [cols="1,3"]
 |===
 | `extract-clauses.sh` | Normative-side atomiser. Lifts the records of the `declaration` field of the six `<verb>/<verb>.k9.ncl` files (`nickel export` piped to `jq`) into `clauses.json` (stable id `verb.slug`). Reader only.
-| `extract-facts.sh`   | Descriptive-side atomiser. Projects the repo deed (through `scripts/deed-field.sh`), including its `(anchor …)` clause, into `facts.json` (stable id `family.key`). The family prefixes `clade.` `state.` `ecosystem.` `agentic.` name the deed clauses that replaced the retired CLADE / STATE / ECOSYSTEM / AGENTIC records (rsr-template-repo#209) and are kept so the witness map does not change.
+| `extract-facts.sh`   | Descriptive-side atomiser. Projects the repo deed (through `scripts/deed-field.sh`), including its `(anchor …)` clause, into `facts.json` (stable id `family.key`). The family prefixes `clade.` `state.` `ecosystem.` `agentic.` name the deed clauses that replaced the retired CLADE / STATE / ECOSYSTEM / AGENTIC records (heron-polyfeed-reader#209) and are kept so the witness map does not change.
 | `witness-map.ncl`    | The hand-authored *knowledge* layer: which fact witnesses which clause, under what predicate. The one file to review for honesty.
 | `grades.ncl`         | Grade type per verb + aggregation tolerances.
 | `coapt.ncl`          | The Yard comparator. Imports the atoms + map + grades; emits the receipt (`nickel export --format raw`).

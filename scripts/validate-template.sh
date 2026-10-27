@@ -187,7 +187,7 @@ log_info "Phase 2: Machine-readable metadata (.machine_readable/)"
 echo ""
 
 # Project state, architecture axes, ecosystem position, the anchor and the
-# maintenance axes are clauses of the repo deed (rsr-template-repo#209).
+# maintenance axes are clauses of the repo deed (heron-polyfeed-reader#209).
 DEED_FILE=$(bash "$REPO_ROOT/scripts/deed-field.sh" --find "$REPO_ROOT" || true)
 for clause in status maturity meta ecosystem anchor policies/maintenance-axes; do
     if [ -z "$DEED_FILE" ] || ! bash "$REPO_ROOT/scripts/deed-field.sh" --has "$DEED_FILE" "$clause"; then
@@ -321,7 +321,7 @@ echo ""
 
 # Note: Template repo is allowed to have placeholders
 # For derived repos, we'd check that placeholders are replaced
-if [ "$(basename "$REPO_ROOT")" = "rsr-template-repo" ]; then
+if [ "$(basename "$REPO_ROOT")" = "heron-polyfeed-reader" ]; then
     log_pass "Skipping placeholder check for template repo"
 else
     # Check that key files don't have unresolved placeholders

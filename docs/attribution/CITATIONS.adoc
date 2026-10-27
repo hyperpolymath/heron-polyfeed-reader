@@ -1,36 +1,36 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= {{PROJECT_NAME}} - Citation Guide
+= heron-polyfeed-reader - Citation Guide
 :toc:
 
 == BibTeX
 
 [source,bibtex]
 ----
-@software{{{PROJECT_NAME}}_{{CURRENT_YEAR}},
-  author = {{{AUTHOR_LAST}}, {{AUTHOR_FIRST}}},
-  title = {{{PROJECT_NAME}}},
-  year = {{{CURRENT_YEAR}}},
-  url = {https://github.com/{{OWNER}}/{{PROJECT_NAME}}},
+@software{heron-polyfeed-reader_2026,
+  author = {Jewell, Jonathan D.A.},
+  title = {heron-polyfeed-reader},
+  year = {2026},
+  url = {https://github.com/hyperpolymath/heron-polyfeed-reader},
   license = {MPL-2.0}
 }
 ----
 
 == Harvard Style
 
-{{AUTHOR_LAST}}, {{AUTHOR_INITIALS}} ({{CURRENT_YEAR}}) _{{PROJECT_NAME}}_ [Computer software]. Available at: https://github.com/{{OWNER}}/{{PROJECT_NAME}}
+Jewell, J. (2026) _heron-polyfeed-reader_ [Computer software]. Available at: https://github.com/hyperpolymath/heron-polyfeed-reader
 
 == OSCOLA
 
-{{AUTHOR}}, '{{PROJECT_NAME}}' ({{CURRENT_YEAR}}) <https://github.com/{{OWNER}}/{{PROJECT_NAME}}>
+Jonathan D.A. Jewell, 'heron-polyfeed-reader' (2026) <https://github.com/hyperpolymath/heron-polyfeed-reader>
 
 == MLA
 
-{{AUTHOR_LAST}}, {{AUTHOR_FIRST}} "{{PROJECT_NAME}}." {{CURRENT_YEAR}}, github.com/{{OWNER}}/{{PROJECT_NAME}}.
+Jewell, Jonathan D.A. "heron-polyfeed-reader." 2026, github.com/hyperpolymath/heron-polyfeed-reader.
 
 == APA 7
 
-{{AUTHOR_LAST}}, {{AUTHOR_INITIALS}} ({{CURRENT_YEAR}}). _{{PROJECT_NAME}}_ [Computer software]. GitHub. https://github.com/{{OWNER}}/{{PROJECT_NAME}}
+Jewell, J. (2026). _heron-polyfeed-reader_ [Computer software]. GitHub. https://github.com/hyperpolymath/heron-polyfeed-reader
 
 == See Also
 

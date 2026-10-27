@@ -30,7 +30,6 @@ Inventory snapshot at audit time:
 
 | Placeholder badge tokens in README
 | `README.adoc`
-| `{{OPENSSF_PROJECT_ID}}`, `{{OWNER}}`, `{{REPO}}`
 | placeholder
 | Template placeholders are intentional pre-bootstrap content.
 | Keep; document clearly as template tokens.

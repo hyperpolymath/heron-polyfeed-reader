@@ -6,7 +6,7 @@
 # *_praxis.deed: the root is the first form with an ABNF doc-head).
 #
 # The repo deed holds what the descriptiles CLADE / META / ECOSYSTEM / STATE /
-# AGENTIC .a2ml files used to hold (rsr-template-repo#209). This is the one
+# AGENTIC .a2ml files used to hold (heron-polyfeed-reader#209). This is the one
 # shell reader for it, so that every gate, extractor and recipe asks the same
 # question the same way. It is a READER: it never writes the deed.
 #

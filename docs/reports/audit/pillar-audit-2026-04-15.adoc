@@ -3,10 +3,10 @@
 = Gemini Audit Report (M2: Pillar Repo Audits)
 :date: 2026-04-15
 
-NOTE: Superseded in part (2026-10-06, rsr-template-repo#209): the `.a2ml` files named below no longer exist; their facts are clauses of the repo deed (`*_chora.deed`).
+NOTE: Superseded in part (2026-10-06, heron-polyfeed-reader#209): the `.a2ml` files named below no longer exist; their facts are clauses of the repo deed (`*_chora.deed`).
 
 Date: 2026-04-15 +
-Repository: `/var/mnt/eclipse/repos/rsr-template-repo`
+Repository: `/var/mnt/eclipse/repos/heron-polyfeed-reader`
 
 == Audit Criteria
 

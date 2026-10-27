@@ -72,7 +72,7 @@ jobs:
           fi
 
           # Project state is the (status …) clause of the repo deed
-          # (rsr-template-repo#209), which replaced descriptiles/STATE.a2ml.
+          # (heron-polyfeed-reader#209), which replaced descriptiles/STATE.a2ml.
           if ! DEED=$(bash scripts/deed-field.sh --find .); then
             echo "::error::exactly one <repo>_chora.deed is required at the root"
             exit 1

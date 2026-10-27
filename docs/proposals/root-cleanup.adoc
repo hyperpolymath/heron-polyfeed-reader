@@ -165,7 +165,7 @@ across `Justfile`, `scripts/`, `.machine_readable/`).
 Resolved: the repo deed (`<repo>_chora.deed` at the root) is the single AI
 manifest. The family-7 allocation manifest folded into it (standards#837
 pilot), and no separate manifest or pointer file remains: no `.a2ml` file
-may exist in the template or its downstream repos (rsr-template-repo#209).
+may exist in the template or its downstream repos (heron-polyfeed-reader#209).
 
 === Template-only relocations
 

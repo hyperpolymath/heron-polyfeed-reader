@@ -34,7 +34,7 @@ K9!
   # Inputs the projection reads (single source of truth).
   inputs = {
     # The repo deed (<repo>_chora.deed) is the only input; the golden path is
-    # its (anchor (golden-path)) clause (rsr-template-repo#209).
+    # its (anchor (golden-path)) clause (heron-polyfeed-reader#209).
     descriptiles = [
       "<repo>_chora.deed",
     ],

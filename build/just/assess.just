@@ -250,7 +250,7 @@ verify:
     check_file "LICENSE"
     check_community_file "CONTRIBUTING"
     check_either "README.adoc" "README.md"
-    # Identity, state and ecosystem live in the repo deed (rsr-template-repo#209).
+    # Identity, state and ecosystem live in the repo deed (heron-polyfeed-reader#209).
     if DEED=$(bash scripts/deed-field.sh --find . 2>/dev/null) && bash scripts/deed-field.sh --has "$DEED" status; then
         echo "  OK:   $DEED (status, meta, ecosystem)"
     else

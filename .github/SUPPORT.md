@@ -2,6 +2,6 @@
 
 For questions, help, and community discussion:
 
-- GitHub Discussions: https://github.com/{{OWNER}}/{{REPO}}/discussions
-- GitHub Issues: https://github.com/{{OWNER}}/{{REPO}}/issues
+- GitHub Discussions: https://github.com/hyperpolymath/heron-polyfeed-reader/discussions
+- GitHub Issues: https://github.com/hyperpolymath/heron-polyfeed-reader/issues
 - Documentation: See README.adoc in the root directory.
