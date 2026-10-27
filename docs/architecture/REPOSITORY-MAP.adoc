@@ -109,10 +109,6 @@ predecessors did.
 | optional
 | pointer to CLAUDE.md for repos without AGENTS.md yet
 
-| `HANDOFF.md`
-| yes
-| -
-
 | `Justfile`
 | yes
 | thin; delegates phases to build/just/*.just
@@ -128,10 +124,6 @@ predecessors did.
 | `README.adoc`
 | yes
 | -
-
-| `archetypes`
-| optional
-| template-only variation seam (ADR-0003); `just repo-init` removes it from minted repos
 
 | `benches/`
 | optional
@@ -169,6 +161,10 @@ predecessors did.
 | optional
 | optional feature packs
 
+| `heron-polyfeed-reader_chora.deed`
+| yes
+| the repo deed: universal AI entry point; family-7 allocation manifest + ply tree folded in (standards#837 pilot). Filename carries the repo slug (deed dispatch <stem>_chora.deed), so repo-init renames it at mint
+
 | `launcher.sh`
 | yes
 | --setup/--doctor/--heal/--ai-setup (launcher-standard 0.6.0); the one file a newcomer runs first
@@ -180,10 +176,6 @@ predecessors did.
 | `mise.toml`
 | yes
 | the toolchain: every tool at latest (PROVISIONING-STANDARD §4)
-
-| `rsr-template-repo_chora.deed`
-| yes
-| -
 
 | `scripts/`
 | yes
@@ -229,6 +221,7 @@ your own repo - but do not read their emptiness as neglect here.
 
 [cols="1"]
 |===
+| `.machine_readable/ai/`
 | `.machine_readable/bot_directives/`
 | `.machine_readable/descriptiles/anchors/`
 | `.machine_readable/scripts/verification/`

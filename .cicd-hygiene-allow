@@ -10,3 +10,11 @@
 # these paths, resolve or issue-link it there — do not widen this list.
 build/container/entrypoint.sh
 tests/e2e.sh
+#
+# heron-polyfeed-reader: THIRD-PARTY VENDORED CODE. Its TODO/FIXME/XXX markers
+# are upstream's (SQLite amalgamation; a patched copy of Zig std's TLS client,
+# see src/vendor/NOTICE), not this repo's debt, and estate policy makes
+# third-party code untouchable. Excluded by exact path; nothing else here.
+vendor/sqlite/sqlite3.c
+vendor/sqlite/sqlite3.h
+src/vendor/tls_client.zig

@@ -37,7 +37,7 @@ jobs:
       - name: Install Zig (version-pinned, checksum-verified)
         run: |
           set -euo pipefail
-          curl -sSfL -o /tmp/zig.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+          curl -sSfL --proto '=https' --tlsv1.2 -o /tmp/zig.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
           echo "${ZIG_SHA256}  /tmp/zig.tar.xz" | sha256sum -c -
           mkdir -p "$HOME/zig"
           tar -xJf /tmp/zig.tar.xz -C "$HOME/zig" --strip-components=1
