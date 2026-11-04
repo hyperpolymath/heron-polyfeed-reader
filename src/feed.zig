@@ -88,8 +88,24 @@ fn rssItem(a: Allocator, source: []const u8, n: *const xml.Node) Allocator.Error
         guid = ab;
     };
     if (link.len == 0) {
-        // RSS where <link> is missing: a permalink guid or atom:link href stands in.
-        if (std.mem.startsWith(u8, guid, "http")) link = guid else if (n.child("link")) |l| link = l.attr("href") orelse "";
+        // RSS without a text <link>: an atom:link href (rel absent or "alternate") stands in, else
+        // the guid, but only when it is a permalink (RSS 2.0: isPermaLink defaults to true; "false"
+        // means an opaque identifier that merely looks like a URL).
+        var c = n.first_child;
+        while (c) |l| : (c = l.next) {
+            if (!l.is("link")) continue;
+            const href = l.attr("href") orelse continue;
+            const rel = l.attr("rel") orelse "alternate";
+            if (std.mem.eql(u8, rel, "alternate")) {
+                link = href;
+                break;
+            }
+        }
+        if (link.len == 0 and std.mem.startsWith(u8, guid, "http")) {
+            // No <guid>: the identifier is RDF's rdf:about, which RSS 1.0 says equals the item link.
+            const permalink = if (n.child("guid")) |g| !std.mem.eql(u8, g.attr("isPermaLink") orelse "true", "false") else true;
+            if (permalink) link = guid;
+        }
     }
     const date_raw = firstNonEmpty(&.{ try childText(a, n, "pubDate"), try childText(a, n, "date"), try childText(a, n, "published"), try childText(a, n, "updated") });
     const body = firstNonEmpty(&.{ try childText(a, n, "encoded"), try childText(a, n, "description"), try childText(a, n, "summary") });
@@ -327,6 +343,25 @@ test "edge: channel without a title yields an empty title, not a panic" {
     const r = try parse(arena.allocator(), "t", "<rdf:RDF><channel/><item><title>y</title></item></rdf:RDF>", null);
     try testing.expectEqualStrings("", r.title);
     try testing.expectEqual(@as(usize, 1), r.items.len);
+}
+
+test "edge: without <link>, an atom:link beats a non-permalink guid; a permalink guid stands in" {
+    var arena = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const p = try parse(a, "t",
+        \\<rss xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>c</title>
+        \\<item><title>1</title><guid isPermaLink="false">https://ex.org/id/1</guid><atom:link rel="alternate" href="https://ex.org/post/1"/></item>
+        \\<item><title>2</title><guid isPermaLink="false">https://ex.org/id/2</guid></item>
+        \\<item><title>3</title><guid>https://ex.org/post/3</guid></item>
+        \\<item><title>4</title><guid isPermaLink="true">https://ex.org/post/4</guid><atom:link rel="self" href="https://ex.org/feed"/></item>
+        \\</channel></rss>
+    , null);
+    try testing.expectEqual(@as(usize, 4), p.items.len);
+    try testing.expectEqualStrings("https://ex.org/post/1", p.items[0].url); // explicit link, not the opaque guid
+    try testing.expectEqualStrings("", p.items[1].url); // an opaque identifier is never used as the URL
+    try testing.expectEqualStrings("https://ex.org/post/3", p.items[2].url); // isPermaLink defaults to true
+    try testing.expectEqualStrings("https://ex.org/post/4", p.items[3].url); // rel=self is not the article
 }
 
 test "resolveLink: relative references resolve against the feed URL; absolute and schemed pass through" {

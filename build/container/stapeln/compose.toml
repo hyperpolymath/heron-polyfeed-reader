@@ -27,16 +27,19 @@ version = "1.0"
 # Primary application service
 [services.heron]
 image = "ghcr.io/hyperpolymath/heron:latest.ctp"
-ports = ["8484:8484"]
+# The web UI has no authentication: publish it on the host loopback only.
+ports = ["127.0.0.1:8484:8484"]
+# heron reads only HERON_CONFIG and HERON_DATA; bind address and port come from the config file.
 environment = {
-  APP_HOST = "[::]",
-  APP_PORT = "8484",
-  APP_LOG_FORMAT = "json",
-  APP_DATA_DIR = "/data",
+  HERON_CONFIG = "/config/heron.json",
+  HERON_DATA = "/data",
 }
-volumes = ["heron-data:/data"]
+# Without a config heron exits with ConfigNotFound. ../heron.json is the one compose.yaml mounts:
+# it binds the UI to 0.0.0.0 inside the container and relies on the loopback mapping above.
+volumes = ["heron-data:/data", "../heron.json:/config/heron.json:ro"]
 restart = "always"
-healthcheck = { test = "curl -sf http://localhost:8484/health", interval = "30s", timeout = "5s", retries = 3 }
+# No healthcheck: heron has no /health route and the runtime image carries no curl. heron is PID 1
+# and exits non-zero on a fatal error, which `restart` handles.
 
 # Rokur secrets gate: refuses to start (and refuses to proxy) unless the
 # declared secrets are present; emits a structured audit log of every access.

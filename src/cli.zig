@@ -78,7 +78,7 @@ fn run(init: std.process.Init) !u8 {
     var diag: config.Diagnostic = .{};
     var app = app_mod.App.load(gpa, io, init.environ_map, ov, &diag) catch |e| {
         try out.flush();
-        std.log.err("{s}{s}{s}", .{ @errorName(e), if (diag.message.len > 0) ": " else "", diag.message });
+        std.log.err("{s}{s}{s}", .{ @errorName(e), if (diag.message().len > 0) ": " else "", diag.message() });
         return 1;
     };
     defer app.deinit();

@@ -57,13 +57,33 @@ pub const Config = struct {
     monitors: []MonitorCfg = &.{},
 };
 
-pub const Diagnostic = struct { message: []const u8 = "" };
+/// Why loading failed. The text lives in the struct itself, not in the parse allocator, so it
+/// outlives the arena a caller frees on error (App.load does). Longer text is truncated.
+pub const Diagnostic = struct {
+    buf: [512]u8 = undefined,
+    len: usize = 0,
+
+    pub fn set(d: *Diagnostic, comptime fmt: []const u8, args: anytype) void {
+        var w: std.Io.Writer = .fixed(&d.buf);
+        w.print(fmt, args) catch {}; // WriteFailed only means the buffer is full: keep the prefix
+        d.len = w.end;
+    }
+
+    pub fn message(d: *const Diagnostic) []const u8 {
+        return d.buf[0..d.len];
+    }
+};
 
 pub const Error = error{InvalidConfig} || Allocator.Error;
 
-fn bad(a: Allocator, diag: *Diagnostic, comptime fmt: []const u8, args: anytype) Error {
-    diag.message = std.fmt.allocPrint(a, fmt, args) catch "invalid configuration";
+fn bad(diag: *Diagnostic, comptime fmt: []const u8, args: anytype) Error {
+    diag.set(fmt, args);
     return error.InvalidConfig;
+}
+
+/// The loopback addresses the web UI may bind without `allow_non_loopback`.
+pub fn isLoopback(addr: []const u8) bool {
+    return std.mem.eql(u8, addr, "127.0.0.1") or std.mem.eql(u8, addr, "::1") or std.mem.startsWith(u8, addr, "127.");
 }
 
 fn validName(n: []const u8) bool {
@@ -80,86 +100,93 @@ fn validHttpUrl(u: []const u8) bool {
 
 /// A string field: absent -> null; present but not a JSON string -> InvalidConfig, so
 /// `"data_dir": false` cannot silently fall back to the default directory.
-fn getStr(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?[]const u8 {
+fn getStr(diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?[]const u8 {
     const v = obj.get(key) orelse return null;
-    if (v != .string) return bad(a, diag, "{s} must be a string", .{what});
+    if (v != .string) return bad(diag, "{s} must be a string", .{what});
     return v.string;
 }
 
 /// An integer field: absent -> null; present but not a JSON integer -> InvalidConfig, so a quoted
 /// `"port": "9000"` cannot silently fall back to the default.
-fn getInt(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?i64 {
+fn getInt(diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?i64 {
     const v = obj.get(key) orelse return null;
-    if (v != .integer) return bad(a, diag, "{s} must be an integer (unquoted)", .{what});
+    if (v != .integer) return bad(diag, "{s} must be an integer (unquoted)", .{what});
     return v.integer;
 }
 
 /// A typo such as "souces" must not parse as "no sources" and let the daemon run polling nothing.
-fn rejectUnknown(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, comptime allowed: []const []const u8, what: []const u8) Error!void {
+fn rejectUnknown(diag: *Diagnostic, obj: std.json.ObjectMap, comptime allowed: []const []const u8, what: []const u8) Error!void {
     var it = obj.iterator();
     while (it.next()) |e| {
         var known = false;
         inline for (allowed) |k| {
             if (std.mem.eql(u8, e.key_ptr.*, k)) known = true;
         }
-        if (!known) return bad(a, diag, "{s}: unknown key '{s}'", .{ what, e.key_ptr.* });
+        if (!known) return bad(diag, "{s}: unknown key '{s}'", .{ what, e.key_ptr.* });
     }
 }
 
 /// A boolean field: absent -> null; present but not a JSON boolean -> InvalidConfig. A mistyped
 /// `"enabled": "false"` must never silently take the default (which for web.enabled is true).
-fn getBool(a: Allocator, diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?bool {
+fn getBool(diag: *Diagnostic, obj: std.json.ObjectMap, key: []const u8, what: []const u8) Error!?bool {
     const v = obj.get(key) orelse return null;
-    if (v != .bool) return bad(a, diag, "{s} must be true or false (unquoted)", .{what});
+    if (v != .bool) return bad(diag, "{s} must be true or false (unquoted)", .{what});
     return v.bool;
 }
 
 /// Parse and validate. All returned memory belongs to `a` (use an arena).
 pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
     const root = std.json.parseFromSliceLeaky(std.json.Value, a, text, .{}) catch |e|
-        return bad(a, diag, "not valid JSON: {s}", .{@errorName(e)});
-    if (root != .object) return bad(a, diag, "top level must be an object", .{});
+        return bad(diag, "not valid JSON: {s}", .{@errorName(e)});
+    if (root != .object) return bad(diag, "top level must be an object", .{});
     const obj = root.object;
     var cfg: Config = .{};
-    try rejectUnknown(a, diag, obj, &.{ "data_dir", "user_agent", "timeout_s", "web", "sources", "monitors" }, "top level");
+    try rejectUnknown(diag, obj, &.{ "data_dir", "user_agent", "timeout_s", "web", "sources", "monitors" }, "top level");
 
-    if (try getStr(a, diag, obj, "data_dir", "data_dir")) |d| cfg.data_dir = d;
-    if (try getStr(a, diag, obj, "user_agent", "user_agent")) |d| cfg.user_agent = d;
-    if (try getInt(a, diag, obj, "timeout_s", "timeout_s")) |t| {
-        if (t < 1 or t > 600) return bad(a, diag, "timeout_s must be 1..600", .{});
+    if (try getStr(diag, obj, "data_dir", "data_dir")) |d| cfg.data_dir = d;
+    if (try getStr(diag, obj, "user_agent", "user_agent")) |d| cfg.user_agent = d;
+    if (try getInt(diag, obj, "timeout_s", "timeout_s")) |t| {
+        if (t < 1 or t > 600) return bad(diag, "timeout_s must be 1..600", .{});
         cfg.timeout_s = @intCast(t);
     }
     if (obj.get("web")) |w| {
-        if (w != .object) return bad(a, diag, "web must be an object", .{});
-        try rejectUnknown(a, diag, w.object, &.{ "enabled", "bind", "port", "allow_non_loopback" }, "web");
-        cfg.web.enabled = (try getBool(a, diag, w.object, "enabled", "web.enabled")) orelse true;
-        if (try getStr(a, diag, w.object, "bind", "web.bind")) |b| cfg.web.bind = b;
-        cfg.web.allow_non_loopback = (try getBool(a, diag, w.object, "allow_non_loopback", "web.allow_non_loopback")) orelse false;
-        if (try getInt(a, diag, w.object, "port", "web.port")) |p| {
-            if (p < 1 or p > 65535) return bad(a, diag, "web.port out of range", .{});
+        if (w != .object) return bad(diag, "web must be an object", .{});
+        try rejectUnknown(diag, w.object, &.{ "enabled", "bind", "port", "allow_non_loopback" }, "web");
+        cfg.web.enabled = (try getBool(diag, w.object, "enabled", "web.enabled")) orelse true;
+        if (try getStr(diag, w.object, "bind", "web.bind")) |b| cfg.web.bind = b;
+        cfg.web.allow_non_loopback = (try getBool(diag, w.object, "allow_non_loopback", "web.allow_non_loopback")) orelse false;
+        if (try getInt(diag, w.object, "port", "web.port")) |p| {
+            if (p < 1 or p > 65535) return bad(diag, "web.port out of range", .{});
             cfg.web.port = @intCast(p);
         }
+        // Checked here, not first at listen time, so that a configuration check that passes means
+        // the UI can actually start: the listener takes a numeric address, and only loopback
+        // unless allowed.
+        _ = std.Io.net.IpAddress.parse(cfg.web.bind, 0) catch
+            return bad(diag, "web.bind must be a numeric IP address such as 127.0.0.1 or ::1, not a host name", .{});
+        if (!cfg.web.allow_non_loopback and !isLoopback(cfg.web.bind))
+            return bad(diag, "web.bind {s} is not a loopback address; set web.allow_non_loopback to expose the unauthenticated UI", .{cfg.web.bind});
     }
 
     var names: std.StringHashMapUnmanaged(void) = .empty;
     var sources: std.ArrayList(SourceCfg) = .empty;
     if (obj.get("sources")) |sv| {
-        if (sv != .array) return bad(a, diag, "sources must be an array", .{});
+        if (sv != .array) return bad(diag, "sources must be an array", .{});
         for (sv.array.items, 0..) |item, idx| {
-            if (item != .object) return bad(a, diag, "sources[{d}] must be an object", .{idx});
+            if (item != .object) return bad(diag, "sources[{d}] must be an object", .{idx});
             const o = item.object;
-            try rejectUnknown(a, diag, o, &.{ "name", "type", "url", "interval_s", "options" }, "source");
-            const name = (try getStr(a, diag, o, "name", "source name")) orelse return bad(a, diag, "sources[{d}]: missing name", .{idx});
-            if (!validName(name)) return bad(a, diag, "sources[{d}]: bad name '{s}' (use A-Z a-z 0-9 . _ -, max 64)", .{ idx, name });
-            if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
-            const type_name = (try getStr(a, diag, o, "type", "source type")) orelse "feed";
-            const url = (try getStr(a, diag, o, "url", "source url")) orelse return bad(a, diag, "source '{s}': missing url", .{name});
-            const interval = (try getInt(a, diag, o, "interval_s", "source interval_s")) orelse default_interval_s;
-            if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "source '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
-            if (std.mem.eql(u8, type_name, "feed") and !validHttpUrl(url)) return bad(a, diag, "source '{s}': url must be http(s)", .{name});
+            try rejectUnknown(diag, o, &.{ "name", "type", "url", "interval_s", "options" }, "source");
+            const name = (try getStr(diag, o, "name", "source name")) orelse return bad(diag, "sources[{d}]: missing name", .{idx});
+            if (!validName(name)) return bad(diag, "sources[{d}]: bad name '{s}' (use A-Z a-z 0-9 . _ -, max 64)", .{ idx, name });
+            if ((try names.getOrPut(a, name)).found_existing) return bad(diag, "duplicate name '{s}'", .{name});
+            const type_name = (try getStr(diag, o, "type", "source type")) orelse "feed";
+            const url = (try getStr(diag, o, "url", "source url")) orelse return bad(diag, "source '{s}': missing url", .{name});
+            const interval = (try getInt(diag, o, "interval_s", "source interval_s")) orelse default_interval_s;
+            if (interval < min_interval_s or interval > 30 * 86400) return bad(diag, "source '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
+            if (std.mem.eql(u8, type_name, "feed") and !validHttpUrl(url)) return bad(diag, "source '{s}': url must be http(s)", .{name});
             var options: []const u8 = "";
             if (o.get("options")) |opt| {
-                if (opt != .object) return bad(a, diag, "source '{s}': options must be an object", .{name});
+                if (opt != .object) return bad(diag, "source '{s}': options must be an object", .{name});
                 options = try std.json.Stringify.valueAlloc(a, opt, .{});
             }
             try sources.append(a, .{ .name = name, .type_name = type_name, .url = url, .interval_s = @intCast(interval), .options = options });
@@ -169,28 +196,28 @@ pub fn parse(a: Allocator, text: []const u8, diag: *Diagnostic) Error!Config {
 
     var monitors: std.ArrayList(MonitorCfg) = .empty;
     if (obj.get("monitors")) |mv| {
-        if (mv != .array) return bad(a, diag, "monitors must be an array", .{});
+        if (mv != .array) return bad(diag, "monitors must be an array", .{});
         for (mv.array.items, 0..) |item, idx| {
-            if (item != .object) return bad(a, diag, "monitors[{d}] must be an object", .{idx});
+            if (item != .object) return bad(diag, "monitors[{d}] must be an object", .{idx});
             const o = item.object;
-            try rejectUnknown(a, diag, o, &.{ "name", "url", "interval_s", "expect_status", "detect_changes", "check_robots", "cert_warn_days" }, "monitor");
-            const name = (try getStr(a, diag, o, "name", "monitor name")) orelse return bad(a, diag, "monitors[{d}]: missing name", .{idx});
-            if (!validName(name)) return bad(a, diag, "monitors[{d}]: bad name '{s}'", .{ idx, name });
-            if ((try names.getOrPut(a, name)).found_existing) return bad(a, diag, "duplicate name '{s}'", .{name});
-            const url = (try getStr(a, diag, o, "url", "monitor url")) orelse return bad(a, diag, "monitor '{s}': missing url", .{name});
-            if (!validHttpUrl(url)) return bad(a, diag, "monitor '{s}': url must be http(s)", .{name});
-            const interval = (try getInt(a, diag, o, "interval_s", "monitor interval_s")) orelse 300;
-            if (interval < min_interval_s or interval > 30 * 86400) return bad(a, diag, "monitor '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
+            try rejectUnknown(diag, o, &.{ "name", "url", "interval_s", "expect_status", "detect_changes", "check_robots", "cert_warn_days" }, "monitor");
+            const name = (try getStr(diag, o, "name", "monitor name")) orelse return bad(diag, "monitors[{d}]: missing name", .{idx});
+            if (!validName(name)) return bad(diag, "monitors[{d}]: bad name '{s}'", .{ idx, name });
+            if ((try names.getOrPut(a, name)).found_existing) return bad(diag, "duplicate name '{s}'", .{name});
+            const url = (try getStr(diag, o, "url", "monitor url")) orelse return bad(diag, "monitor '{s}': missing url", .{name});
+            if (!validHttpUrl(url)) return bad(diag, "monitor '{s}': url must be http(s)", .{name});
+            const interval = (try getInt(diag, o, "interval_s", "monitor interval_s")) orelse 300;
+            if (interval < min_interval_s or interval > 30 * 86400) return bad(diag, "monitor '{s}': interval_s must be {d}..2592000", .{ name, min_interval_s });
             var m: MonitorCfg = .{ .name = name, .url = url, .interval_s = @intCast(interval) };
-            if (try getInt(a, diag, o, "expect_status", "monitor expect_status")) |s| {
-                if (s < 100 or s > 599) return bad(a, diag, "monitor '{s}': expect_status out of range", .{name});
+            if (try getInt(diag, o, "expect_status", "monitor expect_status")) |s| {
+                if (s < 100 or s > 599) return bad(diag, "monitor '{s}': expect_status out of range", .{name});
                 m.expect_status = @intCast(s);
             }
-            if (try getBool(a, diag, o, "detect_changes", "monitor detect_changes")) |b| m.detect_changes = b;
-            if (try getBool(a, diag, o, "check_robots", "monitor check_robots")) |b| m.check_robots = b;
-            if (try getInt(a, diag, o, "cert_warn_days", "monitor cert_warn_days")) |d| {
+            if (try getBool(diag, o, "detect_changes", "monitor detect_changes")) |b| m.detect_changes = b;
+            if (try getBool(diag, o, "check_robots", "monitor check_robots")) |b| m.check_robots = b;
+            if (try getInt(diag, o, "cert_warn_days", "monitor cert_warn_days")) |d| {
                 // Bound before the narrowing cast: an out-of-range integer is a diagnostic, not a trap.
-                if (d < 0 or d > 3650) return bad(a, diag, "monitor '{s}': cert_warn_days must be 0..3650", .{name});
+                if (d < 0 or d > 3650) return bad(diag, "monitor '{s}': cert_warn_days must be 0..3650", .{name});
                 m.cert_warn_days = @intCast(d);
             }
             try monitors.append(a, m);
@@ -250,10 +277,12 @@ test "rejections carry a message" {
         "{\"user_agent\":1}",
         "{\"web\":{\"bind\":[]}}",
         "{\"sources\":[{\"name\":\"a\",\"type\":7,\"url\":\"http://x/\"}]}",
+        "{\"web\":{\"bind\":\"localhost\"}}", // the listener takes numeric addresses only
+        "{\"web\":{\"bind\":\"0.0.0.0\"}}", // not loopback, and allow_non_loopback is not set
     };
     for (cases) |text| {
         var d: Diagnostic = .{};
         try std.testing.expectError(error.InvalidConfig, parse(arena.allocator(), text, &d));
-        try std.testing.expect(d.message.len > 0);
+        try std.testing.expect(d.message().len > 0);
     }
 }

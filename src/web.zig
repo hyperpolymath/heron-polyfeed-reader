@@ -8,7 +8,11 @@
 //! Safety: bind address must be loopback (checked at start); every request's Host header must name
 //! the bound address (DNS-rebinding defence); mutations are POST-only and, when an Origin header is
 //! present, it must match Host (CSRF); CSP forbids scripts, frames and external loads; all text is
-//! HTML-escaped; only http(s) URLs are rendered as links.
+//! HTML-escaped; only http(s) URLs are rendered as links. The one GET side effect, opening an item
+//! marks it read, happens only for a same-origin or user-typed navigation according to the
+//! browser's Fetch Metadata (`Sec-Fetch-Site`, `Sec-Fetch-Mode`), so another site cannot mark
+//! items read by embedding `/item/N`; without those headers the item stays unread and the page
+//! offers a POST button instead.
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Io = std.Io;
@@ -36,9 +40,7 @@ pub const Web = struct {
     }
 };
 
-pub fn isLoopback(addr: []const u8) bool {
-    return std.mem.eql(u8, addr, "127.0.0.1") or std.mem.eql(u8, addr, "::1") or std.mem.startsWith(u8, addr, "127.");
-}
+pub const isLoopback = @import("config.zig").isLoopback;
 
 /// Bind the listener (refusing non-loopback addresses). Caller then runs `localserver.serve` on a task.
 pub fn bind(io: Io, bind_addr: []const u8, port: u16, allow_non_loopback: bool) !Io.net.Server {
@@ -97,10 +99,14 @@ fn hostOk(w: *Web, host: []const u8) bool {
 fn handle(w: *Web, a: Allocator, req: *std.http.Server.Request) !void {
     var host: ?[]const u8 = null;
     var origin: ?[]const u8 = null;
+    var fetch_site: []const u8 = "";
+    var fetch_mode: []const u8 = "";
     var it = req.iterateHeaders();
     while (it.next()) |h| {
         if (std.ascii.eqlIgnoreCase(h.name, "host")) host = h.value;
         if (std.ascii.eqlIgnoreCase(h.name, "origin")) origin = h.value;
+        if (std.ascii.eqlIgnoreCase(h.name, "sec-fetch-site")) fetch_site = h.value;
+        if (std.ascii.eqlIgnoreCase(h.name, "sec-fetch-mode")) fetch_mode = h.value;
     }
     if (host == null or !hostOk(w, host.?)) return send(req, .misdirected_request, "text/plain; charset=utf-8", "bad host\n", null);
 
@@ -126,8 +132,12 @@ fn handle(w: *Web, a: Allocator, req: *std.http.Server.Request) !void {
         try pageList(w, a, o, query);
     } else if (std.mem.startsWith(u8, path, "/item/")) {
         const rowid = std.fmt.parseInt(i64, path["/item/".len..], 10) catch return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
-        // Only a real GET marks the item read; HEAD (link checkers, previews) must not mutate.
-        if (!try pageItem(w, a, o, rowid, req.head.method == .GET)) return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
+        // Only a real GET marks the item read (HEAD from link checkers and previews must not), and only
+        // a navigation from this UI or the user (not an <img> or link on another site; "same-site"
+        // would still admit another local port).
+        const mark = req.head.method == .GET and std.mem.eql(u8, fetch_mode, "navigate") and
+            (std.mem.eql(u8, fetch_site, "same-origin") or std.mem.eql(u8, fetch_site, "none"));
+        if (!try pageItem(w, a, o, rowid, mark)) return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
     } else if (std.mem.eql(u8, path, "/status")) {
         try pageStatus(w, a, o);
     } else return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
@@ -287,6 +297,7 @@ fn pageItem(w: *Web, a: Allocator, o: *Io.Writer, rowid: i64, mark_read: bool) !
         try esc(o, rec.url);
         try o.writeAll("</p>");
     }
+    if (!mark_read) try o.print("<form method=post action=\"/read/{d}\"><button>Mark read</button></form> ", .{rowid});
     try o.print("<form method=post action=\"/unread/{d}\"><button>Mark unread</button></form><pre>", .{rowid});
     try esc(o, try store_mod.plainText(a, rec.body, 64 * 1024));
     try o.writeAll("</pre></body></html>");
@@ -446,12 +457,25 @@ test "web UI end to end: pages, escaping, read marks, host/origin checks, loopba
     try testing.expect(std.mem.indexOf(u8, idx, "Content-Security-Policy") != null);
     try testing.expect(std.mem.indexOf(u8, idx, "2 unread of 2") != null);
 
-    // Item view marks read; javascript: URL is not made into a link.
-    const item1 = try get(a, io, w.port, "GET", "/item/1", hostline);
+    // Opening an item from another site, or with no Fetch Metadata, must not mark it read (an
+    // <img src=http://127.0.0.1:8484/item/1> on any page would otherwise do it); the page then
+    // offers a POST "Mark read" button instead.
+    const cross = try get(a, io, w.port, "GET", "/item/1", try std.fmt.allocPrint(a, "{s}Sec-Fetch-Site: cross-site\r\nSec-Fetch-Mode: no-cors\r\n", .{hostline}));
+    try testing.expect(std.mem.startsWith(u8, cross, "HTTP/1.1 200"));
+    try testing.expect(std.mem.indexOf(u8, cross, "action=\"/read/1\"") != null);
+    _ = try get(a, io, w.port, "GET", "/item/1", try std.fmt.allocPrint(a, "{s}Sec-Fetch-Site: same-site\r\nSec-Fetch-Mode: navigate\r\n", .{hostline}));
+    _ = try get(a, io, w.port, "GET", "/item/1", hostline);
+    try testing.expectEqual(@as(i64, 2), (try st.count()).unread);
+
+    // A navigation from this UI marks read; javascript: URL is not made into a link.
+    const nav = try std.fmt.allocPrint(a, "{s}Sec-Fetch-Site: same-origin\r\nSec-Fetch-Mode: navigate\r\n", .{hostline});
+    const item1 = try get(a, io, w.port, "GET", "/item/1", nav);
     try testing.expect(std.mem.indexOf(u8, item1, "Hello world") != null);
     try testing.expect(std.mem.indexOf(u8, item1, "href=\"javascript:") == null);
+    try testing.expect(std.mem.indexOf(u8, item1, "action=\"/read/1\"") == null);
     try testing.expectEqual(@as(i64, 1), (try st.count()).unread);
-    const item2 = try get(a, io, w.port, "GET", "/item/2", hostline);
+    // A typed or bookmarked URL ("none") counts as the user's own navigation.
+    const item2 = try get(a, io, w.port, "GET", "/item/2", try std.fmt.allocPrint(a, "{s}Sec-Fetch-Site: none\r\nSec-Fetch-Mode: navigate\r\n", .{hostline}));
     try testing.expect(std.mem.indexOf(u8, item2, "href=\"https://example.org/2\"") != null);
     try testing.expectEqual(@as(i64, 0), (try st.count()).unread);
 
@@ -486,7 +510,7 @@ test "web UI end to end: pages, escaping, read marks, host/origin checks, loopba
     // HEAD must not mark an item read; an absurd page number must not overflow (ReleaseSafe panic).
     _ = try get(a, io, w.port, "POST", "/unread/1", hostline);
     try testing.expectEqual(@as(i64, 1), (try st.count()).unread);
-    const hd = try get(a, io, w.port, "HEAD", "/item/1", hostline);
+    const hd = try get(a, io, w.port, "HEAD", "/item/1", nav);
     try testing.expect(std.mem.startsWith(u8, hd, "HTTP/1.1 200"));
     try testing.expectEqual(@as(i64, 1), (try st.count()).unread);
     const big = try get(a, io, w.port, "GET", "/?page=4294967295", hostline);

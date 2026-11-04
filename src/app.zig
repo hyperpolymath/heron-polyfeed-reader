@@ -45,7 +45,7 @@ pub const App = struct {
             break :blk try std.fmt.allocPrint(a, "{s}/.config/heron-polyfeed-reader/config.json", .{h});
         };
         const text = Io.Dir.cwd().readFileAlloc(io, config_path, a, .limited(1024 * 1024)) catch {
-            diag.message = try std.fmt.allocPrint(a, "cannot read config file {s}", .{config_path});
+            diag.set("cannot read config file {s}", .{config_path});
             return error.ConfigNotFound;
         };
         const cfg = config.parse(a, text, diag) catch |e| switch (e) {
@@ -86,3 +86,20 @@ pub const App = struct {
         self.arena.deinit();
     }
 };
+
+test "a load failure's diagnostic outlives the arena load frees" {
+    var env = std.process.Environ.Map.init(std.testing.allocator);
+    defer env.deinit();
+    var diag: config.Diagnostic = .{};
+    // The path is allocated after the arena is gone, so the message must not point into it.
+    try std.testing.expectError(error.ConfigNotFound, App.load(std.testing.allocator, std.testing.io, &env, .{ .config_path = "/nonexistent/heron.json" }, &diag));
+    try std.testing.expectEqualStrings("cannot read config file /nonexistent/heron.json", diag.message());
+
+    var tmp = std.testing.tmpDir(.{});
+    defer tmp.cleanup();
+    try tmp.dir.writeFile(std.testing.io, .{ .sub_path = "bad.json", .data = "{\"web\":{\"bind\":\"localhost\"}}" });
+    const path = try tmp.dir.realPathFileAlloc(std.testing.io, "bad.json", std.testing.allocator);
+    defer std.testing.allocator.free(path);
+    try std.testing.expectError(error.InvalidConfig, App.load(std.testing.allocator, std.testing.io, &env, .{ .config_path = path }, &diag));
+    try std.testing.expect(std.mem.startsWith(u8, diag.message(), "web.bind must be a numeric IP address"));
+}

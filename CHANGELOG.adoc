@@ -75,6 +75,19 @@ the template commit.
   other than `24:00:00` are rejected; `heron fetch` cannot overflow its
   failure counter; the compose build context is the repository root; the
   documented monitor defaults and robots.txt behaviour now match the code.
+* Fourth review round (posted as #3 merged, fixed on a follow-up branch): a
+  configuration error message no longer points into memory freed before it
+  is printed; opening `/item/N` marks the item read only for a navigation
+  the browser labels same-origin or user-typed (Fetch Metadata), so another
+  site cannot mark items read by embedding the URL, and otherwise the page
+  offers a POST "Mark read" button; `check-config` rejects a `web.bind` that
+  is a host name or a non-loopback address without `allow_non_loopback`;
+  `cert_warn_days: 0` turns the certificate check off entirely, expired
+  certificates included; an RSS `<guid isPermaLink="false">` is never used
+  as the item URL and an `atom:link` is preferred to a guid; a `<` that
+  cannot open a tag (`Price < 10`) is text for monitor change detection; the
+  selur (Tier-C) stack mounts a config, sets `HERON_*`, publishes on host
+  loopback only and drops the unusable health check.
 
 ==== Changed
 

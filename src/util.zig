@@ -55,6 +55,12 @@ test "termSafe neutralises escape sequences, newlines and C1 controls; leaves te
     try std.testing.expectEqualStrings("a\u{FFFD}b\u{FFFD}c", try termSafe(a, "a\nb\u{9b}c"));
 }
 
+/// Whether the byte after a '<' can start markup (a tag, end tag, comment, doctype or processing
+/// instruction), as HTML's tokenizer decides it. Any other '<', as in "Price < 10", is text.
+pub fn tagOpener(c: u8) bool {
+    return std.ascii.isAlphabetic(c) or c == '/' or c == '!' or c == '?';
+}
+
 /// Human duration like "5m", "3h", "2d".
 pub fn fmtSpan(buf: []u8, secs: i64) []const u8 {
     const s = if (secs < 0) -secs else secs;

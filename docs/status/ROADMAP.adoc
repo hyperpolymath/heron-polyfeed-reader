@@ -16,13 +16,32 @@ build and test instructions moved to `README.adoc` and `CONTRIBUTING.adoc`.
 Milestones M0–M6 are complete and imported with their signed commit history.
 Ground truth at import (2026-10-27, Zig 0.17.0 exactly, x86_64 Linux host):
 
-* `zig build test --summary all`: 85/85 tests pass.
+* `zig build test --summary all`: 85/85 tests pass at import; 94/94 after
+  the four review rounds (see below).
 * `zig build -Doptimize=ReleaseSafe` and the static musl build both succeed.
 * `zig fmt --check` was NOT clean on seven files (Zig 0.17 renames
   `@intFromEnum` to `@backingInt` and re-wraps two literals); the formatter was
   applied at import so that `just lint` passes.
 * Idle RSS ~8 MB (ReleaseSafe, 24 feeds + 6 monitors + web UI) was measured
   before import over one ~45 s window; not re-measured since.
+
+=== Import review (2026-10-27 to 2026-11-04)
+
+The import merged to `main` as hyperpolymath/heron-polyfeed-reader#3
+(squash, 2026-10-27). Codex reviewed every push: 45 findings over four
+rounds, each traced to a real input before it was fixed, all fixed with
+tests, none declined. The fourth round (8 findings) was posted as #3 merged
+and is fixed on a follow-up PR. Among them: panics or ReleaseSafe traps
+on untrusted input (title-less RSS channel, page-number overflow,
+out-of-range `cert_warn_days`), a use-after-free of configuration error
+text, terminal-escape injection through feed titles printed by the CLI, a
+cross-site GET that marked items read, mixed-content text order, index/log
+consistency (stale read-only log length, replay limit, failed-commit replay,
+truncated-log reindex), strict configuration (unknown keys, mistyped values,
+unknown adapter types, unusable `web.bind`), robots.txt across redirects, and
+the template container stacks (Tier-A image, compose and selur configs).
+SonarCloud's quality gate passed. CodeRabbit did not review: the import's
+216 files exceed its 100-file limit and the account had no credits.
 
 == Milestones
 
@@ -37,7 +56,7 @@ Ground truth at import (2026-10-27, Zig 0.17.0 exactly, x86_64 Linux host):
 | M4: HTTP transport (timeouts, manual redirects), config, engine, daemon, CLI | 100%
 | M5: monitor adapter (up/down transitions, change detection, TLS expiry, robots) | 100%
 | M6: localhost-only web UI (list/search/item/read marks/status), daemon integration, e2e test | 100%
-| M7: integrate into the RSR estate (template merge, mint, CI) | 90%
+| M7: integrate into the RSR estate (template merge, mint, CI, review) | 95%
 | M8: second adapter (NNTP or Gemini) to prove the adapter seam | 0%
 | M9: live-site soak test and real-CA certificate-probe check | 0%
 | M10: web UI `monitors` summary and search pagination | 0%
@@ -49,10 +68,18 @@ Ground truth at import (2026-10-27, Zig 0.17.0 exactly, x86_64 Linux host):
 . *Clade is UNASSIGNED* in the deed. Choosing it is the owner's act (the
   template says so); `just validate-rsr` fails until it is chosen. The
   ecosystem `:position-type` is UNASSIGNED for the same reason.
-. *Signing.* The M7 integration commits were prepared in a session with no
-  signing key. They must be committed with `id_ed25519_signing` locally
-  before push; the eleven imported milestone commits keep their own
-  signatures.
+. *Code-owner review of your own PR.* `main`'s Branch-Floor ruleset requires
+  a code-owner review, and CODEOWNERS names only `@hyperpolymath`, who also
+  authors these PRs; GitHub never counts an author's own review. The owner
+  merged #3 themselves. Every later PR from this account meets the same
+  wall unless a second code owner (a person or a team) is added or the rule
+  is relaxed for solo repositories; that is an estate-wide question for
+  `standards`, not this repo alone.
+. *Commit signatures.* The M7 commits were signed by the cloud session's
+  key, not the owner's `id_ed25519_signing`; `main` holds the squash commit
+  GitHub made. The eleven milestone commits keep their own signatures in
+  #3's commits, which GitHub keeps at `refs/pull/3/head` (a squash
+  flattens them out of `main`; the source branch was deleted on merge).
 . *Idris2 ABI seam.* `just test` and `just build` run every detected
   language. The template's `src/interface/abi.ipkg` (Idris2) is detected
   alongside `build.zig`; without `idris2` on PATH the Zig steps pass but the
@@ -67,8 +94,19 @@ Ground truth at import (2026-10-27, Zig 0.17.0 exactly, x86_64 Linux host):
 
 == Next actions
 
-* Push the branch, let `zig-ci.yml` and the estate gates run, triage every
-  review-app finding and CI anomaly, merge.
+* Merge the fourth-round fixes; then M7 is done except the owner decisions
+  above.
+* Feature raised in review, not built: an alert when robots.txt itself
+  changes (today only a change that blocks the monitored path alerts).
+* Upstream, outside this repo:
+** `hyperpolymath/standards`: `scripts/check-no-vlang.sh` should exclude
+  `vendor/` (SQLite's `iPrevLangid` matches its case-insensitive pattern;
+  patched locally).
+** `hyperpolymath/rsr-template-repo`: `just repo-init`'s OPENSSF line delete
+  leaves a table row in `docs/governance/TEMPLATE-STANDARDS-AUDIT.adoc` one
+  cell short; the template `compose.yaml` build context `..` resolves to
+  `build/`, not the repository root; its container stacks assume an
+  `APP_*` environment and a `/health` route a minted project may not have.
 * Owner: choose the clade (`ap` Applications is the obvious candidate: an
   end-user desktop daemon), set `:position-type`, register in gv-clade-index.
 * M8: second adapter (NNTP/NNTPS or Gemini with TOFU) with no core changes;
@@ -85,8 +123,6 @@ Ground truth at import (2026-10-27, Zig 0.17.0 exactly, x86_64 Linux host):
 * Re-sync `src/vendor/tls_client.zig` whenever Zig is upgraded
   (`src/vendor/NOTICE`); the `[sfr patch]` markers carry the old project
   name and can be renamed then.
-* Re-count the container `test` stage after the rename (host run was 85/85;
-  `zig-ci.yml` now builds that stage on every push).
 
 == Known gaps / untested
 
