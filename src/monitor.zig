@@ -85,6 +85,13 @@ pub fn parseOptions(a: Allocator, text: []const u8) Options {
     return std.json.parseFromSliceLeaky(Options, a, text, .{ .ignore_unknown_fields = true }) catch .{};
 }
 
+/// The certificate expiry a status view should show (0 = none). While `cert_warn_days` is 0 the
+/// check is off, so nothing is shown even if saved state still holds an earlier probe's result: the
+/// poll that clears it can be a whole interval away, for instance after a restart.
+pub fn shownCertNotAfter(a: Allocator, options: []const u8, st: State) i64 {
+    return if (parseOptions(a, options).cert_warn_days == 0) 0 else st.cert_not_after;
+}
+
 /// Visible-text normalisation for change hashing.
 pub fn normalizeText(a: Allocator, html: []const u8) Allocator.Error![]u8 {
     var out: std.ArrayList(u8) = .empty;
@@ -700,6 +707,13 @@ test "tls certificate: warn once per cert, expired, renewal re-arms, http skippe
     try testing.expectEqual(@as(i64, 0), was_on.state().cert_not_after);
     try testing.expectEqual(@as(i64, 0), was_on.state().cert_checked);
     try testing.expectEqualStrings("", was_on.state().cert_alert);
+
+    // Until that poll (e.g. right after a restart), status views still hide the saved value.
+    const saved: State = .{ .cert_not_after = now + 5 * day_s };
+    const a = was_on.arena.allocator();
+    try testing.expectEqual(@as(i64, 0), shownCertNotAfter(a, "{\"cert_warn_days\":0}", saved));
+    try testing.expectEqual(now + 5 * day_s, shownCertNotAfter(a, "{\"cert_warn_days\":14}", saved));
+    try testing.expectEqual(now + 5 * day_s, shownCertNotAfter(a, "{}", saved)); // default 14
 }
 
 test "normalizeText" {

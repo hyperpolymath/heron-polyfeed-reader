@@ -91,7 +91,11 @@ the template commit.
   PR: a prerendered item page is declined rather than marked read; an RSS
   text `<link>` is found even after an `atom:link`, and `rel` compares
   case-insensitively; the selur config path starts with `./` as
-  selur-compose requires.
+  selur-compose requires; status views hide certificate expiry while
+  `cert_warn_days` is 0; an alternate link the UI cannot follow (`ftp:`) no
+  longer displaces a permalink guid; the selur environment tables are
+  single-line so its TOML 1.0 parser accepts the file, and the proxy note
+  covers the Origin check on POST.
 
 ==== Changed
 

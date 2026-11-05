@@ -246,8 +246,9 @@ fn cmdMonitors(app: *app_mod.App, store: *store_mod.Store, out: *Io.Writer, aren
         const state: []const u8 = if (ms.blocked) "blocked" else if (ms.up) |u| (if (u) "up" else "DOWN") else "unknown";
         const since = if (ms.since > 0) util.fmtSpan(&b1, now - ms.since) else "-";
         const http_s = if (ms.status > 0) try std.fmt.bufPrint(&b2, "{d}", .{ms.status}) else "-";
-        const cert = if (ms.cert_not_after > 0)
-            (if (ms.cert_not_after <= now) "EXPIRED" else util.fmtSpan(&b3, ms.cert_not_after - now))
+        const not_after = monitor_mod.shownCertNotAfter(arena, job.options, ms);
+        const cert = if (not_after > 0)
+            (if (not_after <= now) "EXPIRED" else util.fmtSpan(&b3, not_after - now))
         else
             "-";
         try out.print("{s:<20} {s:<8} {s:>9} {s:>6} {s:>10}  {s}\n", .{ job.name, state, since, http_s, cert, try util.termSafe(arena, ms.err) });

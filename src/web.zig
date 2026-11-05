@@ -335,11 +335,12 @@ fn pageStatus(w: *Web, a: Allocator, o: *Io.Writer) !void {
         try o.writeAll("<tr><td>");
         try esc(o, job.name);
         const state: []const u8 = if (ms.blocked) "blocked" else if (ms.up) |u| (if (u) "up" else "DOWN") else "unknown";
+        const not_after = monitor.shownCertNotAfter(a, job.options, ms);
         try o.print("<td>{s}<td>{s}<td>{d}<td>{s}<td>", .{
             state,
             if (ms.since > 0) util.fmtSpan(&b1, t - ms.since) else "-",
             ms.status,
-            if (ms.cert_not_after > 0) (if (ms.cert_not_after <= t) "EXPIRED" else util.fmtSpan(&b3, ms.cert_not_after - t)) else "-",
+            if (not_after > 0) (if (not_after <= t) "EXPIRED" else util.fmtSpan(&b3, not_after - t)) else "-",
         });
         try esc(o, ms.err);
     }

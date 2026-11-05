@@ -30,10 +30,9 @@ image = "ghcr.io/hyperpolymath/heron:latest.ctp"
 # The web UI has no authentication: publish it on the host loopback only.
 ports = ["127.0.0.1:8484:8484"]
 # heron reads only HERON_CONFIG and HERON_DATA; bind address and port come from the config file.
-environment = {
-  HERON_CONFIG = "/config/heron.json",
-  HERON_DATA = "/data",
-}
+# Inline tables stay on one line: selur-compose parses with the toml 0.8 crate (TOML 1.0), which
+# rejects a newline inside `{ }`.
+environment = { HERON_CONFIG = "/config/heron.json", HERON_DATA = "/data" }
 # Without a config heron exits with ConfigNotFound. This is the heron.json compose.yaml mounts: it
 # binds the UI to 0.0.0.0 inside the container and relies on the loopback mapping above.
 # selur-compose takes a volume as a bind mount only when it starts with "./" or "/" (anything else
@@ -47,7 +46,10 @@ restart = "always"
 # configured: the UI refuses a Host header that is not the bound address or a loopback name
 # (DNS-rebinding defence), so a gateway must forward Host as 127.0.0.1:8484. Rokur's documented
 # settings offer no Host rewrite, so either front heron with a proxy that can, or drop this tier
-# (`just container-keep oci portable`) and use the loopback port above.
+# (`just container-keep oci portable`) and use the loopback port above. Such a proxy must also make
+# the forwarded Origin match the forwarded Host (http://127.0.0.1:8484), after validating the
+# browser's Origin itself: the UI refuses a POST whose Origin differs from its Host (CSRF defence),
+# so mark-read/unread and mark-all-read would otherwise answer 403.
 
 # Rokur secrets gate: refuses to start (and refuses to proxy) unless the
 # declared secrets are present; emits a structured audit log of every access.
@@ -55,13 +57,7 @@ restart = "always"
 [services.rokur]
 image = "ghcr.io/hyperpolymath/rokur:latest.ctp"
 ports = ["8081:8081"]
-environment = {
-  ROKUR_BACKEND = "http://heron:8484",
-  ROKUR_LISTEN = "[::]:8081",
-  ROKUR_REQUIRED_SECRETS = "",
-  ROKUR_AUDIT_LOG = "/var/log/rokur/audit.jsonl",
-  ROKUR_LOG_FORMAT = "json",
-}
+environment = { ROKUR_BACKEND = "http://heron:8484", ROKUR_LISTEN = "[::]:8081", ROKUR_REQUIRED_SECRETS = "", ROKUR_AUDIT_LOG = "/var/log/rokur/audit.jsonl", ROKUR_LOG_FORMAT = "json" }
 volumes = ["rokur-audit:/var/log/rokur"]
 depends_on = ["heron"]
 restart = "always"
@@ -72,11 +68,7 @@ healthcheck = { test = "curl -sf http://localhost:8081/health", interval = "30s"
 [services.svalinn]
 image = "ghcr.io/hyperpolymath/svalinn:latest.ctp"
 ports = ["443:443", "80:80"]
-environment = {
-  SVALINN_BACKEND = "http://rokur:8081",
-  SVALINN_POLICY_FILE = "/etc/svalinn/gatekeeper.yaml",
-  SVALINN_TLS_AUTO = "true",
-}
+environment = { SVALINN_BACKEND = "http://rokur:8081", SVALINN_POLICY_FILE = "/etc/svalinn/gatekeeper.yaml", SVALINN_TLS_AUTO = "true" }
 volumes = ["svalinn-config:/etc/svalinn:ro"]
 depends_on = ["rokur"]
 restart = "always"

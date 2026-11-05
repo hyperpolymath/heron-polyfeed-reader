@@ -108,7 +108,9 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   `build/`, not the repository root; its container stacks assume an
   `APP_*` environment and a `/health` route a minted project may not have,
   and that rokur proxies to the app (`ROKUR_BACKEND`), which rokur's own
-  documented settings do not include.
+  documented settings do not include. Its selur `compose.toml` and
+  `compose.example.toml` use multi-line inline tables, which selur's TOML 1.0
+  parser (toml 0.8) rejects, so neither loads (fixed here in `compose.toml`).
 ** `metadatastician/selur`: `selur-compose` treats a volume that does not
   start with `./` or `/` as a named volume, so `../file` bind mounts fail
   validation (heron works round it with `./../heron.json`).
