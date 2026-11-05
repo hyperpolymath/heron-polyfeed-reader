@@ -70,6 +70,16 @@ fn nodeText(a: Allocator, n: *const xml.Node) Allocator.Error![]const u8 {
     return std.mem.trim(u8, try n.deepText(a), " \t\r\n");
 }
 
+/// An http(s) URL or a relative reference (no scheme, RFC 3986 §4.2): the only links the web UI
+/// renders as anchors. A `ftp:` or `mailto:` alternate must not displace a usable permalink.
+fn webOrRelative(href: []const u8) bool {
+    const colon = std.mem.indexOfScalar(u8, href, ':') orelse return true;
+    const scheme = href[0..colon];
+    // A ':' after the first '/', '?' or '#' belongs to the path or query, not to a scheme.
+    if (std.mem.indexOfAny(u8, scheme, "/?#") != null) return true;
+    return std.ascii.eqlIgnoreCase(scheme, "http") or std.ascii.eqlIgnoreCase(scheme, "https");
+}
+
 fn firstNonEmpty(cands: []const []const u8) []const u8 {
     for (cands) |c| if (c.len > 0) return c;
     return "";
@@ -82,14 +92,36 @@ fn childText(a: Allocator, n: *const xml.Node, name: []const u8) Allocator.Error
 
 fn rssItem(a: Allocator, source: []const u8, n: *const xml.Node) Allocator.Error!?Item {
     const title = try childText(a, n, "title");
-    var link = try childText(a, n, "link");
     var guid = try childText(a, n, "guid");
     if (guid.len == 0) if (n.attr("about")) |ab| { // RDF: rdf:about is the identifier
         guid = ab;
     };
+    // The item URL, in order: the first RSS <link> with text (an atom:link may come before it in
+    // document order, so every link child is looked at), else an atom:link href whose rel is absent
+    // or "alternate" (RFC 8288: relation names compare case-insensitively), else the guid, but only
+    // when it is a permalink (RSS 2.0: isPermaLink defaults to true; "false" means an opaque
+    // identifier that merely looks like a URL).
+    var link: []const u8 = "";
+    var alt_href: []const u8 = "";
+    var c = n.first_child;
+    while (c) |l| : (c = l.next) {
+        if (!l.is("link")) continue;
+        const text = try nodeText(a, l);
+        if (text.len > 0) {
+            link = text;
+            break;
+        }
+        if (alt_href.len == 0) if (l.attr("href")) |href| {
+            if (std.ascii.eqlIgnoreCase(l.attr("rel") orelse "alternate", "alternate") and webOrRelative(href)) alt_href = href;
+        };
+    }
     if (link.len == 0) {
-        // RSS where <link> is missing: a permalink guid or atom:link href stands in.
-        if (std.mem.startsWith(u8, guid, "http")) link = guid else if (n.child("link")) |l| link = l.attr("href") orelse "";
+        link = alt_href;
+        if (link.len == 0 and std.mem.startsWith(u8, guid, "http")) {
+            // No <guid>: the identifier is RDF's rdf:about, which RSS 1.0 says equals the item link.
+            const permalink = if (n.child("guid")) |g| !std.mem.eql(u8, g.attr("isPermaLink") orelse "true", "false") else true;
+            if (permalink) link = guid;
+        }
     }
     const date_raw = firstNonEmpty(&.{ try childText(a, n, "pubDate"), try childText(a, n, "date"), try childText(a, n, "published"), try childText(a, n, "updated") });
     const body = firstNonEmpty(&.{ try childText(a, n, "encoded"), try childText(a, n, "description"), try childText(a, n, "summary") });
@@ -327,6 +359,56 @@ test "edge: channel without a title yields an empty title, not a panic" {
     const r = try parse(arena.allocator(), "t", "<rdf:RDF><channel/><item><title>y</title></item></rdf:RDF>", null);
     try testing.expectEqualStrings("", r.title);
     try testing.expectEqual(@as(usize, 1), r.items.len);
+}
+
+test "edge: without <link>, an atom:link beats a non-permalink guid; a permalink guid stands in" {
+    var arena = std.heap.ArenaAllocator.init(testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const p = try parse(a, "t",
+        \\<rss xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>c</title>
+        \\<item><title>1</title><guid isPermaLink="false">https://ex.org/id/1</guid><atom:link rel="alternate" href="https://ex.org/post/1"/></item>
+        \\<item><title>2</title><guid isPermaLink="false">https://ex.org/id/2</guid></item>
+        \\<item><title>3</title><guid>https://ex.org/post/3</guid></item>
+        \\<item><title>4</title><guid isPermaLink="true">https://ex.org/post/4</guid><atom:link rel="self" href="https://ex.org/feed"/></item>
+        \\</channel></rss>
+    , null);
+    try testing.expectEqual(@as(usize, 4), p.items.len);
+    try testing.expectEqualStrings("https://ex.org/post/1", p.items[0].url); // explicit link, not the opaque guid
+    try testing.expectEqualStrings("", p.items[1].url); // an opaque identifier is never used as the URL
+    try testing.expectEqualStrings("https://ex.org/post/3", p.items[2].url); // isPermaLink defaults to true
+    try testing.expectEqualStrings("https://ex.org/post/4", p.items[3].url); // rel=self is not the article
+
+    const q = try parse(a, "t",
+        \\<rss xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>c</title>
+        \\<item><title>5</title><atom:link rel="self" href="https://ex.org/feed"/><link>https://ex.org/post/5</link></item>
+        \\<item><title>6</title><guid isPermaLink="false">x6</guid><atom:link rel="Alternate" href="https://ex.org/post/6"/></item>
+        \\</channel></rss>
+    , null);
+    try testing.expectEqual(@as(usize, 2), q.items.len);
+    try testing.expectEqualStrings("https://ex.org/post/5", q.items[0].url); // text <link> after an atom:link
+    try testing.expectEqualStrings("https://ex.org/post/6", q.items[1].url); // rel compares case-insensitively
+
+    // An alternate the UI cannot link (ftp:) does not displace a usable permalink guid; a relative one is kept.
+    const r = try parse(a, "t",
+        \\<rss xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>c</title>
+        \\<item><title>7</title><guid>https://ex.org/post/7</guid><atom:link href="ftp://ex.org/7.txt"/></item>
+        \\<item><title>8</title><guid isPermaLink="false">x8</guid><atom:link href="/post/8"/></item>
+        \\</channel></rss>
+    , null);
+    try testing.expectEqualStrings("https://ex.org/post/7", r.items[0].url);
+    try testing.expectEqualStrings("/post/8", r.items[1].url); // resolved against the feed URL later, by the adapter
+}
+
+test "webOrRelative" {
+    try testing.expect(webOrRelative("https://ex.org/a"));
+    try testing.expect(webOrRelative("HTTP://ex.org/a"));
+    try testing.expect(webOrRelative("/a/b:c"));
+    try testing.expect(webOrRelative("a?x=1:2"));
+    try testing.expect(webOrRelative("post/9"));
+    try testing.expect(!webOrRelative("ftp://ex.org/a"));
+    try testing.expect(!webOrRelative("mailto:x@ex.org"));
+    try testing.expect(!webOrRelative("javascript:alert(1)"));
 }
 
 test "resolveLink: relative references resolve against the feed URL; absolute and schemed pass through" {

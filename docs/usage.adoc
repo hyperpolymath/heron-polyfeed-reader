@@ -69,7 +69,7 @@ One JSON file (no YAML). `check-config` rejects unknown keys at every level and 
 | `user_agent` | string | built-in | Sent on every request; put a contact address in it.
 | `timeout_s` | integer | 30 | Wall-clock timeout per request.
 | `web.enabled` | boolean | `false` | Serve the web UI from the daemon.
-| `web.bind` | string | `127.0.0.1` | Bind address. Anything but loopback also needs `allow_non_loopback`. Requests must carry a Host header naming `127.0.0.1`, `localhost`, `[::1]` or this bound address (with the port); a wildcard bind (`0.0.0.0`, `::`) is not special-cased, so name the address you expose.
+| `web.bind` | string | `127.0.0.1` | Bind address, numeric (`127.0.0.1`, `::1`); a host name such as `localhost` is rejected. Anything but loopback also needs `allow_non_loopback`. Requests must carry a Host header naming `127.0.0.1`, `localhost`, `[::1]` or this bound address (with the port); a wildcard bind (`0.0.0.0`, `::`) is not special-cased, so name the address you expose.
 | `web.port` | integer | 8484 | Listening port.
 | `web.allow_non_loopback` | boolean | `false` | Required to bind a non-loopback address; the UI has no authentication.
 | `sources[].name` | string | required | Short unique name used by the CLI.
@@ -83,7 +83,7 @@ One JSON file (no YAML). `check-config` rejects unknown keys at every level and 
 | `monitors[].expect_status` | integer | 200 | HTTP status that counts as UP.
 | `monitors[].detect_changes` | boolean | `true` | Fetch the body (GET), hash its visible text and alert on change (rate-limited to one alert per hour). `false` checks reachability with HEAD only.
 | `monitors[].check_robots` | boolean | `true` | Fetch and honour `robots.txt` (RFC 9309, cached 24 h): a BLOCKED alert when it starts disallowing the monitored path, and redirects to another origin are refused. Changes to robots.txt that leave the path allowed raise no alert.
-| `monitors[].cert_warn_days` | integer | 14 | Alert when the leaf certificate expires within this many days.
+| `monitors[].cert_warn_days` | integer | 14 | Alert when the leaf certificate expires within this many days, or has expired. `0` turns the certificate check off (no probe, no alerts).
 |===
 
 `examples/heron.json` is a complete, valid example.
@@ -106,6 +106,7 @@ One JSON file (no YAML). `check-config` rejects unknown keys at every level and 
 * No WebSub; feeds are polled.
 * Relative entry links are resolved against the feed URL; `xml:base` is not consulted.
 * The web UI serves one request at a time with a 10 s per-connection deadline; it is a personal UI, not a public server.
+* Opening an item in the web UI marks it read only when the browser sends Fetch Metadata saying the navigation came from the UI itself or was typed by you (`Sec-Fetch-Site: same-origin` or `none`, `Sec-Fetch-Mode: navigate`; every current browser does). Otherwise, for example from an older browser or a link on another site, the item stays unread and the page shows a *Mark read* button. A prefetch or prerender (`Sec-Purpose: prefetch`) of an item page is declined with 503, so only the real visit marks it read.
 
 == See also
 

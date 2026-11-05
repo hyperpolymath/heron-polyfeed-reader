@@ -67,7 +67,7 @@ crash recovery and `heron rebuild` would be lies.
 
 | 4
 | The web UI is reachable only from the machine unless explicitly allowed.
-| `src/web.zig`: loopback bind by default, `allow_non_loopback` gate, Host-header allowlist, Origin check on POST, CSP, no JavaScript.
+| `src/web.zig`: loopback bind by default, `allow_non_loopback` gate, Host-header allowlist, Origin check on POST, Fetch Metadata gate on the GET read mark, CSP, no JavaScript.
 | DNS-rebinding or LAN exposure of an unauthenticated UI.
 
 | 5

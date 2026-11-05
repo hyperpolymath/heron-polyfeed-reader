@@ -11,6 +11,7 @@
 //! indexed (`meta.indexed_offset`); on open, anything beyond that is replayed, so a crash
 //! between the two steps heals itself. `rebuild` wipes the derived tables and replays everything.
 const std = @import("std");
+const util = @import("util.zig");
 const Allocator = std.mem.Allocator;
 const Io = std.Io;
 const sqlite = @import("sqlite.zig");
@@ -572,7 +573,7 @@ pub fn plainText(a: Allocator, html: []const u8, cap: usize) Allocator.Error![]c
     for (html, 0..) |c, i| {
         if (out.items.len >= cap) break;
         // Only a plausible tag opener starts markup: a bare "<" in decoded text ("2 < 3") is text.
-        if (c == '<' and !in_tag and i + 1 < html.len and tagOpener(html[i + 1])) {
+        if (c == '<' and !in_tag and i + 1 < html.len and util.tagOpener(html[i + 1])) {
             in_tag = true;
             continue;
         }
@@ -598,10 +599,6 @@ pub fn plainText(a: Allocator, html: []const u8, cap: usize) Allocator.Error![]c
     while (n > 0 and !std.unicode.utf8ValidateSlice(out.items[0..n])) n -= 1;
     while (n > 0 and out.items[n - 1] == ' ') n -= 1;
     return out.items[0..n];
-}
-
-fn tagOpener(c: u8) bool {
-    return std.ascii.isAlphabetic(c) or c == '/' or c == '!' or c == '?';
 }
 
 // ---------------------------------------------------------------------------

@@ -85,6 +85,13 @@ pub fn parseOptions(a: Allocator, text: []const u8) Options {
     return std.json.parseFromSliceLeaky(Options, a, text, .{ .ignore_unknown_fields = true }) catch .{};
 }
 
+/// The certificate expiry a status view should show (0 = none). While `cert_warn_days` is 0 the
+/// check is off, so nothing is shown even if saved state still holds an earlier probe's result: the
+/// poll that clears it can be a whole interval away, for instance after a restart.
+pub fn shownCertNotAfter(a: Allocator, options: []const u8, st: State) i64 {
+    return if (parseOptions(a, options).cert_warn_days == 0) 0 else st.cert_not_after;
+}
+
 /// Visible-text normalisation for change hashing.
 pub fn normalizeText(a: Allocator, html: []const u8) Allocator.Error![]u8 {
     var out: std.ArrayList(u8) = .empty;
@@ -92,7 +99,8 @@ pub fn normalizeText(a: Allocator, html: []const u8) Allocator.Error![]u8 {
     var space = true;
     while (i < html.len) {
         const c = html[i];
-        if (c == '<') {
+        // Only a plausible tag opener starts markup: "Price < 10" is visible text and must hash.
+        if (c == '<' and i + 1 < html.len and util.tagOpener(html[i + 1])) {
             const rest = html[i..];
             if (std.mem.startsWith(u8, rest, "<!--")) {
                 i += if (std.mem.find(u8, rest, "-->")) |e| e + 3 else rest.len;
@@ -342,13 +350,20 @@ pub fn check(self: *MonitorAdapter, ctx: *adapter.Context, source: adapter.Sourc
         };
     }
 
-    // ---- TLS certificate expiry ----------------------------------------------------------------
-    if (target.https and !skip_request and (st.cert_checked == 0 or now - st.cert_checked >= cert_recheck_s)) {
+    // ---- TLS certificate expiry (cert_warn_days = 0 turns it off: no probe, no alerts) ----------
+    // Turning it off also forgets what an earlier probe found, or `heron monitors` and the web
+    // status page would show a stale countdown (or EXPIRED) for a check that no longer runs.
+    if (opt.cert_warn_days == 0) {
+        st.cert_not_after = 0;
+        st.cert_checked = 0;
+        st.cert_alert = "";
+    }
+    if (opt.cert_warn_days > 0 and target.https and !skip_request and (st.cert_checked == 0 or now - st.cert_checked >= cert_recheck_s)) {
         if (ctx.transport.certNotAfter(target.host, target.port)) |na| {
             st.cert_not_after = na;
             st.cert_checked = now;
             const days_left = @divFloor(na - now, day_s);
-            const kind: ?[]const u8 = if (na <= now) "expired" else if (opt.cert_warn_days > 0 and days_left <= opt.cert_warn_days) "warn" else null;
+            const kind: ?[]const u8 = if (na <= now) "expired" else if (days_left <= opt.cert_warn_days) "warn" else null;
             if (kind) |k| {
                 const id = try std.fmt.allocPrint(a, "cert:{d}:{s}", .{ na, k });
                 if (!std.mem.eql(u8, id, st.cert_alert)) {
@@ -672,6 +687,33 @@ test "tls certificate: warn once per cert, expired, renewal re-arms, http skippe
     plain.fake.cert = 1;
     _ = try plain.step(now);
     try testing.expectEqual(@as(u32, 0), plain.fake.cert_calls);
+
+    // cert_warn_days = 0 is "off": no probe, so not even an expired certificate alerts.
+    var off = Harness.init();
+    defer off.deinit();
+    off.src.options = "{\"cert_warn_days\":0}";
+    off.fake.cert = now - 3600;
+    try testing.expectEqual(@as(usize, 0), (try off.step(now)).len);
+    try testing.expectEqual(@as(u32, 0), off.fake.cert_calls);
+
+    // Switching an existing monitor to 0 clears the certificate status an earlier probe saved.
+    var was_on = Harness.init();
+    defer was_on.deinit();
+    was_on.fake.cert = now + 5 * day_s;
+    _ = try was_on.step(now);
+    try testing.expect(was_on.state().cert_not_after != 0);
+    was_on.src.options = "{\"cert_warn_days\":0}";
+    _ = try was_on.step(now + 60);
+    try testing.expectEqual(@as(i64, 0), was_on.state().cert_not_after);
+    try testing.expectEqual(@as(i64, 0), was_on.state().cert_checked);
+    try testing.expectEqualStrings("", was_on.state().cert_alert);
+
+    // Until that poll (e.g. right after a restart), status views still hide the saved value.
+    const saved: State = .{ .cert_not_after = now + 5 * day_s };
+    const a = was_on.arena.allocator();
+    try testing.expectEqual(@as(i64, 0), shownCertNotAfter(a, "{\"cert_warn_days\":0}", saved));
+    try testing.expectEqual(now + 5 * day_s, shownCertNotAfter(a, "{\"cert_warn_days\":14}", saved));
+    try testing.expectEqual(now + 5 * day_s, shownCertNotAfter(a, "{}", saved)); // default 14
 }
 
 test "normalizeText" {
@@ -682,4 +724,7 @@ test "normalizeText" {
     try testing.expectEqualStrings("A & B", try normalizeText(a, "A &amp; B"));
     try testing.expectEqualStrings(try normalizeText(a, "A &amp; B"), try normalizeText(a, "A &#38; B")); // same text, same hash
     try testing.expectEqualStrings("x", try normalizeText(a, "<style>p{}</style>x<script>unterminated"));
+    // A '<' that cannot open a tag is text: the content after it still counts.
+    try testing.expectEqualStrings("Price < 10 now", try normalizeText(a, "<p>Price < 10</p> now"));
+    try testing.expect(!std.mem.eql(u8, try normalizeText(a, "<p>Price < 10</p>"), try normalizeText(a, "<p>Price < 12</p>")));
 }
