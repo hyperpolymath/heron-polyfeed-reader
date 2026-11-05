@@ -81,10 +81,19 @@ fn bad(diag: *Diagnostic, comptime fmt: []const u8, args: anytype) Error {
     return error.InvalidConfig;
 }
 
-/// The loopback addresses the web UI may bind without `allow_non_loopback`.
+/// The loopback addresses the web UI may bind without `allow_non_loopback`: 127.0.0.0/8, ::1 and
+/// the IPv4-mapped ::ffff:127.0.0.0/104. Decided on the parsed value, not the spelling, so
+/// `0:0:0:0:0:0:0:1` is loopback and `127.evil` (not an address) is not.
 pub fn isLoopback(addr: []const u8) bool {
-    return std.mem.eql(u8, addr, "127.0.0.1") or std.mem.eql(u8, addr, "::1") or std.mem.startsWith(u8, addr, "127.");
+    const ip = std.Io.net.IpAddress.parse(addr, 0) catch return false;
+    return switch (ip) {
+        .ip4 => |a| a.bytes[0] == 127,
+        .ip6 => |a| std.mem.eql(u8, &a.bytes, &std.Io.net.Ip6Address.loopback(0).bytes) or
+            (std.mem.eql(u8, a.bytes[0..12], &ip4_mapped_prefix) and a.bytes[12] == 127),
+    };
 }
+
+const ip4_mapped_prefix = [12]u8{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff };
 
 fn validName(n: []const u8) bool {
     if (n.len == 0 or n.len > 64) return false;

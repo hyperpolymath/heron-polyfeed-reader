@@ -401,6 +401,15 @@ test "loopback check" {
     try testing.expect(isLoopback("::1"));
     try testing.expect(!isLoopback("0.0.0.0"));
     try testing.expect(!isLoopback("192.168.1.2"));
+    // Classified by value, not spelling.
+    try testing.expect(isLoopback("127.1.2.3"));
+    try testing.expect(isLoopback("0:0:0:0:0:0:0:1"));
+    try testing.expect(isLoopback("::ffff:127.0.0.1"));
+    try testing.expect(!isLoopback("::"));
+    try testing.expect(!isLoopback("::2"));
+    try testing.expect(!isLoopback("::ffff:10.0.0.1"));
+    try testing.expect(!isLoopback("127.evil"));
+    try testing.expect(!isLoopback("localhost"));
 }
 
 fn rawRequest(a: Allocator, io: Io, port: u16, request: []const u8) ![]const u8 {
