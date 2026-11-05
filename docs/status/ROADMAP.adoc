@@ -100,8 +100,8 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   changes (today only a change that blocks the monitored path alerts).
 * Upstream, outside this repo:
 ** `hyperpolymath/standards`: `scripts/check-no-vlang.sh` should exclude
-  `vendor/` (SQLite's `iPrevLangid` matches its case-insensitive pattern;
-  patched locally).
+  `vendor/` (an FTS3 identifier in SQLite's amalgamation matches its
+  case-insensitive pattern; patched locally).
 ** `hyperpolymath/rsr-template-repo`: `just repo-init`'s OPENSSF line delete
   leaves a table row in `docs/governance/TEMPLATE-STANDARDS-AUDIT.adoc` one
   cell short; the template `compose.yaml` build context `..` resolves to
