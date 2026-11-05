@@ -344,6 +344,13 @@ pub fn check(self: *MonitorAdapter, ctx: *adapter.Context, source: adapter.Sourc
     }
 
     // ---- TLS certificate expiry (cert_warn_days = 0 turns it off: no probe, no alerts) ----------
+    // Turning it off also forgets what an earlier probe found, or `heron monitors` and the web
+    // status page would show a stale countdown (or EXPIRED) for a check that no longer runs.
+    if (opt.cert_warn_days == 0) {
+        st.cert_not_after = 0;
+        st.cert_checked = 0;
+        st.cert_alert = "";
+    }
     if (opt.cert_warn_days > 0 and target.https and !skip_request and (st.cert_checked == 0 or now - st.cert_checked >= cert_recheck_s)) {
         if (ctx.transport.certNotAfter(target.host, target.port)) |na| {
             st.cert_not_after = na;
@@ -681,6 +688,18 @@ test "tls certificate: warn once per cert, expired, renewal re-arms, http skippe
     off.fake.cert = now - 3600;
     try testing.expectEqual(@as(usize, 0), (try off.step(now)).len);
     try testing.expectEqual(@as(u32, 0), off.fake.cert_calls);
+
+    // Switching an existing monitor to 0 clears the certificate status an earlier probe saved.
+    var was_on = Harness.init();
+    defer was_on.deinit();
+    was_on.fake.cert = now + 5 * day_s;
+    _ = try was_on.step(now);
+    try testing.expect(was_on.state().cert_not_after != 0);
+    was_on.src.options = "{\"cert_warn_days\":0}";
+    _ = try was_on.step(now + 60);
+    try testing.expectEqual(@as(i64, 0), was_on.state().cert_not_after);
+    try testing.expectEqual(@as(i64, 0), was_on.state().cert_checked);
+    try testing.expectEqualStrings("", was_on.state().cert_alert);
 }
 
 test "normalizeText" {

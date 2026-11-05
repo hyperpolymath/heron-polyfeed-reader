@@ -106,7 +106,9 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   leaves a table row in `docs/governance/TEMPLATE-STANDARDS-AUDIT.adoc` one
   cell short; the template `compose.yaml` build context `..` resolves to
   `build/`, not the repository root; its container stacks assume an
-  `APP_*` environment and a `/health` route a minted project may not have.
+  `APP_*` environment and a `/health` route a minted project may not have,
+  and that rokur proxies to the app (`ROKUR_BACKEND`), which rokur's own
+  documented settings do not include.
 ** `metadatastician/selur`: `selur-compose` treats a volume that does not
   start with `./` or `/` as a named volume, so `../file` bind mounts fail
   validation (heron works round it with `./../heron.json`).

@@ -42,6 +42,12 @@ volumes = ["heron-data:/data", "./../heron.json:/config/heron.json:ro"]
 restart = "always"
 # No healthcheck: heron has no /health route and the runtime image carries no curl. heron is PID 1
 # and exits non-zero on a fatal error, which `restart` handles.
+#
+# The rokur/svalinn gateway services below are template extras and do NOT make the UI reachable as
+# configured: the UI refuses a Host header that is not the bound address or a loopback name
+# (DNS-rebinding defence), so a gateway must forward Host as 127.0.0.1:8484. Rokur's documented
+# settings offer no Host rewrite, so either front heron with a proxy that can, or drop this tier
+# (`just container-keep oci portable`) and use the loopback port above.
 
 # Rokur secrets gate: refuses to start (and refuses to proxy) unless the
 # declared secrets are present; emits a structured audit log of every access.
