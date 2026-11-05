@@ -82,25 +82,31 @@ fn childText(a: Allocator, n: *const xml.Node, name: []const u8) Allocator.Error
 
 fn rssItem(a: Allocator, source: []const u8, n: *const xml.Node) Allocator.Error!?Item {
     const title = try childText(a, n, "title");
-    var link = try childText(a, n, "link");
     var guid = try childText(a, n, "guid");
     if (guid.len == 0) if (n.attr("about")) |ab| { // RDF: rdf:about is the identifier
         guid = ab;
     };
-    if (link.len == 0) {
-        // RSS without a text <link>: an atom:link href (rel absent or "alternate") stands in, else
-        // the guid, but only when it is a permalink (RSS 2.0: isPermaLink defaults to true; "false"
-        // means an opaque identifier that merely looks like a URL).
-        var c = n.first_child;
-        while (c) |l| : (c = l.next) {
-            if (!l.is("link")) continue;
-            const href = l.attr("href") orelse continue;
-            const rel = l.attr("rel") orelse "alternate";
-            if (std.mem.eql(u8, rel, "alternate")) {
-                link = href;
-                break;
-            }
+    // The item URL, in order: the first RSS <link> with text (an atom:link may come before it in
+    // document order, so every link child is looked at), else an atom:link href whose rel is absent
+    // or "alternate" (RFC 8288: relation names compare case-insensitively), else the guid, but only
+    // when it is a permalink (RSS 2.0: isPermaLink defaults to true; "false" means an opaque
+    // identifier that merely looks like a URL).
+    var link: []const u8 = "";
+    var alt_href: []const u8 = "";
+    var c = n.first_child;
+    while (c) |l| : (c = l.next) {
+        if (!l.is("link")) continue;
+        const text = try nodeText(a, l);
+        if (text.len > 0) {
+            link = text;
+            break;
         }
+        if (alt_href.len == 0) if (l.attr("href")) |href| {
+            if (std.ascii.eqlIgnoreCase(l.attr("rel") orelse "alternate", "alternate")) alt_href = href;
+        };
+    }
+    if (link.len == 0) {
+        link = alt_href;
         if (link.len == 0 and std.mem.startsWith(u8, guid, "http")) {
             // No <guid>: the identifier is RDF's rdf:about, which RSS 1.0 says equals the item link.
             const permalink = if (n.child("guid")) |g| !std.mem.eql(u8, g.attr("isPermaLink") orelse "true", "false") else true;
@@ -362,6 +368,16 @@ test "edge: without <link>, an atom:link beats a non-permalink guid; a permalink
     try testing.expectEqualStrings("", p.items[1].url); // an opaque identifier is never used as the URL
     try testing.expectEqualStrings("https://ex.org/post/3", p.items[2].url); // isPermaLink defaults to true
     try testing.expectEqualStrings("https://ex.org/post/4", p.items[3].url); // rel=self is not the article
+
+    const q = try parse(a, "t",
+        \\<rss xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>c</title>
+        \\<item><title>5</title><atom:link rel="self" href="https://ex.org/feed"/><link>https://ex.org/post/5</link></item>
+        \\<item><title>6</title><guid isPermaLink="false">x6</guid><atom:link rel="Alternate" href="https://ex.org/post/6"/></item>
+        \\</channel></rss>
+    , null);
+    try testing.expectEqual(@as(usize, 2), q.items.len);
+    try testing.expectEqualStrings("https://ex.org/post/5", q.items[0].url); // text <link> after an atom:link
+    try testing.expectEqualStrings("https://ex.org/post/6", q.items[1].url); // rel compares case-insensitively
 }
 
 test "resolveLink: relative references resolve against the feed URL; absolute and schemed pass through" {

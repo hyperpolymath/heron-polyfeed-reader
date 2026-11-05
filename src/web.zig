@@ -101,12 +101,16 @@ fn handle(w: *Web, a: Allocator, req: *std.http.Server.Request) !void {
     var origin: ?[]const u8 = null;
     var fetch_site: []const u8 = "";
     var fetch_mode: []const u8 = "";
+    var speculative = false;
     var it = req.iterateHeaders();
     while (it.next()) |h| {
         if (std.ascii.eqlIgnoreCase(h.name, "host")) host = h.value;
         if (std.ascii.eqlIgnoreCase(h.name, "origin")) origin = h.value;
         if (std.ascii.eqlIgnoreCase(h.name, "sec-fetch-site")) fetch_site = h.value;
         if (std.ascii.eqlIgnoreCase(h.name, "sec-fetch-mode")) fetch_mode = h.value;
+        // Sec-Purpose (and the older Purpose) marks a prefetch or prerender: a guess, not a visit.
+        if ((std.ascii.eqlIgnoreCase(h.name, "sec-purpose") or std.ascii.eqlIgnoreCase(h.name, "purpose")) and
+            std.ascii.findIgnoreCase(h.value, "prefetch") != null) speculative = true;
     }
     if (host == null or !hostOk(w, host.?)) return send(req, .misdirected_request, "text/plain; charset=utf-8", "bad host\n", null);
 
@@ -132,6 +136,10 @@ fn handle(w: *Web, a: Allocator, req: *std.http.Server.Request) !void {
         try pageList(w, a, o, query);
     } else if (std.mem.startsWith(u8, path, "/item/")) {
         const rowid = std.fmt.parseInt(i64, path["/item/".len..], 10) catch return send(req, .not_found, "text/plain; charset=utf-8", "not found\n", null);
+        // A browser may prerender a typed URL or a hovered bookmark with the same Fetch Metadata as
+        // a real visit. Declining it (non-2xx) cancels the prerender, so the visit, if it happens,
+        // is a fresh request that marks the item read; nothing is marked for a guess.
+        if (speculative) return send(req, .service_unavailable, "text/plain; charset=utf-8", "speculative loads are declined\n", null);
         // Only a real GET marks the item read (HEAD from link checkers and previews must not), and only
         // a navigation from this UI or the user (not an <img> or link on another site; "same-site"
         // would still admit another local port).
@@ -465,6 +473,9 @@ test "web UI end to end: pages, escaping, read marks, host/origin checks, loopba
     try testing.expect(std.mem.indexOf(u8, cross, "action=\"/read/1\"") != null);
     _ = try get(a, io, w.port, "GET", "/item/1", try std.fmt.allocPrint(a, "{s}Sec-Fetch-Site: same-site\r\nSec-Fetch-Mode: navigate\r\n", .{hostline}));
     _ = try get(a, io, w.port, "GET", "/item/1", hostline);
+    // A prerender carries a user-like "none"/"navigate" but is only a guess: declined, not marked.
+    const pre = try get(a, io, w.port, "GET", "/item/1", try std.fmt.allocPrint(a, "{s}Sec-Fetch-Site: none\r\nSec-Fetch-Mode: navigate\r\nSec-Purpose: prefetch;prerender\r\n", .{hostline}));
+    try testing.expect(std.mem.startsWith(u8, pre, "HTTP/1.1 503"));
     try testing.expectEqual(@as(i64, 2), (try st.count()).unread);
 
     // A navigation from this UI marks read; javascript: URL is not made into a link.

@@ -107,6 +107,9 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   cell short; the template `compose.yaml` build context `..` resolves to
   `build/`, not the repository root; its container stacks assume an
   `APP_*` environment and a `/health` route a minted project may not have.
+** `metadatastician/selur`: `selur-compose` treats a volume that does not
+  start with `./` or `/` as a named volume, so `../file` bind mounts fail
+  validation (heron works round it with `./../heron.json`).
 * Owner: choose the clade (`ap` Applications is the obvious candidate: an
   end-user desktop daemon), set `:position-type`, register in gv-clade-index.
 * M8: second adapter (NNTP/NNTPS or Gemini with TOFU) with no core changes;

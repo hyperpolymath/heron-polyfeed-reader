@@ -34,9 +34,11 @@ environment = {
   HERON_CONFIG = "/config/heron.json",
   HERON_DATA = "/data",
 }
-# Without a config heron exits with ConfigNotFound. ../heron.json is the one compose.yaml mounts:
-# it binds the UI to 0.0.0.0 inside the container and relies on the loopback mapping above.
-volumes = ["heron-data:/data", "../heron.json:/config/heron.json:ro"]
+# Without a config heron exits with ConfigNotFound. This is the heron.json compose.yaml mounts: it
+# binds the UI to 0.0.0.0 inside the container and relies on the loopback mapping above.
+# selur-compose takes a volume as a bind mount only when it starts with "./" or "/" (anything else
+# must be a declared named volume), hence "./../" rather than "../". Run it from this directory.
+volumes = ["heron-data:/data", "./../heron.json:/config/heron.json:ro"]
 restart = "always"
 # No healthcheck: heron has no /health route and the runtime image carries no curl. heron is PID 1
 # and exits non-zero on a fatal error, which `restart` handles.

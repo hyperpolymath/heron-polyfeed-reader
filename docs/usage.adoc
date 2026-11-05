@@ -106,7 +106,7 @@ One JSON file (no YAML). `check-config` rejects unknown keys at every level and 
 * No WebSub; feeds are polled.
 * Relative entry links are resolved against the feed URL; `xml:base` is not consulted.
 * The web UI serves one request at a time with a 10 s per-connection deadline; it is a personal UI, not a public server.
-* Opening an item in the web UI marks it read only when the browser sends Fetch Metadata saying the navigation came from the UI itself or was typed by you (`Sec-Fetch-Site: same-origin` or `none`, `Sec-Fetch-Mode: navigate`; every current browser does). Otherwise, for example from an older browser or a link on another site, the item stays unread and the page shows a *Mark read* button.
+* Opening an item in the web UI marks it read only when the browser sends Fetch Metadata saying the navigation came from the UI itself or was typed by you (`Sec-Fetch-Site: same-origin` or `none`, `Sec-Fetch-Mode: navigate`; every current browser does). Otherwise, for example from an older browser or a link on another site, the item stays unread and the page shows a *Mark read* button. A prefetch or prerender (`Sec-Purpose: prefetch`) of an item page is declined with 503, so only the real visit marks it read.
 
 == See also
 
