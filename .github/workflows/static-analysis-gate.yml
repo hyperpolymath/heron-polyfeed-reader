@@ -354,7 +354,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     needs: [panic-attack-assail, hypatia-scan, patch-bridge-triage]
-    if: always()
+    # !cancelled(), not always(): deposit what the scans found even when one
+    # failed, but not after the run was cancelled (a superseding push), when
+    # the artifacts were never uploaded and the download step can only fail.
+    if: ${{ !cancelled() }}
     steps:
       - name: Download panic-attack findings
         uses: actions/download-artifact@v8.0.1
