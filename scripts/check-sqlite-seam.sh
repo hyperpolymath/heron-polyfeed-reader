@@ -31,8 +31,8 @@ HDR="$ROOT/vendor/sqlite/sqlite3.h"
 MODE="${1:-}"
 
 die() { echo "check-sqlite-seam: $*" >&2; exit 2; }
-[ -n "$MODE" ] || die "usage: check-sqlite-seam.sh header|regen|all"
-[ -f "$GEN" ] || die "missing $GEN"
+[[ -n "$MODE" ]] || die "usage: check-sqlite-seam.sh header|regen|all"
+[[ -f "$GEN" ]] || die "missing $GEN"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -80,20 +80,20 @@ function cls(t) {
 
 check_header() {
   command -v zig >/dev/null 2>&1 || die "zig is not on PATH (the header check needs zig translate-c)"
-  [ -f "$HDR" ] || die "missing $HDR"
+  [[ -f "$HDR" ]] || die "missing $HDR"
   zig translate-c "$HDR" > "$TMP/hdr.zig" 2> "$TMP/tc.err" \
     || { cat "$TMP/tc.err" >&2; die "zig translate-c failed on $HDR"; }
 
   awk "$CLASSIFY" "$GEN" | sort > "$TMP/ours"
-  [ -s "$TMP/ours" ] || { echo "FAIL: no extern declarations found in $GEN"; fail=1; return; }
+  [[ -s "$TMP/ours" ]] || { echo "FAIL: no extern declarations found in $GEN"; fail=1; return; }
   cut -d' ' -f1 "$TMP/ours" > "$TMP/names"
   awk "$CLASSIFY" "$TMP/hdr.zig" | sort | awk 'NR==FNR { want[$1]; next } ($1 in want)' "$TMP/names" - > "$TMP/theirs"
 
   while read -r name ps r; do
     h="$(awk -v n="$name" '$1 == n { print $2, $3 }' "$TMP/theirs")"
-    if [ -z "$h" ]; then
+    if [[ -z "$h" ]]; then
       echo "FAIL: $name is not declared in sqlite3.h"; fail=1
-    elif [ "$h" != "$ps $r" ]; then
+    elif [[ "$h" != "$ps $r" ]]; then
       echo "FAIL: $name: ours ($ps) -> $r, header (${h% *}) -> ${h##* }"; fail=1
     fi
   done < "$TMP/ours"
@@ -102,9 +102,9 @@ check_header() {
   # @as(c_int, …) or promoteIntLiteral) against ours.
   while read -r name val; do
     hv="$(grep -E "^pub const $name = " "$TMP/hdr.zig" | head -1 | grep -oE '0x[0-9a-fA-F]+|[0-9]+' | tail -1 || true)"
-    if [ -z "$hv" ]; then
+    if [[ -z "$hv" ]]; then
       echo "FAIL: constant $name is not in sqlite3.h"; fail=1
-    elif [ "$((hv))" != "$((val))" ]; then
+    elif [[ "$((hv))" != "$((val))" ]]; then
       echo "FAIL: constant $name: ours $val, header $((hv))"; fail=1
     fi
   done < <(sed -nE 's/^pub const (SQLITE_[A-Z0-9_]+): c_int = (-?[0-9]+);$/\1 \2/p' "$GEN")
@@ -112,12 +112,12 @@ check_header() {
   local nf nc
   nf="$(wc -l < "$TMP/ours")"
   nc="$(grep -cE '^pub const SQLITE_' "$GEN" || true)"
-  [ "$fail" = 0 ] && echo "PASS: $nf functions and $nc constants in sqlite_c.zig agree with sqlite3.h (zig $(zig version))"
+  [[ "$fail" = 0 ]] && echo "PASS: $nf functions and $nc constants in sqlite_c.zig agree with sqlite3.h (zig $(zig version))"
 
   # The generated file is the only SQLite declaration in the tree.
   local stray
   stray="$(grep -rnE 'extern fn sqlite3_' "$ROOT/src" --include='*.zig' | grep -v '^'"$ROOT"'/src/interface/generated/' || true)"
-  if [ -n "$stray" ]; then
+  if [[ -n "$stray" ]]; then
     echo "FAIL: SQLite declared outside src/interface/generated/:"
     echo "$stray"
     fail=1
