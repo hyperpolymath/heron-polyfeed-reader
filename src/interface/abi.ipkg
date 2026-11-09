@@ -34,3 +34,11 @@ depends = base
 modules = Abi.Types
         , Abi.Layout
         , Abi.Foreign
+        , Abi.Sqlite
+        , SeamGen
+
+-- `idris2 --build abi.ipkg` also builds the generator for
+-- src/interface/generated/sqlite_c.zig (`just seam-gen`, PROOF-NEEDS SEAM-4).
+main = SeamGen
+
+executable = seamgen

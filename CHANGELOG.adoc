@@ -115,3 +115,12 @@ the template commit.
   `Coaptation.idr` checks under `%default total`. `PROOF-STATUS.adoc` and
   `PROOF-NEEDS.adoc` report the 2026-11-09 run in PROOF-POLICY terms and
   list heron's own SQLite-boundary obligations.
+* SQLite boundary (PROOF-NEEDS SEAM-4): `src/interface/Abi/Sqlite.idr`
+  describes the 22 SQLite functions and 8 integer constants heron uses, once.
+  `src/interface/generated/sqlite_c.zig` is rendered from it (`just
+  seam-gen`) and is now the only SQLite declaration; `src/sqlite.zig` uses it
+  and `src/store.zig` reaches the last row id through `Db.lastInsertRowid`
+  instead of its own `extern`. The type checker proves each declaration's ABI
+  shape matches `sqlite3.h`; `scripts/check-sqlite-seam.sh` checks the
+  rendered file against `zig translate-c` of the header on every Zig CI run,
+  and `just seam-check` (in `just ci`) fails if it drifts from its source.

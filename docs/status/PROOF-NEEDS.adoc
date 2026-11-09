@@ -65,19 +65,21 @@ they say nothing about heron. heron's own obligations are under
 |===
 | # | Proof Needed | Category | Prover | Priority | File(s)
 
-| SEAM-1 | The hand-written SQLite C declarations agree with the vendored
-  `sqlite3.h` (arity, parameter and return types, nullability, integer width)
-  and the constants heron uses match the header | ABI | Zig `translate-c`
-  comparison today; Idris2 once SEAM-4 lands | P1 | `src/sqlite.zig`,
-  `src/store.zig`, `vendor/sqlite/sqlite3.h`
+| SEAM-1 | The SQLite C declarations agree with the vendored `sqlite3.h`
+  (functions, arity, ABI shape of every parameter and result) and the integer
+  constants heron uses match the header | ABI | Zig `translate-c` comparison,
+  `scripts/check-sqlite-seam.sh header`, every Zig CI run | P1 |
+  `src/interface/generated/sqlite_c.zig`, `vendor/sqlite/sqlite3.h`
 | SEAM-2 | SQLite behaves as its documented C API (third-party, PROOF-POLICY
   §1.1) | ABI | none: recorded ASSUMED | — | `vendor/sqlite/`
 | SEAM-3 | The `setpriority` declaration matches the C library | ABI | Zig
   `translate-c` of `<sys/resource.h>` | P3 | `src/daemon.zig`
 | SEAM-4 | One source for the SQLite boundary: an Idris2 description of the
-  functions heron calls generates the Zig declarations, run through idris2x
-  (owner decision 2026-11-09; experiment first) | ABI | Idris2 | P2 |
-  `src/interface/` (to be designed)
+  functions and constants heron uses renders the Zig declarations, with a
+  proof that their ABI shapes match the header (owner decision 2026-11-09);
+  GitHub CI runs the rendering check once idris2x provides Idris2 | ABI |
+  Idris2 | P2 | `src/interface/Abi/Sqlite.idr`, `src/interface/SeamGen.idr`,
+  `just seam-check`
 |===
 
 == Dangerous Patterns (BANNED)

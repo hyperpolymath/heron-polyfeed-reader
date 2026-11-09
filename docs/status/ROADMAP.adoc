@@ -85,7 +85,8 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   (PROOF-NEEDS SEAM-4), run through idris2x. `just test` and `just build`
   run every detected language, and without `idris2` on PATH they exit
   non-zero, so they stay red until idris2x (or pack) provides Idris2.
-  `src/interface/abi.ipkg` type-checks under Idris2 0.7.0 today.
+  `src/interface/abi.ipkg` type-checks under Idris2 0.7.0 today and now
+  holds the SEAM-4 description and its generator.
 . *mise.lock was edited by hand* for the Zig 0.17.0 pin (no `mise` in the
   import session). Checksums are the official ones from
   `ziglang.org/download/index.json`; re-lock with `just toolchain-refresh` to
@@ -99,13 +100,18 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   was run. `just proof-check-all` had been red with no workflow to show it:
   `Types.idr` and `ApiTypes.lean` compiled while their MANIFESTs still said
   quarantined. Both are now gated and the four gates pass.
-* SEAM-4: run a scratch experiment first (an Idris2 description of the 22
-  SQLite functions, a total emitter for the Zig declarations, compared with
-  `src/sqlite.zig` and with `zig translate-c` of `sqlite3.h`). Then design
-  `src/interface/` around it, and wire `just proof-check-all` and the
-  generated-file drift check into CI through idris2x.
-* Add `src/interface/abi.ipkg` to a proof MANIFEST so a gate keeps it
-  compiling (it type-checks today, unguarded).
+* SEAM-4 landed (2026-11-09): `src/interface/Abi/Sqlite.idr` is the one
+  source of heron's SQLite boundary, `src/interface/generated/sqlite_c.zig`
+  is rendered from it, and nothing else declares SQLite. The experiment
+  before it found two hand-written copies of one handle type that disagreed
+  (`store.zig` used non-null `*anyopaque`, `sqlite.zig` nullable `?*Handle`).
+  Zig CI checks the generated file against `sqlite3.h` on every run.
+* Once idris2x exists: run `just seam-check` (the rendering check) and
+  `just proof-check-all` in GitHub CI; today they need a local Idris2.
+* After #5 merges: re-run the mathesis census for heron. It reads `main`,
+  so it still counts zero own proofs; `Abi/Sqlite.idr` is the first.
+* SEAM-3: check the `setpriority` declaration (`src/daemon.zig`) the same
+  way, against `<sys/resource.h>`.
 * The deed's `(variant (paths :added ()))` lists nothing, although heron
   added all of its own code after the mint; the template's
   `check-mint-drift.sh` would report every file. Not run here today; list

@@ -10,16 +10,18 @@ below was run, not read; the date and toolchain are on the row.
 
 == Summary
 
-heron owns *no proof of its own yet*. Everything under
-`verification/proofs/` is the RSR template's worked examples about example
+heron owns one proof of its own: `seamAgreesWithHeader` in
+`src/interface/Abi/Sqlite.idr` (SEAM-4). The files under
+`verification/proofs/` are the RSR template's worked examples about example
 types (a bounded natural number, a toy expression language). They are kept
 compiling by `just proof-check-all`, and they are correct, but they prove
-nothing about heron. The mathesis estate census agrees: it records heron
-with zero own proofs.
+nothing about heron. The mathesis estate census reads each repository's
+`main`, so it will count the SEAM-4 proof only after this lands there.
 
-heron's real formal boundary is its SQLite C API: 22 hand-written `extern`
-declarations (`src/sqlite.zig`, `src/store.zig`). Its obligations are
-SEAM-1 to SEAM-4 in `PROOF-NEEDS.adoc`.
+heron's real formal boundary is its SQLite C API: 22 functions and 8 integer
+constants. They are declared in exactly one place,
+`src/interface/generated/sqlite_c.zig`, which is rendered from the Idris2
+description in `src/interface/Abi/Sqlite.idr` and never edited by hand.
 
 == heron's own obligations
 
@@ -29,13 +31,19 @@ SEAM-1 to SEAM-4 in `PROOF-NEEDS.adoc`.
 
 | SEAM-1
 | The 22 SQLite declarations agree with `vendor/sqlite/sqlite3.h` (SQLite
-  3.50.4): arity, parameter and return types, nullability and integer width;
-  and the 9 constants heron uses (`SQLITE_OK`, `ROW`, `DONE`, the four
-  `OPEN_*` flags, `SQLITE_TRANSIENT`, `SQLITE_NULL`) equal the header's.
+  3.50.4): same functions, same arity, and the same ABI shape for every
+  parameter and result (32-bit int, 64-bit int, pointer, no value); and the
+  8 integer constants equal the header's values.
 | TESTED
-| 2026-11-09, one-off: each declaration compared with the output of
-  `zig translate-c vendor/sqlite/sqlite3.h` (Zig 0.17.0). Bounds: this SQLite
-  version, x86_64-linux. Nothing re-checks it; SEAM-4 is the planned route.
+| Every Zig CI run: `scripts/check-sqlite-seam.sh header` compares the
+  generated file with `zig translate-c vendor/sqlite/sqlite3.h` (Zig 0.17.0)
+  and refuses an SQLite declaration anywhere else in `src/`. Bounds: this
+  SQLite version, x86_64-linux, ABI shape rather than C-level type identity
+  (a `char *` and an `int *` are both "pointer"). Seen failing on six
+  deliberate corruptions (wrong width, wrong constant, wrong arity, an unknown
+  function, a hand edit, a stray declaration) on 2026-11-09.
+  `SQLITE_TRANSIENT`, a pointer sentinel kept in `src/sqlite.zig`, is not
+  covered.
 
 | SEAM-2
 | SQLite behaves as its documented C API.
@@ -48,10 +56,17 @@ SEAM-1 to SEAM-4 in `PROOF-NEEDS.adoc`.
 | Not checked.
 
 | SEAM-4
-| One source for the SQLite boundary: an Idris2 description generates the
-  Zig declarations, run through idris2x.
-| OPEN
-| Owner decision 2026-11-09. A scratch experiment comes first.
+| One source for the SQLite boundary. `Abi.Sqlite` describes it once; the
+  type checker proves each function's ABI shape equals a table of
+  `sqlite3.h`; `SeamGen` renders the Zig file from the same description.
+| PROVEN (shape agreement); TESTED (rendering)
+| `seamAgreesWithHeader : agrees seam header = True` is `Refl`, accepted by
+  Idris2 0.7.0 with `%default total`; a corrupted table entry is rejected.
+  `just seam-check` (also in `just ci`) re-renders the file and fails on any
+  difference. That rendering check needs idris2, so it runs locally, not in
+  GitHub CI, until idris2x provides Idris2 there. The table itself is
+  transcribed, which is why SEAM-1 checks the rendered file against the
+  header directly.
 |===
 
 == Template examples (not heron claims)
@@ -102,11 +117,13 @@ SEAM-1 to SEAM-4 in `PROOF-NEEDS.adoc`.
 | Not model-checked: there is no `.cfg`, the state space is unbounded, and
   `ProcessedMonotonic` (`processed >= 0`) holds trivially.
 
-| `src/interface/abi.ipkg` (`Abi.Types`, `Abi.Layout`, `Abi.Foreign`)
+| `src/interface/abi.ipkg`: `Abi.Types`, `Abi.Layout`, `Abi.Foreign` (the
+  package also holds heron's own `Abi.Sqlite` and `SeamGen`, above)
 | Idris2
 | PROVEN
-| `idris2 --typecheck`, Idris2 0.7.0; total, no escape hatches. Not listed in
-  any MANIFEST, so no gate keeps it compiling.
+| `idris2 --typecheck`, Idris2 0.7.0; total, no escape hatches. `just test`
+  and `just quality` type-check the package whenever idris2 is on PATH; no
+  GitHub workflow does yet.
 
 | `.machine_readable/coaptation/core/Coaptation.idr`
 | Idris2
@@ -140,4 +157,5 @@ CI waits on idris2x (see `docs/status/ROADMAP.adoc`).
 
 | 2026-04-04 | Initial proof status tracking | Template
 | 2026-11-09 | Rewritten from a run of every prover; PROOF-POLICY §5 vocabulary; heron's own SEAM obligations | Claude Code (owner-supervised)
+| 2026-11-09 | SEAM-4 landed: one Idris2 source for the SQLite boundary, a shape proof, a rendering check; SEAM-1 checked on every Zig CI run | Claude Code (owner-supervised)
 |===

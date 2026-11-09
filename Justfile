@@ -140,6 +140,20 @@ test-smoke:
     ./zig-out/bin/heron help >/dev/null
     ./zig-out/bin/heron --config examples/heron.json --data "$(mktemp -d)" check-config
 
+# heron's SQLite C boundary (PROOF-NEEDS SEAM-4). The declarations in
+# src/interface/generated/sqlite_c.zig are rendered from the Idris2 description
+# in src/interface/Abi/Sqlite.idr; never edit the generated file by hand.
+
+# Regenerate sqlite_c.zig from the Idris2 description (needs idris2)
+seam-gen:
+    cd src/interface && idris2 --build abi.ipkg
+    ./src/interface/build/exec/seamgen > src/interface/generated/sqlite_c.zig
+    zig fmt --check src/interface/generated/sqlite_c.zig
+
+# Fail if sqlite_c.zig drifted from its source or from sqlite3.h (needs idris2 and zig)
+seam-check:
+    bash scripts/check-sqlite-seam.sh all
+
 # Run end-to-end tests (full pipeline: build → run → verify)
 e2e:
     bash tests/e2e.sh
@@ -363,7 +377,7 @@ man:
 # Run full CI pipeline locally
 # proof-check-all is FATAL if any prover toolchain is absent (idris2/lean/agda/coqc):
 # the full CI gate must not pass on a machine that cannot verify the proofs.
-ci: deps quality proof-check-all
+ci: deps quality proof-check-all seam-check
     @echo "CI pipeline complete!"
 
 # Install git hooks

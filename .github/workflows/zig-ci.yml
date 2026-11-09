@@ -46,6 +46,12 @@ jobs:
         run: zig version
       - name: Format check
         run: zig fmt --check build.zig src
+      - name: SQLite boundary agrees with sqlite3.h (SEAM-1)
+        # Compares src/interface/generated/sqlite_c.zig with `zig translate-c`
+        # of the vendored header, and refuses an SQLite declaration anywhere
+        # else. Regenerating the file from its Idris2 source (`seam-check
+        # regen`) needs idris2, which CI does not have until idris2x.
+        run: bash scripts/check-sqlite-seam.sh header
       - name: Unit tests
         run: zig build test --summary all
       - name: Release build (static musl, as the container does)
