@@ -26,7 +26,12 @@
 
 == Mandatory Proofs (All RSR Repos)
 
-These proofs come from the heron-polyfeed-reader and MUST be present in every repo:
+These proofs are inherited from the RSR template spine and MUST be present in every repo.
+(The mint's self-name pass once rewrote the template's own name here into this
+repository's; the template now words this line so the pass cannot.)
+In this repository they are the template's worked examples about example types;
+they say nothing about heron. heron's own obligations are under
+<<_project_specific_proofs>>.
 
 === ABI/FFI Boundary Proofs (Idris2)
 
@@ -60,7 +65,19 @@ These proofs come from the heron-polyfeed-reader and MUST be present in every re
 |===
 | # | Proof Needed | Category | Prover | Priority | File(s)
 
-| | | | | |
+| SEAM-1 | The hand-written SQLite C declarations agree with the vendored
+  `sqlite3.h` (arity, parameter and return types, nullability, integer width)
+  and the constants heron uses match the header | ABI | Zig `translate-c`
+  comparison today; Idris2 once SEAM-4 lands | P1 | `src/sqlite.zig`,
+  `src/store.zig`, `vendor/sqlite/sqlite3.h`
+| SEAM-2 | SQLite behaves as its documented C API (third-party, PROOF-POLICY
+  §1.1) | ABI | none: recorded ASSUMED | — | `vendor/sqlite/`
+| SEAM-3 | The `setpriority` declaration matches the C library | ABI | Zig
+  `translate-c` of `<sys/resource.h>` | P3 | `src/daemon.zig`
+| SEAM-4 | One source for the SQLite boundary: an Idris2 description of the
+  functions heron calls generates the Zig declarations, run through idris2x
+  (owner decision 2026-11-09; experiment first) | ABI | Idris2 | P2 |
+  `src/interface/` (to be designed)
 |===
 
 == Dangerous Patterns (BANNED)

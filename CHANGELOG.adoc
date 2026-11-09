@@ -103,3 +103,15 @@ the template commit.
   `HERON_CONFIG` / `HERON_DATA`, lock file `heron.lock`.
 * Seven source files reformatted by `zig fmt` 0.17 (`@intFromEnum` →
   `@backingInt`, literal layout); no behaviour change, 85/85 tests still pass.
+* Canon pin moved to 2.1.5 (the gate-table detection fixes in standards
+  #1419); the Canon lockstep gate compares against it.
+* Five workflows that called the retired `hyperpolymath/standards` reusable
+  workflows, and so failed at startup on `main`, now carry the template's
+  inline versions: governance, secret-scanner, mirror, scorecard,
+  hypatia-scan. `rust-ci` is removed (heron has no Rust) and the removal is
+  declared in the deed's `(variant (paths :removed …))`.
+* Proof spine: `Types.idr` and `ApiTypes.lean` compile, so they are gated
+  rather than quarantined, and `just proof-check-all` passes again;
+  `Coaptation.idr` checks under `%default total`. `PROOF-STATUS.adoc` and
+  `PROOF-NEEDS.adoc` report the 2026-11-09 run in PROOF-POLICY terms and
+  list heron's own SQLite-boundary obligations.

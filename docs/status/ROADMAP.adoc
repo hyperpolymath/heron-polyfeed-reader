@@ -80,13 +80,12 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   GitHub made. The eleven milestone commits keep their own signatures in
   #3's commits, which GitHub keeps at `refs/pull/3/head` (a squash
   flattens them out of `main`; the source branch was deleted on merge).
-. *Idris2 ABI seam.* `just test` and `just build` run every detected
-  language. The template's `src/interface/abi.ipkg` (Idris2) is detected
-  alongside `build.zig`; without `idris2` on PATH the Zig steps pass but the
-  recipe exits non-zero. Decide whether the seam stays (then provision
-  `idris2` via pack, as the template expects) or whether this project opts
-  out (then `validate-rsr`, which hard-requires `src/interface/{abi,ffi,generated}`,
-  needs a ruling).
+. *Idris2 provisioning.* The owner decided on 2026-11-09 that the seam
+  stays, and that it becomes the single source of heron's SQLite boundary
+  (PROOF-NEEDS SEAM-4), run through idris2x. `just test` and `just build`
+  run every detected language, and without `idris2` on PATH they exit
+  non-zero, so they stay red until idris2x (or pack) provides Idris2.
+  `src/interface/abi.ipkg` type-checks under Idris2 0.7.0 today.
 . *mise.lock was edited by hand* for the Zig 0.17.0 pin (no `mise` in the
   import session). Checksums are the official ones from
   `ziglang.org/download/index.json`; re-lock with `just toolchain-refresh` to
@@ -94,8 +93,25 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
 
 == Next actions
 
-* Merge the fourth-round fixes; then M7 is done except the owner decisions
-  above.
+* M7 is done except the owner decisions above (the fourth-round fixes
+  merged as #4).
+* Proof audit, 2026-11-09 (results in `PROOF-STATUS.adoc`): every prover
+  was run. `just proof-check-all` had been red with no workflow to show it:
+  `Types.idr` and `ApiTypes.lean` compiled while their MANIFESTs still said
+  quarantined. Both are now gated and the four gates pass.
+* SEAM-4: run a scratch experiment first (an Idris2 description of the 22
+  SQLite functions, a total emitter for the Zig declarations, compared with
+  `src/sqlite.zig` and with `zig translate-c` of `sqlite3.h`). Then design
+  `src/interface/` around it, and wire `just proof-check-all` and the
+  generated-file drift check into CI through idris2x.
+* Add `src/interface/abi.ipkg` to a proof MANIFEST so a gate keeps it
+  compiling (it type-checks today, unguarded).
+* The deed's `(variant (paths :added ()))` lists nothing, although heron
+  added all of its own code after the mint; the template's
+  `check-mint-drift.sh` would report every file. Not run here today; list
+  the added paths before anything runs it.
+* The GitHub repository description still reads "holding repo - only
+  template for now" (owner: repository settings).
 * Feature raised in review, not built: an alert when robots.txt itself
   changes (today only a change that blocks the monitored path alerts).
 * Upstream, outside this repo:
@@ -111,6 +127,17 @@ SonarCloud's quality gate passed. CodeRabbit did not review: the import's
   documented settings do not include. Its selur `compose.toml` and
   `compose.example.toml` use multi-line inline tables, which selur's TOML 1.0
   parser (toml 0.8) rejects, so neither loads (fixed here in `compose.toml`).
+** `hyperpolymath/rsr-template-repo` (proof spine, fixed in a companion
+  template PR): the idris2 and lean4 MANIFESTs still quarantine `Types.idr`
+  and `ApiTypes.lean`, which compile, so `just proof-check-all` fails in
+  every fresh mint; `PROOF-NEEDS.adoc` names the template in a sentence the
+  mint's self-name pass rewrites into the child's name; and it assigns
+  public-API typing to Lean, where PROOF-POLICY §1 assigns APIs to Idris2.
+** `metadatastician/standards`: `CLAUDE.md` cites
+  `3-practice/DATA-FORMAT-ROUTING.adoc` as the canon for kyq's scope, and
+  no such file exists on `main`. Each draft canon PATCH (2.1.4, 2.1.5)
+  needs a re-pin in every child, because Canon lockstep compares against
+  the draft.
 ** `metadatastician/selur`: `selur-compose` treats a volume that does not
   start with `./` or `/` as a named volume, so `../file` bind mounts fail
   validation (heron works round it with `./../heron.json`).
