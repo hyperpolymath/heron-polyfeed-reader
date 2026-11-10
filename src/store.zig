@@ -548,9 +548,8 @@ pub const Store = struct {
     }
 };
 
-extern fn sqlite3_last_insert_rowid(db: *anyopaque) i64;
 fn lastRowId(db: sqlite.Db) i64 {
-    return sqlite3_last_insert_rowid(@ptrCast(db.h));
+    return db.lastInsertRowid();
 }
 
 /// Quote user text as one FTS5 phrase ("" doubles embedded quotes).

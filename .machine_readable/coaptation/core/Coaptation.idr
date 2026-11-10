@@ -21,6 +21,8 @@ module Coaptation
 import Data.Vect
 import Data.Fin
 
+%default total
+
 ||| The six normative contractile verbs.
 public export
 data Verb = Intend | Must | Trust | Adjust | Dust | Bust

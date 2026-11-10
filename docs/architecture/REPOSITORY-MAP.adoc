@@ -265,7 +265,6 @@ your own repo - but do not read their emptiness as neglect here.
 | `src/core/`
 | `src/definitions/`
 | `src/errors/`
-| `src/interface/generated/`
 | `src/interface/generated/abi/`
 | `tests/fuzz/`
 | `verification/benchmarks/`
