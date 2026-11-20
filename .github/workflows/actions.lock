@@ -49,7 +49,9 @@ workflows:
     '.github/workflows/labels.yml': []
     '.github/workflows/lock-sync-gate.yml': []
     '.github/workflows/main-estate-audit.yml':
-        - 'hyperpolymath/cicd-suite@55556cf5ba71ba744695861503c13148d3915a5d'
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
+        - 'hyperpolymath/deed-ecosystem@f9d999b60cb5f383679ea19912bcdc49c944973a'
+        - 'hyperpolymath/k9-ecosystem@2155aa26a21758f2ba119f61bc7e0e1981c106fb'
     '.github/workflows/mirror.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
     '.github/workflows/ossf-best-practices.yml':
@@ -201,24 +203,21 @@ dependencies:
         commit: 'sha1-6037f33647c3f17758a2356c80fc4a53d7e0685d'
         owner_id: 75048950
         repo_id: 623796603
-    'hyperpolymath/cicd-suite@0da816c05ae7486671d863e07935f93981c0c2d5':
-        ref: '0da816c05ae7486671d863e07935f93981c0c2d5'
-        commit: 'sha1-0da816c05ae7486671d863e07935f93981c0c2d5'
+    'hyperpolymath/deed-ecosystem@f9d999b60cb5f383679ea19912bcdc49c944973a':
+        ref: 'v0.1.0'
+        commit: 'sha1-f9d999b60cb5f383679ea19912bcdc49c944973a'
         owner_id: 6759885
-        repo_id: 1326697643
-    'hyperpolymath/cicd-suite@55556cf5ba71ba744695861503c13148d3915a5d':
-        ref: '55556cf5ba71ba744695861503c13148d3915a5d'
-        commit: 'sha1-55556cf5ba71ba744695861503c13148d3915a5d'
-        owner_id: 6759885
-        repo_id: 1326697643
-        uses:
-            - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
-            - 'hyperpolymath/cicd-suite@0da816c05ae7486671d863e07935f93981c0c2d5'
+        repo_id: 1275649586
     'hyperpolymath/deed-ecosystem@main':
         ref: 'main'
         commit: 'sha1-44f9c9fc42901a55e0f489a40eabf4173e550d1d'
         owner_id: 6759885
         repo_id: 1275649586
+    'hyperpolymath/k9-ecosystem@2155aa26a21758f2ba119f61bc7e0e1981c106fb':
+        ref: 'v0.1.0'
+        commit: 'sha1-2155aa26a21758f2ba119f61bc7e0e1981c106fb'
+        owner_id: 6759885
+        repo_id: 1275650185
     'hyperpolymath/k9-ecosystem@main':
         ref: 'main'
         commit: 'sha1-2155aa26a21758f2ba119f61bc7e0e1981c106fb'
