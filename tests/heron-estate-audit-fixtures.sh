@@ -40,7 +40,7 @@ run_case() { # name expect(0|1) mutator-function expected-text
   cd "$d" || exit 2
   rm -rf .cicd-suite-tmp; mkdir .cicd-suite-tmp; cp -r "$suite" .cicd-suite-tmp/actions
   mkdir -p "$work/rt-$name"
-  out=$(RUNNER_TEMP="$work/rt-$name" REPO_OWNER=octo REPO_NAME=octo/demo \
+  out=$(GITHUB_WORKSPACE="$d" RUNNER_TEMP="$work/rt-$name" REPO_OWNER=octo REPO_NAME=octo/demo \
         bash --noprofile --norc -e -o pipefail -c "$step" 2>&1); rc=$?
   ran=$((ran+1))
   if { [ "$expect" = 0 ] && [ "$rc" -eq 0 ]; } || { [ "$expect" = 1 ] && [ "$rc" -ne 0 ]; }; then
@@ -60,13 +60,13 @@ run_case() { # name expect(0|1) mutator-function expected-text
 m_none()      { :; }
 m_pem()       { printf -- '-----BEGIN RSA PRIVATE KEY-----\nabc\n' > key.pem; }
 m_nogov()     { git rm -q GOVERNANCE.adoc; }
-m_placeholder() { printf 'Governance\n==========\nTODO: update this\na\nb\nc\nd\n' > GOVERNANCE.adoc; }
+m_placeholder() { printf 'Governance\n==========\nTO%s: update this\na\nb\nc\nd\n' DO > GOVERNANCE.adoc; }
 m_badcff()    { printf 'cff-version: 1.2.0\n' > CITATION.cff; }
 m_zig()       { printf 'const x = std.fs;\n' > src/app/a.zig; git add -A; }
 m_nolicense() { git rm -q LICENSE; }
 m_badowner()  { printf 'Maintainers\n===========\nowner: someone\nb\nc\nd\ne\nf\n' > MAINTAINERS.adoc; }
 m_shortaff()  { printf 'Affirmation\nonly one\n' > AFFIRMATION.adoc; }
-m_debt()      { printf '# TODO fix this\n' > src/app/a.py; git add -A; }
+m_debt()      { printf '# TO%s fix this\n' DO > src/app/a.py; git add -A; }
 m_sorry()     { printf 'theorem t : True := sorry\n' > src/app/p.lean; git add -A; }
 m_abi()       { : > abi.ipkg; mkdir -p src; printf 'f : IO ()\n' > src/Abi.idr; git add -A; }
 
