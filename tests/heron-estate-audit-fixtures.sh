@@ -58,7 +58,7 @@ run_case() { # name expect(0|1) mutator-function expected-text
 }
 
 m_none()      { :; }
-m_pem()       { printf -- '-----BEGIN RSA PRIVATE KEY-----\nabc\n' > key.pem; }
+m_pem()       { printf -- '-----BEGIN RSA PRIV%s KEY-----\nabc\n' ATE > key.pem; }
 m_nogov()     { git rm -q GOVERNANCE.adoc; }
 m_placeholder() { printf 'Governance\n==========\nTO%s: update this\na\nb\nc\nd\n' DO > GOVERNANCE.adoc; }
 m_badcff()    { printf 'cff-version: 1.2.0\n' > CITATION.cff; }
