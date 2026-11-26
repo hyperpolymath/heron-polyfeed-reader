@@ -33,14 +33,14 @@ mkrepo() { # dir: a compliant repository
   printf 'x\n' > src/app/a.txt
   git add -A && git commit -q -m init
 }
-run_case() { # name expect(0|1) mutator-function expected-text
-  local name=$1 expect=$2 mut=$3 text=$4 d="$work/$1" out rc
+run_case() { # name expect(0|1) mutator-function expected-text [VAR=value ...]
+  local name=$1 expect=$2 mut=$3 text=$4 d="$work/$1" out rc; shift 4
   planned=$((planned+1))
   mkrepo "$d"; ( cd "$d" && $mut )
   cd "$d" || exit 2
   rm -rf .cicd-suite-tmp; mkdir .cicd-suite-tmp; cp -r "$suite" .cicd-suite-tmp/actions
   mkdir -p "$work/rt-$name"
-  out=$(GITHUB_WORKSPACE="$d" RUNNER_TEMP="$work/rt-$name" REPO_OWNER=octo REPO_NAME=octo/demo \
+  out=$(env "$@" GITHUB_WORKSPACE="$d" RUNNER_TEMP="$work/rt-$name" REPO_OWNER=octo REPO_NAME=octo/demo \
         bash --noprofile --norc -e -o pipefail -c "$step" 2>&1); rc=$?
   ran=$((ran+1))
   if { [ "$expect" = 0 ] && [ "$rc" -eq 0 ]; } || { [ "$expect" = 1 ] && [ "$rc" -ne 0 ]; }; then
@@ -69,6 +69,7 @@ m_shortaff()  { printf 'Affirmation\nonly one\n' > AFFIRMATION.adoc; }
 m_debt()      { printf '# TO%s fix this\n' DO > src/app/a.py; git add -A; }
 m_sorry()     { printf 'theorem t : True := sorry\n' > src/app/p.lean; git add -A; }
 m_abi()       { : > abi.ipkg; mkdir -p src; printf 'f : IO ()\n' > src/Abi.idr; git add -A; }
+m_cartridge()  { printf '{}\n' > cartridge.json; git add -A; }
 
 run_case silence-compliant     0 m_none        'Central Estate CI/CD Audit passed.'
 run_case fire-private-key      1 m_pem         'Private-key material detected'
@@ -82,6 +83,12 @@ run_case fire-affirmation-stub 1 m_shortaff    'is a stub, not an affirmation'
 run_case fire-debt-marker      1 m_debt        'Untracked debt markers found'
 run_case fire-proof-sorry      1 m_sorry       'Undeclared proof circumventions found'
 run_case fire-idris2-abi-io    1 m_abi         'prohibited side-effects (IO/unsafe)'
+# boj-cartridge-check: CI never sets BOJ_CARTRIDGE_REQUIRED and heron has no cartridge,
+# so the gate is a no-op there. These cases pin its behaviour in both modes, so a
+# regression in the pinned check.sh is caught here.
+run_case silence-boj-not-applicable 0 m_none      'BoJ cartridge is not applicable'
+run_case silence-boj-cartridge-present 0 m_cartridge 'BoJ cartridge present at cartridge.json' BOJ_CARTRIDGE_REQUIRED=true
+run_case fire-boj-cartridge-required 1 m_none     'A BoJ cartridge is required' BOJ_CARTRIDGE_REQUIRED=true
 
 echo "cases planned=$planned ran=$ran pass=$pass fail=$fail"
 [ "$ran" -eq "$planned" ] || { echo "FAIL: a planned case did not run"; exit 1; }
